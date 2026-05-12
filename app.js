@@ -909,51 +909,67 @@ function renderSectionContent() {
 
   if (s === 'events') {
     const today = new Date(); today.setHours(0,0,0,0);
-    const pastEvs = EVENTS.filter(e => new Date(e.year, e.month-1, e.day) < today);
-    const upcomingEvs = EVENTS.filter(e => new Date(e.year, e.month-1, e.day) >= today);
-    const gPast = groupEvents(pastEvs, false);
-    const gUpcoming = groupEvents(upcomingEvs, true);
+    const pastEvs   = EVENTS.filter(e => new Date(e.year, e.month-1, e.day) <  today);
+    const futureEvs = EVENTS.filter(e => new Date(e.year, e.month-1, e.day) >= today);
+    const gPast   = groupEvents(pastEvs,   false);
+    const gFuture = groupEvents(futureEvs, true);
 
-    const pastToggle = h('button', { className: 'past-toggle', onClick: () => { state.showPast = !state.showPast; render(); } },
-      h('span', { style: 'font-size:16px' }, state.showPast ? '🙈' : '📅'),
-      ' ',
-      state.showPast ? tr.events.hidePast : (tr.events.showPast + ' (' + pastEvs.length + ')')
-    );
-
-    const upcomingSection = upcomingEvs.length
-      ? gUpcoming.map(g =>
-          h('div', { className: 'month-group' },
-            h('div', { className: 'month-label' }, g.monthName),
-            ...g.events.map(e =>
-              h('div', { className: 'event-card' },
-                h('div', { className: 'event-date' }, h('div', { className: 'event-day' }, e.day), h('div', { className: 'event-mon' }, e.monShort)),
-                h('div', { className: 'event-info' }, h('div', { className: 'event-title' }, e.emoji + ' ' + e.title), h('div', { className: 'event-desc' }, e.desc)),
-              )
-            )
+    // Costruisce le card di un gruppo di eventi
+    function eventGroup(g, dimmed) {
+      return h('div', { className: 'month-group' },
+        h('div', { className: 'month-label' }, g.monthName),
+        ...g.events.map(e =>
+          h('div', { className: 'event-card' + (dimmed ? '' : ''), style: dimmed ? 'opacity:.52' : '' },
+            h('div', { className: 'event-date' },
+              h('div', { className: 'event-day' }, e.day),
+              h('div', { className: 'event-mon' }, e.monShort),
+            ),
+            h('div', { className: 'event-info' },
+              h('div', { className: 'event-title' }, e.emoji + ' ' + e.title),
+              h('div', { className: 'event-desc' }, e.desc),
+            ),
           )
         )
+      );
+    }
+
+    // Sezione eventi futuri
+    const futureNodes = futureEvs.length
+      ? gFuture.map(g => eventGroup(g, false))
       : [h('p', { style: 'font-size:15px;color:var(--text-3);text-align:center;margin-top:32px' }, tr.events.noUpcoming)];
 
-    return h('div', { className: 'section-body' },
-      h('h2', { className: 'section-h2' }, tr.tabs.events),
-      h('p', { style: 'font-size:13px;color:var(--text-3);font-style:italic;margin-bottom:4px' }, todayLabel()),
-      h('p', { style: 'font-size:14px;color:var(--text-3);margin-bottom:16px;line-height:1.6' }, tr.events.desc),
-      ...upcomingSection,
-      pastEvs.length ? h('div', { style: 'margin-top:24px' },
-        pastToggle,
-        ...(state.showPast ? [h('div', { style: 'margin-top:12px' }, ...gPast.map(g =>
-          h('div', { className: 'month-group' },
-            h('div', { className: 'month-label' }, g.monthName),
-            ...g.events.map(e =>
-              h('div', { className: 'event-card', style: 'opacity:.55' },
-                h('div', { className: 'event-date' }, h('div', { className: 'event-day' }, e.day), h('div', { className: 'event-mon' }, e.monShort)),
-                h('div', { className: 'event-info' }, h('div', { className: 'event-title' }, e.emoji + ' ' + e.title), h('div', { className: 'event-desc' }, e.desc)),
+    // Sezione eventi passati (con toggle)
+    const pastNodes = [];
+    if (pastEvs.length) {
+      const toggleLabel = state.showPast
+        ? tr.events.hidePast
+        : (tr.events.showPast + ' (' + pastEvs.length + ')');
+      pastNodes.push(
+        h('div', { style: 'margin-top:22px' },
+          h('button', { className: 'past-toggle',
+              onClick: () => { state.showPast = !state.showPast; render(); } },
+            h('span', { style: 'font-size:16px' }, state.showPast ? '🙈' : '📅'),
+            ' ',
+            toggleLabel,
+          ),
+          state.showPast
+            ? h('div', { style: 'margin-top:12px' },
+                h('hr', { className: 'past-divider' }),
+                ...gPast.map(g => eventGroup(g, true))
               )
-            )
-          )
-        ))] : []),
-      ) : null,
-    );
+            : null,
+        )
+      );
+    }
+
+    // Assembla la pagina in un wrapper e restituisce
+    const wrapper = h('div', { className: 'section-body' });
+    wrapper.appendChild(h('h2', { className: 'section-h2' }, tr.tabs.events));
+    wrapper.appendChild(h('p', { style: 'font-size:13px;color:var(--text-3);font-style:italic;margin-bottom:4px' }, todayLabel()));
+    wrapper.appendChild(h('p', { style: 'font-size:14px;color:var(--text-3);margin-bottom:16px;line-height:1.6' }, tr.events.desc));
+    futureNodes.forEach(n => wrapper.appendChild(n));
+    pastNodes.forEach(n => wrapper.appendChild(n));
+    return wrapper;
   }
 
   if (s === 'museums') {
