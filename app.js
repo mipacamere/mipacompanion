@@ -49,12 +49,6 @@ const allT = {
         { icon:'flight', color:'#7c3aed', title:'To Catania Airport', desc:'Direct bus connections from Milazzo to Catania airport — check schedules at the port stop.' }
       ]
     },
-    monuments: [
-      { emoji:'🏰', title:'Castello di Milazzo', dist:'10 min walk', desc:'A UNESCO-candidate fortress offering panoramic views over the Tyrrhenian Sea and the Aeolian Islands. The castle dates back to the Norman era.', link:'https://maps.app.goo.gl/castle' },
-      { emoji:'⛪', title:'Duomo Antico', dist:'8 min walk', desc:'The ancient Cathedral of Milazzo, a Baroque masterpiece in the heart of the historic centre. Free entry.', link:'https://maps.app.goo.gl/duomo' },
-      { emoji:'🏛️', title:'Borgo Antico', dist:'10 min walk', desc:'The historic old town of Milazzo, a labyrinth of narrow streets, viewpoints and traditional architecture.', link:'https://maps.app.goo.gl/borgo' },
-      { emoji:'🌊', title:'Riserva Naturale Capo Milazzo', dist:'20 min bike', desc:'A stunning nature reserve at the tip of the Milazzo promontory. Swimming, snorkelling and dramatic sea views.', link:'https://maps.app.goo.gl/capo' }
-    ],
     services: [
       { emoji:'🚲', title:'Bike Rental', price:'From €10 / day', note:'Explore Milazzo on two wheels — city bikes and e-bikes available.', waText:'Hello, I would like to book a bike rental.' },
       { emoji:'🤿', title:'Scuba Diving', price:'From €60 / person', note:'Book 24h in advance. Crystal-clear waters of the Tyrrhenian await.', waText:'Hello, I would like to book a scuba diving experience.' },
@@ -92,12 +86,6 @@ const allT = {
         { icon:'flight', color:'#7c3aed', title:'Aeroporto di Catania', desc:"Collegamento diretto da Milazzo all'aeroporto di Catania — controlla gli orari alla fermata del porto." }
       ]
     },
-    monuments: [
-      { emoji:'🏰', title:'Castello di Milazzo', dist:'10 min a piedi', desc:"Fortezza candidata all'UNESCO con vista panoramica sul Tirreno e sulle Isole Eolie. Risale all'epoca normanna.", link:'https://maps.app.goo.gl/castle' },
-      { emoji:'⛪', title:'Duomo Antico', dist:'8 min a piedi', desc:"L'antico Duomo di Milazzo, capolavoro barocco nel cuore del centro storico. Ingresso libero.", link:'https://maps.app.goo.gl/duomo' },
-      { emoji:'🏛️', title:'Borgo Antico', dist:'10 min a piedi', desc:'Il centro storico di Milazzo, un labirinto di vicoli, belvedere e architettura tradizionale.', link:'https://maps.app.goo.gl/borgo' },
-      { emoji:'🌊', title:'Riserva Naturale Capo Milazzo', dist:'20 min in bici', desc:'Una splendida riserva naturale alla punta del promontorio di Milazzo. Nuoto, snorkeling e viste mozzafiato.', link:'https://maps.app.goo.gl/capo' }
-    ],
     services: [
       { emoji:'🚲', title:'Noleggio Biciclette', price:'Da €10 / giorno', note:'Esplora Milazzo in bici — city bike ed e-bike disponibili.', waText:'Ciao, vorrei noleggiare una bicicletta.' },
       { emoji:'🤿', title:'Immersioni Subacquee', price:'Da €60 / persona', note:"Prenota 24h in anticipo. Le acque cristalline del Tirreno ti aspettano.", waText:"Ciao, vorrei prenotare un'immersione." },
@@ -122,7 +110,6 @@ const allT = {
     events:{ desc:'Événements à Milazzo et environs — mis à jour régulièrement.', showPast:'Afficher les événements passés', hidePast:'Masquer les événements passés', noUpcoming:'Aucun événement à venir. Revenez bientôt !' },
     philosophy:["Accueillir sans laisser de trace : c'est là que tout commence. Au cœur de Milazzo, où le rythme de la ville rencontre la mer, nous avons imaginé un espace capable de s'intégrer naturellement et discrètement dans le tissu urbain, offrant un séjour confortable et authentique.","Toutes nos chambres — junior suites — sont soignées dans les moindres détails : lumière naturelle, isolation phonique, systèmes efficaces qui minimisent le gaspillage. Des espaces généreux et équilibrés conçus pour un vrai bien-être profond, fondé sur la qualité et l'harmonie.","La durabilité est un choix concret, vécu chaque jour avec un engagement réel. Nous avons éliminé le plastique à usage unique et le papier jetable, proposons de l'eau potable gratuite et utilisons uniquement de l'énergie issue de sources renouvelables. Ainsi, nous contribuons à une hospitalité véritablement responsable.","Être au centre, c'est découvrir la ville authentiquement. Nous travaillons à promouvoir la mobilité douce comme le vélo, avec des itinéraires et des cartes dédiés pour se repérer facilement et réduire son empreinte environnementale.","Nous croyons en une hospitalité où responsabilité et confort fusionnent sans compromis. Nous avons déjà tout prévu : les hôtes n'ont rien à faire différemment ni à adopter de comportements éco-responsables particuliers. Ils peuvent simplement se détendre et profiter de leurs vacances, tandis que nous agissons discrètement pour minimiser notre impact. Ce qui reste, c'est le souvenir d'un voyage léger, authentique et conscient — avec une empreinte minimale sur l'environnement et une marque positive en soi."],
     dir:{ arriving:'Arrivée', leaving:'Quitter Milazzo', arrivalModes:[{icon:'directions_car',color:'#4f7d65',title:'En Voiture',desc:"Quittez l'autoroute au péage de Milazzo et suivez le Viale Sicilia jusqu'à la dernière sortie. Garez-vous sur la Piazza XXV Aprile (lignes bleues — app EasyPark)."},{icon:'train',color:'#0284c7',title:'En Train',desc:"Descendez à la gare de Milazzo et prenez les lignes 4 ou 5 jusqu'à l'arrêt du port, le plus proche de l'hébergement."},{icon:'directions_bus',color:'#d97706',title:'En Bus',desc:"Depuis l'aéroport de Catane ou d'autres localités, descendez à l'arrêt du port — le plus proche de MiPA."}], departureModes:[{icon:'directions_car',color:'#4f7d65',title:'En Voiture',desc:"Suivez le Viale Sicilia jusqu'au bout, puis prenez le raccordement Milazzo pour entrer sur l'A20 en direction de Messine (Catane) ou Palerme."},{icon:'directions_bus',color:'#d97706',title:'En Bus (vers Messine)',desc:'Vérifiez les horaires de GiuntaBus et AST pour les liaisons journalières vers Messine.'},{icon:'train',color:'#0284c7',title:'En Train',desc:"Prenez les lignes 4 ou 5 depuis l'arrêt du port jusqu'à la gare de Milazzo."},{icon:'flight',color:'#7c3aed',title:"Aéroport de Catane",desc:"Liaison directe de Milazzo à l'aéroport de Catane — horaires à l'arrêt du port."}] },
-    monuments:[{emoji:'🏰',title:'Château de Milazzo',dist:'10 min à pied',desc:"Une forteresse candidate à l'UNESCO avec une vue panoramique sur la mer Tyrrhénienne et les îles Éoliennes.",link:'https://maps.app.goo.gl/castle'},{emoji:'⛪',title:'Duomo Antico',dist:'8 min à pied',desc:"L'ancienne cathédrale de Milazzo, chef-d'œuvre baroque au cœur du centre historique. Entrée gratuite.",link:'https://maps.app.goo.gl/duomo'},{emoji:'🏛️',title:'Borgo Antico',dist:'10 min à pied',desc:"Le vieux centre historique de Milazzo, un labyrinthe de ruelles, belvédères et architecture traditionnelle.",link:'https://maps.app.goo.gl/borgo'},{emoji:'🌊',title:'Réserve naturelle Capo Milazzo',dist:'20 min à vélo',desc:'Une superbe réserve naturelle à la pointe du promontoire de Milazzo. Baignade, snorkeling et vues époustouflantes.',link:'https://maps.app.goo.gl/capo'}],
     services:[{emoji:'🚲',title:'Location de vélos',price:'À partir de €10 / jour',note:'Explorez Milazzo à vélo — vélos urbains et électriques disponibles.',waText:'Bonjour, je voudrais louer un vélo.'},{emoji:'🤿',title:'Plongée sous-marine',price:'À partir de €60 / pers.',note:'Réservez 24h à l\'avance. Des eaux cristallines vous attendent.',waText:'Bonjour, je voudrais réserver une plongée.'},{emoji:'⛵',title:'Tour îles Éoliennes (2-3 îles)',price:'À partir de €40 / pers.',note:'Réservez via Navisal ou Tarnav. Excursions à Lipari, Stromboli, Vulcano.',waText:'Bonjour, je voudrais des infos sur le tour des îles Éoliennes.'},{emoji:'🛥️',title:'Tour privé îles Éoliennes',price:'À partir de €100 / pers.',note:'Croisière privée. Itinéraire personnalisable.',waText:'Bonjour, je voudrais réserver un tour privé aux îles Éoliennes.'}]
   },
   es: {
@@ -142,7 +129,6 @@ const allT = {
     events:{ desc:'Eventos en Milazzo y alrededores — actualizados regularmente.', showPast:'Mostrar eventos pasados', hidePast:'Ocultar eventos pasados', noUpcoming:'No hay eventos próximos. ¡Vuelve pronto!' },
     philosophy:['Acoger sin dejar huella: ahí empieza todo. En el corazón de Milazzo, donde el ritmo de la ciudad se encuentra con el mar, imaginamos un espacio capaz de integrarse de forma natural y discreta en el tejido urbano, ofreciendo una estancia cómoda y auténtica.','Todas nuestras habitaciones —junior suites— están cuidadas hasta el último detalle: luz natural, insonorización, sistemas eficientes que minimizan el desperdicio. Espacios generosos y equilibrados diseñados para un bienestar genuino y profundo, basado en la calidad y la armonía.','La sostenibilidad es una elección concreta, vivida cada día con verdadero compromiso. Hemos eliminado el plástico de un solo uso y el papel desechable, ofrecemos agua potable gratuita y utilizamos únicamente energía de fuentes renovables. Así contribuimos a una hospitalidad verdaderamente responsable.','Estar en el centro significa descubrir la ciudad de forma auténtica. Trabajamos para promover la movilidad suave como el ciclismo, con itinerarios y mapas dedicados para navegar fácilmente y reducir la huella ambiental.','Creemos en una hospitalidad donde responsabilidad y comodidad se fusionan sin compromisos. Ya hemos pensado en todo: los huéspedes no necesitan hacer nada diferente ni adoptar ningún comportamiento especial. Pueden simplemente relajarse y disfrutar de sus vacaciones, mientras actuamos discretamente para minimizar nuestro impacto. Lo que queda es el recuerdo de un viaje ligero, auténtico y consciente — con una huella mínima en el entorno y una marca positiva en uno mismo.'],
     dir:{ arriving:'Llegada', leaving:'Salir de Milazzo', arrivalModes:[{icon:'directions_car',color:'#4f7d65',title:'En Coche',desc:'Sal de la autopista en el peaje de Milazzo y sigue el Viale Sicilia hasta la última salida. Aparca en la Piazza XXV Aprile (líneas azules — app EasyPark).'},{icon:'train',color:'#0284c7',title:'En Tren',desc:'Baja en la estación de Milazzo y toma las líneas 4 o 5 hasta la parada del puerto, la más cercana al alojamiento.'},{icon:'directions_bus',color:'#d97706',title:'En Autobús',desc:'Desde el aeropuerto de Catania u otros lugares, baja en la parada del puerto — la más cercana a MiPA.'}], departureModes:[{icon:'directions_car',color:'#4f7d65',title:'En Coche',desc:'Sigue el Viale Sicilia hasta el final, luego toma el enlace de Milazzo para entrar en la A20 hacia Mesina (Catania) o Palermo.'},{icon:'directions_bus',color:'#d97706',title:'En Autobús (a Mesina)',desc:'Consulta los horarios de GiuntaBus y AST para las conexiones diarias a Mesina.'},{icon:'train',color:'#0284c7',title:'En Tren',desc:'Toma las líneas 4 o 5 desde la parada del puerto hasta la estación de tren de Milazzo.'},{icon:'flight',color:'#7c3aed',title:'Aeropuerto de Catania',desc:'Conexión directa de Milazzo al aeropuerto de Catania — consulta los horarios en la parada del puerto.'}] },
-    monuments:[{emoji:'🏰',title:'Castillo de Milazzo',dist:'10 min a pie',desc:'Una fortaleza candidata a la UNESCO con vistas panorámicas al mar Tirreno y las islas Eolias.',link:'https://maps.app.goo.gl/castle'},{emoji:'⛪',title:'Duomo Antico',dist:'8 min a pie',desc:'La antigua catedral de Milazzo, obra maestra barroca en el corazón del centro histórico. Entrada gratuita.',link:'https://maps.app.goo.gl/duomo'},{emoji:'🏛️',title:'Borgo Antico',dist:'10 min a pie',desc:'El casco histórico de Milazzo, un laberinto de callejuelas, miradores y arquitectura tradicional.',link:'https://maps.app.goo.gl/borgo'},{emoji:'🌊',title:'Reserva Natural Capo Milazzo',dist:'20 min en bici',desc:'Una impresionante reserva natural en la punta del promontorio de Milazzo. Natación, snorkel y vistas dramáticas.',link:'https://maps.app.goo.gl/capo'}],
     services:[{emoji:'🚲',title:'Alquiler de Bicicletas',price:'Desde €10 / día',note:'Explora Milazzo en bicicleta — bicis urbanas y eléctricas disponibles.',waText:'Hola, me gustaría alquilar una bicicleta.'},{emoji:'🤿',title:'Buceo',price:'Desde €60 / persona',note:'Reserva con 24h de antelación. Aguas cristalinas te esperan.',waText:'Hola, me gustaría reservar una experiencia de buceo.'},{emoji:'⛵',title:'Tour islas Eolias (2-3 islas)',price:'Desde €40 / persona',note:'Reserva con Navisal o Tarnav. Excursiones a Lipari, Stromboli, Vulcano.',waText:'Hola, me gustaría información sobre el tour de las islas Eolias.'},{emoji:'🛥️',title:'Tour privado islas Eolias',price:'Desde €100 / persona',note:'Barco privado exclusivo. Itinerario personalizable.',waText:'Hola, me gustaría reservar un tour privado a las islas Eolias.'}]
   },
   de: {
@@ -162,7 +148,6 @@ const allT = {
     events:{ desc:'Veranstaltungen in Milazzo und Umgebung — regelmäßig aktualisiert.', showPast:'Vergangene Events anzeigen', hidePast:'Vergangene Events ausblenden', noUpcoming:'Derzeit keine bevorstehenden Veranstaltungen. Schauen Sie bald wieder vorbei!' },
     philosophy:['Willkommen heißen, ohne Spuren zu hinterlassen: das ist der Ausgangspunkt von allem. Im Herzen von Milazzo, wo der Stadtrhythmus auf das Meer trifft, haben wir uns einen Raum vorgestellt, der sich auf natürliche und diskrete Weise in das städtische Gefüge einfügt und einen komfortablen, authentischen Aufenthalt bietet.','Alle unsere Zimmer — Junior-Suiten — sind bis ins kleinste Detail gepflegt: natürliches Licht, Schalldämmung, effiziente Anlagen, die Verschwendung reduzieren. Großzügige, ausgewogene Räume, die auf echtes und tiefes Wohlbefinden ausgerichtet sind, das aus Qualität und Harmonie besteht.','Nachhaltigkeit ist eine konkrete Wahl, die jeden Tag mit echtem Engagement gelebt wird. Wir haben Einwegplastik und Einwegpapier eliminiert, bieten kostenloses Trinkwasser an und nutzen ausschließlich Energie aus erneuerbaren Quellen. So leisten wir einen Beitrag zu einer wirklich verantwortungsvollen Gastfreundschaft.','Im Stadtzentrum zu sein bedeutet, die Stadt auf authentische Weise zu entdecken. Wir arbeiten daran, sanfte Mobilität wie das Fahrrad zu fördern, mit eigenen Routen und Karten, um sich leicht zu orientieren und die Umweltbelastung zu reduzieren.','Wir glauben an eine Gastfreundschaft, bei der Verantwortung und Komfort ohne Kompromisse verschmelzen. Wir haben bereits an alles gedacht: Der Gast muss nichts anderes tun oder besondere umweltbewusste Verhaltensweisen annehmen. Er kann sich einfach entspannen und seinen Urlaub genießen, während wir diskret handeln, um unseren Einfluss zu minimieren. Was bleibt, ist die Erinnerung an eine leichte, authentische und bewusste Reise — mit einem minimalen Fußabdruck auf der Umwelt und einem positiven Zeichen in sich selbst.'],
     dir:{ arriving:'Anreise', leaving:'Abreise aus Milazzo', arrivalModes:[{icon:'directions_car',color:'#4f7d65',title:'Mit dem Auto',desc:'Verlassen Sie die Autobahn an der Mautstelle Milazzo und folgen Sie dem Viale Sicilia bis zur letzten Ausfahrt. Parken auf der Piazza XXV Aprile (blaue Linien — EasyPark-App).'},{icon:'train',color:'#0284c7',title:'Mit dem Zug',desc:'Steigen Sie am Bahnhof Milazzo aus und nehmen Sie die Linien 4 oder 5 bis zur Hafenhaltestelle.'},{icon:'directions_bus',color:'#d97706',title:'Mit dem Bus',desc:'Vom Flughafen Catania oder anderen Orten steigen Sie an der Hafenhaltestelle aus — die nächstgelegene zu MiPA.'}], departureModes:[{icon:'directions_car',color:'#4f7d65',title:'Mit dem Auto',desc:'Folgen Sie dem Viale Sicilia bis zum Ende, dann nehmen Sie die Ausfahrt Milazzo auf die A20 Richtung Messina oder Palermo.'},{icon:'directions_bus',color:'#d97706',title:'Mit dem Bus (nach Messina)',desc:'Prüfen Sie die Fahrpläne von GiuntaBus und AST für tägliche Verbindungen nach Messina.'},{icon:'train',color:'#0284c7',title:'Mit dem Zug',desc:'Nehmen Sie die Linien 4 oder 5 von der Hafenhaltestelle zum Bahnhof Milazzo.'},{icon:'flight',color:'#7c3aed',title:'Flughafen Catania',desc:'Direktverbindung von Milazzo zum Flughafen Catania — Fahrpläne an der Hafenhaltestelle.'}] },
-    monuments:[{emoji:'🏰',title:'Burg Milazzo',dist:'10 Min. zu Fuß',desc:'UNESCO-Kandidaten-Festung mit Panoramablick auf das Tyrrhenische Meer.',link:'https://maps.app.goo.gl/castle'},{emoji:'⛪',title:'Duomo Antico',dist:'8 Min. zu Fuß',desc:'Die alte Kathedrale von Milazzo, ein Barockmeisterwerk im historischen Zentrum. Eintritt frei.',link:'https://maps.app.goo.gl/duomo'},{emoji:'🏛️',title:'Borgo Antico',dist:'10 Min. zu Fuß',desc:'Das historische Altstadtviertel mit engen Gassen und Aussichtspunkten.',link:'https://maps.app.goo.gl/borgo'},{emoji:'🌊',title:'Naturreservat Capo Milazzo',dist:'20 Min. mit dem Rad',desc:'Atemberaubendes Naturreservat mit Schwimmen, Schnorcheln und Meeresblicken.',link:'https://maps.app.goo.gl/capo'}],
     services:[{emoji:'🚲',title:'Fahrradverleih',price:'Ab €10 / Tag',note:'Erkunden Sie Milazzo per Rad — Stadtfahrräder und E-Bikes verfügbar.',waText:'Hallo, ich möchte ein Fahrrad mieten.'},{emoji:'🤿',title:'Tauchen',price:'Ab €60 / Person',note:'24h im Voraus buchen. Kristallklares Wasser wartet.',waText:'Hallo, ich möchte einen Tauchgang buchen.'},{emoji:'⛵',title:'Äolische Inseln Tour (2-3 Inseln)',price:'Ab €40 / Person',note:'Bei Navisal oder Tarnav buchen.',waText:'Hallo, ich möchte Infos zur Äolischen Inseln Tour.'},{emoji:'🛥️',title:'Private Äolische Inseln Tour',price:'Ab €100 / Person',note:'Privat-Bootstour mit anpassbarem Reiseprogramm.',waText:'Hallo, ich möchte eine private Tour zu den Äolischen Inseln buchen.'}]
   },
   zh: {
@@ -182,7 +167,6 @@ const allT = {
     events:{ desc:'米拉佐及周边活动 — 定期更新。', showPast:'显示过去的活动', hidePast:'隐藏过去的活动', noUpcoming:'目前没有即将举行的活动。请稍后再查看！' },
     philosophy:['接待客人，不留痕迹：一切由此而生。在米拉佐的心脏地带，城市的节奏与大海相遇，我们构想了一个能够自然、低调地融入城市肌理的空间，为宾客提供舒适而真实的住宿体验。','我们所有的房间——精品套房——都精心打磨每一处细节：自然采光、隔音设计、高效节能系统。宽敞、平衡的空间，旨在提供由品质与和谐构成的真实而深层的舒适感。','可持续发展是一种具体的选择，每天以真正的承诺去践行。我们已消除一次性塑料和一次性纸制品，提供免费饮用水，并仅使用可再生能源。由此，我们为真正负责任的待客之道作出贡献。','身处市中心意味着真实地探索这座城市。我们正致力于推广骑自行车等温和出行方式，配有专属路线和地图，方便导航并减少环境影响。','我们相信一种责任与舒适无妥协融合的待客之道。我们已经为您考虑好了一切：宾客无需做任何不同的事，也无需采取任何特别的环保行为。只需放松身心，享受假期，而我们则悄然行动，将影响降至最低。留下的是一段轻盈、真实而有意识的旅行记忆。'],
     dir:{ arriving:'到达', leaving:'离开米拉佐', arrivalModes:[{icon:'directions_car',color:'#4f7d65',title:'驾车',desc:'在米拉佐收费站下高速公路，沿西西里大道行驶至最后出口。在XXV Aprile广场停车（蓝线停车位 — 使用EasyPark应用）。'},{icon:'train',color:'#0284c7',title:'乘火车',desc:'在米拉佐站下车，乘坐4或5路公交至港口站，即最近的站点。'},{icon:'directions_bus',color:'#d97706',title:'乘巴士',desc:'从卡塔尼亚机场或其他地点，在港口站下车 — 距MiPA最近。'}], departureModes:[{icon:'directions_car',color:'#4f7d65',title:'驾车',desc:'沿西西里大道行驶至尽头，然后取道米拉佐交叉口进入A20高速公路，朝墨西拿或巴勒莫方向。'},{icon:'directions_bus',color:'#d97706',title:'乘巴士（前往墨西拿）',desc:'查看GiuntaBus和AST的时刻表，了解前往墨西拿的每日班次。'},{icon:'train',color:'#0284c7',title:'乘火车',desc:'从港口站乘坐4或5路公交至米拉佐火车站。'},{icon:'flight',color:'#7c3aed',title:'卡塔尼亚机场',desc:'从米拉佐直达卡塔尼亚机场 — 在港口站查看时刻表。'}] },
-    monuments:[{emoji:'🏰',title:'米拉佐城堡',dist:'步行10分钟',desc:'UNESCO候选堡垒，可俯瞰第勒尼安海和埃奥利安群岛的全景。',link:'https://maps.app.goo.gl/castle'},{emoji:'⛪',title:'古大教堂',dist:'步行8分钟',desc:'米拉佐古大教堂，历史中心心脏的巴洛克杰作。免费入场。',link:'https://maps.app.goo.gl/duomo'},{emoji:'🏛️',title:'古城区',dist:'步行10分钟',desc:'米拉佐历史中心，狭窄街道、观景台和传统建筑的迷宫。',link:'https://maps.app.goo.gl/borgo'},{emoji:'🌊',title:'卡波米拉佐自然保护区',dist:'骑车20分钟',desc:'米拉佐海角的壮观自然保护区。游泳、浮潜和绝美海景。',link:'https://maps.app.goo.gl/capo'}],
     services:[{emoji:'🚲',title:'自行车租赁',price:'每天起价€10',note:'骑车探索米拉佐 — 提供城市自行车和电动车。',waText:'您好，我想租一辆自行车。'},{emoji:'🤿',title:'水肺潜水',price:'每人起价€60',note:'提前24小时预订。清澈的海水等待着您。',waText:'您好，我想预订一次潜水体验。'},{emoji:'⛵',title:'埃奥利安群岛之旅（2-3个岛）',price:'每人起价€40',note:'通过Navisal或Tarnav预订。',waText:'您好，我想了解埃奥利安群岛之旅的信息。'},{emoji:'🛥️',title:'埃奥利安群岛私人游',price:'每人起价€100',note:'私人游船之旅，可定制行程。',waText:'您好，我想预订埃奥利安群岛私人游。'}]
   },
   ru: {
@@ -202,23 +186,25 @@ const allT = {
     events:{ desc:'Мероприятия в Милаццо и окрестностях — регулярно обновляется.', showPast:'Показать прошедшие события', hidePast:'Скрыть прошедшие события', noUpcoming:'На данный момент предстоящих мероприятий нет. Заглядывайте позже!' },
     philosophy:['Принимать гостей, не оставляя следов: с этого начинается всё. В самом сердце Милаццо, где ритм города встречается с морем, мы представили пространство, способное естественно и ненавязчиво вписаться в городскую ткань, предлагая комфортный и аутентичный отдых.','Все наши номера — категории «junior suite» — продуманы до мельчайших деталей: естественный свет, звукоизоляция, эффективные системы, сокращающие расход ресурсов. Просторные, сбалансированные пространства, созданные для подлинного и глубокого комфорта.','Устойчивое развитие — это конкретный выбор, который мы реализуем каждый день с реальной ответственностью. Мы полностью отказались от одноразового пластика и одноразовой бумаги, предлагаем бесплатную питьевую воду и используем исключительно энергию из возобновляемых источников.','Находиться в центре города — значит открывать его аутентично. Мы работаем над тем, чтобы продвигать мягкие виды передвижения, такие как велосипед.','Мы верим в гостеприимство, где ответственность и комфорт сливаются без компромиссов. Мы уже всё продумали: гостю не нужно ничего делать иначе. Он может просто расслабиться и наслаждаться отдыхом, пока мы ненавязчиво действуем, чтобы свести к минимуму наше воздействие.'],
     dir:{ arriving:'Прибытие', leaving:'Отъезд из Милаццо', arrivalModes:[{icon:'directions_car',color:'#4f7d65',title:'На автомобиле',desc:'Съезжайте с автострады на пункте оплаты Милаццо и следуйте по проспекту Сицилия до последнего выезда. Паркуйтесь на площади XXV Aprile (синие линии — приложение EasyPark).'},{icon:'train',color:'#0284c7',title:'На поезде',desc:'Выйдите на станции Милаццо и сядьте на линии 4 или 5 до остановки у порта.'},{icon:'directions_bus',color:'#d97706',title:'На автобусе',desc:'Из аэропорта Катании или других мест выйдите на остановке у порта — ближайшей к MiPA.'}], departureModes:[{icon:'directions_car',color:'#4f7d65',title:'На автомобиле',desc:'Следуйте по проспекту Сицилия до конца, затем возьмите развязку Милаццо на автостраду A20 в направлении Мессины или Палермо.'},{icon:'directions_bus',color:'#d97706',title:'На автобусе (в Мессину)',desc:'Проверьте расписание GiuntaBus и AST для ежедневных рейсов в Мессину.'},{icon:'train',color:'#0284c7',title:'На поезде',desc:'Возьмите линии 4 или 5 от остановки у порта до железнодорожного вокзала Милаццо.'},{icon:'flight',color:'#7c3aed',title:'Аэропорт Катании',desc:'Прямое сообщение из Милаццо в аэропорт Катании — расписание на остановке у порта.'}] },
-    monuments:[{emoji:'🏰',title:'Замок Милаццо',dist:'10 мин пешком',desc:'Крепость-кандидат ЮНЕСКО с панорамным видом на Тирренское море и Эолийские острова.',link:'https://maps.app.goo.gl/castle'},{emoji:'⛪',title:'Duomo Antico',dist:'8 мин пешком',desc:'Старинный собор Милаццо, барочный шедевр в сердце исторического центра. Вход свободный.',link:'https://maps.app.goo.gl/duomo'},{emoji:'🏛️',title:'Borgo Antico',dist:'10 мин пешком',desc:'Исторический центр Милаццо — лабиринт узких улочек и смотровых площадок.',link:'https://maps.app.goo.gl/borgo'},{emoji:'🌊',title:'Природный заповедник Капо-Милаццо',dist:'20 мин на велосипеде',desc:'Потрясающий природный заповедник на оконечности мыса Милаццо. Плавание, снорклинг и захватывающие морские виды.',link:'https://maps.app.goo.gl/capo'}],
     services:[{emoji:'🚲',title:'Прокат велосипедов',price:'От €10 / день',note:'Исследуйте Милаццо на велосипеде — городские велосипеды и электровелосипеды.',waText:'Здравствуйте, я хотел бы арендовать велосипед.'},{emoji:'🤿',title:'Дайвинг',price:'От €60 / человек',note:'Бронируйте за 24 часа. Кристально чистые воды ждут вас.',waText:'Здравствуйте, я хотел бы забронировать погружение.'},{emoji:'⛵',title:'Тур по Эолийским островам',price:'От €40 / человек',note:'Бронируйте через Navisal или Tarnav.',waText:'Здравствуйте, я хотел бы информацию о туре на Эолийские острова.'},{emoji:'🛥️',title:'Частный тур по Эолийским островам',price:'От €100 / человек',note:'Частная прогулка на лодке. Настраиваемый маршрут.',waText:'Здравствуйте, я хотел бы забронировать частный тур на Эолийские острова.'}]
   }
 };
 
 // ── Events data ─────────────────────────────
 const EVENTS = [
-  { year:2025, month:3,  day:22, emoji:'🌸', titles:{en:'Spring Farmers Market',it:'Mercato dei Produttori di Primavera'}, descs:{en:'Piazza Roma · 9:00–14:00 · Local produce & crafts',it:'Piazza Roma · 9:00–14:00 · Prodotti locali e artigianato'} },
-  { year:2025, month:4,  day:13, emoji:'🎨', titles:{en:'Street Art Festival',it:'Festival di Street Art'}, descs:{en:'Centro storico · Free entry · Live murals',it:'Centro storico · Ingresso libero · Murales dal vivo'} },
-  { year:2025, month:5,  day:3,  emoji:'🚲', titles:{en:'Milazzo Cycling Day',it:'Giornata della Bicicletta'}, descs:{en:'Lungomare · 9:00 start · Group ride',it:'Lungomare · Partenza 9:00 · Pedalata di gruppo'} },
-  { year:2025, month:5,  day:31, emoji:'🎭', titles:{en:'Open Theatre Night',it:'Notte del Teatro Aperto'}, descs:{en:'Teatro Trifiletti · 21:00 · Admission €8',it:'Teatro Trifiletti · 21:00 · Ingresso €8'} },
-  { year:2025, month:6,  day:21, emoji:'🎶', titles:{en:'Music Feast of San Giovanni',it:'Festa della Musica di San Giovanni'}, descs:{en:'Piazza Duomo · All evening · Free',it:'Piazza Duomo · Tutta la sera · Ingresso libero'} },
-  { year:2025, month:7,  day:19, emoji:'🌊', titles:{en:'Marine Night',it:'Notte Marina'}, descs:{en:'Porto di Milazzo · From 21:00 · Free',it:'Porto di Milazzo · Dalle 21:00 · Ingresso libero'} },
-  { year:2025, month:7,  day:26, emoji:'🎆', titles:{en:"Patronal Feast of Sant'Antonio",it:"Festa Patronale di Sant'Antonio"}, descs:{en:'Centro storico · Procession 19:00 · Fireworks midnight',it:'Centro storico · Processione 19:00 · Fuochi mezzanotte'} },
-  { year:2025, month:8,  day:15, emoji:'🎉', titles:{en:'Ferragosto · Boat Parade',it:'Ferragosto · Processione in Barca'}, descs:{en:'Porto di Milazzo · From 10:00 · All day',it:'Porto di Milazzo · Dalle 10:00 · Tutto il giorno'} },
-  { year:2025, month:9,  day:14, emoji:'🍇', titles:{en:'Harvest Festival',it:'Festa della Vendemmia'}, descs:{en:'Piazza Caio Duilio · 17:00–23:00 · Wine, food & music',it:'Piazza Caio Duilio · 17:00–23:00 · Vino, cibo e musica'} },
-  { year:2025, month:10, day:11, emoji:'🐟', titles:{en:'Fish & Sea Festival',it:'Sagra del Pesce e del Mare'}, descs:{en:'Lungomare · 12:00–22:00 · Tastings & live music',it:'Lungomare · 12:00–22:00 · Degustazioni e musica dal vivo'} },
+  { year:2026, month:4,  day:24, emoji:'🎨', titles:{en:'Art Exhibition (Pione)',it:'Mostra d Arte (Mostra di Pione)'}, descs:{en:'Palazzo D Amico · 24–30 April',it:'Palazzo D Amico · 24–30 aprile'} },
+  { year:2026, month:4,  day:26, emoji:'🎶', titles:{en:'Parish Choirs Concert',it:'Esibizione Cori Parrocchiali'}, descs:{en:'Santuario San Francesco di Paola · 19:30',it:'Santuario di San Francesco di Paola · 19:30'} },
+  { year:2026, month:4,  day:29, emoji:'⚓', titles:{en:'Maritime Arts Museum Opening',it:'Inaugurazione Museo delle Arti Marinare'}, descs:{en:'Localita Vaccarella · 18:00',it:'Localita Vaccarella · 18:00'} },
+  { year:2026, month:5,  day:2,  emoji:'🎭', titles:{en:'Beauty and the Beast Musical',it:'La Bella e la Bestia - L amore oltre le apparenze'}, descs:{en:'Teatro Trifiletti',it:'Teatro Trifiletti'} },
+  { year:2026, month:5,  day:3,  emoji:'⛪', titles:{en:'Procession of San Francesco di Paola (I)',it:'Prima processione di San Francesco di Paola'}, descs:{en:'City streets · Religious procession',it:'Vie cittadine · Processione religiosa'} },
+  { year:2026, month:5,  day:8,  emoji:'🎵', titles:{en:'La Dolce Vita degli anni 50 e 60',it:'Concerto La Dolce Vita degli anni 50 e 60'}, descs:{en:'Teatro Trifiletti · 20:30',it:'Teatro Trifiletti · 20:30'} },
+  { year:2026, month:5,  day:10, emoji:'⛵', titles:{en:'Procession of San Francesco di Paola (II)',it:'Seconda processione e corteo di barche di San Francesco'}, descs:{en:'City streets and sea · Religious boat procession',it:'Vie cittadine e mare · Processione in barca'} },
+  { year:2026, month:5,  day:17, emoji:'🎭', titles:{en:'Enrico Guarneri — Quaranta ma non li Dimostra!',it:'Enrico Guarneri in Quaranta... ma non li Dimostra!'}, descs:{en:'Teatro Trifiletti · 21:00',it:'Teatro Trifiletti · 21:00'} },
+  { year:2026, month:5,  day:24, emoji:'🗳️', titles:{en:'Local Administrative Elections',it:'Elezioni Amministrative'}, descs:{en:'Polling stations across the city · 24–25 May',it:'Sedi elettorali cittadine · 24–25 maggio'} },
+  { year:2026, month:6,  day:20, emoji:'🌊', titles:{en:'Saperi di Mare (2nd edition)',it:'Saperi di Mare - secondo evento'}, descs:{en:'Localita Vaccarella',it:'Localita Vaccarella'} },
+  { year:2026, month:7,  day:11, emoji:'🥾', titles:{en:'Reopening: Tre Pietrazze Nature Trail',it:'Riapertura sentiero naturalistico Tre Pietrazze'}, descs:{en:'Area Marina Protetta Capo Milazzo · 19:00',it:'Area Marina Protetta Capo Milazzo · 19:00'} },
+  { year:2026, month:7,  day:13, emoji:'🎭', titles:{en:'Uno Nessuno Centomila — Enrico Lo Verso',it:'Uno, Nessuno, Centomila con Enrico Lo Verso'}, descs:{en:'Atrio del Carmine · 13–14 July',it:'Atrio del Carmine · 13–14 luglio'} },
+  { year:2026, month:8,  day:29, emoji:'🎤', titles:{en:'Massimo Ranieri — Tutti i sogni ancora in volo',it:'Massimo Ranieri in Tutti i sogni ancora in volo'}, descs:{en:'Castello di Milazzo · 21:00',it:'Castello di Milazzo · 21:00'} },
 ];
 
 const MONTHS_LONG = {
@@ -404,6 +390,72 @@ const RECIPES = {
       steps:["Mascarpone mit Puderzucker glatt ruehren.","Kaffee mit Rum in Teller mischen.","Biskuit kurz in Kaffee (1-2 Sek) tauchen, in Glas legen.","Schicht Mascarponecreme darueber.","Lagen wiederholen. Mit Creme abschliessen.","Mit Kakao bestaeuben. 1 Stunde kuehlen."] },
   ],
 };
+
+// ── Places / Museums data (with categories) ─────────────
+const PLACES = {
+  cats: {
+    en: ["Museums & Exhibition Centres", "Natural Parks & Trails", "Monuments & Archaeological Sites"],
+    it: ["Musei e Centri Espositivi", "Parchi Naturali e Sentieri", "Monumenti e Siti Archeologici"],
+    fr: ["Musées et Centres d Exposition", "Parcs Naturels et Sentiers", "Monuments et Sites Archeologiques"],
+    es: ["Museos y Centros de Exposicion", "Parques Naturales y Senderos", "Monumentos y Sitios Arqueologicos"],
+    de: ["Museen und Ausstellungszentren", "Naturparks und Wanderwege", "Monumente und Archaologische Statten"],
+    zh: ["博物馆与展览中心", "自然公园与步道", "纪念碑与考古遗址"],
+    ru: ["Muzei i Vystavochnye Centry", "Prirodnye Parki i Marshruty", "Pamyatniki i Arkheologicheskie Pamyatniki"],
+  },
+  items: [
+    // ── MUSEI E CENTRI ESPOSITIVI ─────────────────
+    { cat:0, emoji:"🏛️", title:"Antiquarium Domenico Ryolo",
+      descs:{ en:"Housed in a former Bourbon women's prison on Via Risorgimento. Archaeological collections from the Milazzo area.", it:"Ospitato in un ex carcere femminile borbonico in Via Risorgimento. Collezioni archeologiche del territorio milazzese.", fr:"Ancien prison de femmes bourbonienne. Collections archéologiques de la région.", es:"Antiguo presidio femenino borbónico. Colecciones arqueológicas de la zona.", de:"Ehemaliges bourbonisches Frauengefaengnis. Archaeologische Sammlungen.", zh:"前波旁女子监狱，收藏米拉佐地区考古文物。", ru:"Byvsheya burbonskaya zhenskaya tyurma. Arkheologicheskie kollektsii." },
+      link:"https://maps.app.goo.gl/CrMHFGh5P5M7zHSD8" },
+    { cat:0, emoji:"⚓", title:"MuMa — Museo del Mare",
+      descs:{ en:"Inside Milazzo Castle (Bastione di Santa Maria). Houses the skeleton of a sperm whale and maritime collections.", it:"Nel Castello di Milazzo (Bastione di Santa Maria). Contiene lo scheletro di un capodoglio e collezioni marittime.", fr:"Dans le Château de Milazzo. Squelette de cachalot et collections maritimes.", es:"En el Castillo de Milazzo. Esqueleto de cachalote y colecciones marítimas.", de:"Im Kastell von Milazzo. Pottwal-Skelett und maritime Sammlungen.", zh:"米拉佐城堡内，馆藏抹香鲸骨架和海洋文物。", ru:"V zamke Milazzo. Skelet kashalota i morskie kollektsii." },
+      link:"https://maps.app.goo.gl/sBjJGJT8u4E9hD8M6" },
+    { cat:0, emoji:"🐟", title:"Museo della Tonnara",
+      descs:{ en:"Museum dedicated to the traditions and history of tuna fishing in Milazzo.", it:"Museo dedicato alle tradizioni e alla storia della pesca del tonno a Milazzo.", fr:"Musée dédié aux traditions de la pêche au thon.", es:"Museo dedicado a las tradiciones de la pesca del atún.", de:"Museum der Thunfisch-Fischereitradition.", zh:"专注于金枪鱼捕捞传统与历史的博物馆。", ru:"Muzey posvyashchen traditsiyam lova tunca." },
+      link:"https://maps.app.goo.gl/Zj3VvJN8Rv4fP9wRA" },
+    { cat:0, emoji:"🚢", title:"Museo delle Arti Marinare",
+      descs:{ en:"Newly inaugurated (April 2026) at Localita Vaccarella. Dedicated to maritime arts and crafts of the area.", it:"Inaugurato ad aprile 2026 a Localita Vaccarella. Dedicato alle arti marinare del territorio.", fr:"Inauguré en avril 2026. Dédié aux arts maritimes de la région.", es:"Inaugurado en abril 2026. Dedicado a las artes marineras de la zona.", de:"Im April 2026 eroeffnet. Maritimes Kunsthandwerk der Region.", zh:"2026年4月新开放，展示当地海洋艺术与工艺。", ru:"Otkryt v aprele 2026. Posvyashchen morskim iskusstvam." },
+      link:"https://maps.app.goo.gl/VaccarellaMuseo" },
+    { cat:0, emoji:"👁️", title:"IllusionVille",
+      descs:{ en:"Interactive museum of optical illusions — fun for all ages.", it:"Museo interattivo delle illusioni ottiche — divertimento per tutte le eta.", fr:"Musée interactif des illusions d optique.", es:"Museo interactivo de ilusiones ópticas.", de:"Interaktives Museum fuer optische Illusionen.", zh:"互动视觉错觉博物馆，老少皆宜。", ru:"Interaktivnyy muzey opticheskikh illyuziy." },
+      link:"https://maps.app.goo.gl/IllusionVilleMilazzo" },
+
+    // ── PARCHI NATURALI E SENTIERI ─────────────────
+    { cat:1, emoji:"🌊", title:"Area Marina Protetta Capo Milazzo",
+      descs:{ en:"Protected marine area covering the entire Capo Milazzo promontory — marine and terrestrial nature reserve. Swimming, snorkelling, diving.", it:"Area marina protetta che comprende l intero promontorio di Capo Milazzo — riserva naturale marina e terrestre. Nuoto, snorkeling, immersioni.", fr:"Zone marine protégée. Réserve naturelle marine et terrestre. Baignade, snorkeling, plongée.", es:"Área marina protegida. Reserva natural marina y terrestre. Natación, snorkel, buceo.", de:"Meeresschutzgebiet. Marine und terrestrische Naturreservat. Schwimmen, Schnorcheln, Tauchen.", zh:"受保护的海洋区域，涵盖整个卡波米拉佐海角。游泳、浮潜、潜水。", ru:"Okhranyaemaya morskaya zona. Plavanie, snorkeling, dayvink." },
+      link:"https://maps.app.goo.gl/CapoMilazzoAMP" },
+    { cat:1, emoji:"🌀", title:"Piscina di Venere",
+      descs:{ en:"A natural seawater basin at the very tip of Capo Milazzo — one of Sicily's most spectacular natural pools.", it:"Bacino d acqua naturale situato sulla punta estrema di Capo Milazzo — una delle piscine naturali piu spettacolari della Sicilia.", fr:"Bassin d eau naturelle à la pointe de Capo Milazzo — l une des piscines naturelles les plus spectaculaires de Sicile.", es:"Cuenca de agua natural en la punta de Capo Milazzo — una de las piscinas naturales más espectaculares de Sicilia.", de:"Natuerliches Wasserbecken an der Spitze von Capo Milazzo.", zh:"位于卡波米拉佐最顶端的天然海水池，西西里岛最壮观的天然水池之一。", ru:"Prirodnyy bassejn v samom konce mysa Capo Milazzo." },
+      link:"https://maps.app.goo.gl/PiscinaDiVenere" },
+    { cat:1, emoji:"🥾", title:"Sentiero Tre Pietrazze",
+      descs:{ en:"Nature trail recently restored and enhanced within the AMP. Scenic coastal walk with sea views.", it:"Percorso naturalistico recentemente riaperto e valorizzato all interno dell AMP. Passeggiata costiera panoramica.", fr:"Sentier naturel récemment rouvert dans la réserve marine. Promenade côtière panoramique.", es:"Sendero natural recientemente reabierto dentro del AMP. Paseo costero panorámico.", de:"Naturweg kuerzlich wieder eroeffnet im Meeresschutzgebiet. Panoramischer Kuestenweg.", zh:"近期在海洋保护区内重新开放的自然步道，沿海全景散步。", ru:"Prirodnyy marshrut, nedavno vossozdannyy v more. Zhivopisnaya beregovaya progulka." },
+      link:"https://maps.app.goo.gl/TrePietrazze" },
+    { cat:1, emoji:"🗺️", title:"Sentieri Naturalistici di Capo Milazzo",
+      descs:{ en:"Multiple scenic trails: Sant Opolo, La Baronia, Punta Messinese, Baia di Sant Antonio, Nfennu e Paradisu, A Funtanedda.", it:"Diversi percorsi panoramici: Sant Opolo, La Baronia, Punta Messinese, Baia di Sant Antonio, Nfennu e Paradisu, A Funtanedda.", fr:"Plusieurs sentiers panoramiques: Sant Opolo, La Baronia, Punta Messinese, Baia di Sant Antonio.", es:"Varios senderos panorámicos por el promontorio de Capo Milazzo.", de:"Mehrere Panoramawege: Sant Opolo, La Baronia, Punta Messinese und weitere.", zh:"多条风景步道：圣奥波洛、拉巴罗尼亚、梅西纳角、圣安东尼奥湾等。", ru:"Neskol ko zhivopisnykh marshrutov po poluostrovu Capo Milazzo." },
+      link:"https://maps.app.goo.gl/SentieriCapoMilazzo" },
+
+    // ── MONUMENTI E SITI ARCHEOLOGICI ─────────────────
+    { cat:2, emoji:"🏰", title:"La Cittadella Fortificata — Castello di Milazzo",
+      descs:{ en:"The largest fortified complex in Sicily, containing the Duomo Antico, the Benedictine Monastery and the Palazzo Svevo.", it:"Il piu grande complesso fortificato della Sicilia, contenente il Duomo Antico, il Monastero delle Benedettine e il Palazzo Svevo.", fr:"Le plus grand complexe fortifié de Sicile — Duomo Antico, Monastère des Bénédictines, Palazzo Svevo.", es:"El mayor complejo fortificado de Sicilia — Duomo Antico, Monasterio benedictino, Palazzo Svevo.", de:"Groesstes Festungsanlage Siziliens mit Dom, Benediktinerkloster und Palazzo Svevo.", zh:"西西里岛最大的防御建筑群，内含古大教堂、本笃会修道院和斯瓦比亚宫。", ru:"Krupneyshiy ukreplenyy kompleks Sitsilii." },
+      link:"https://maps.app.goo.gl/CastelloMilazzo" },
+    { cat:2, emoji:"🗼", title:"Torri e Fortini Storici",
+      descs:{ en:"Torre del Mulino, Torre della Lanterna, Torre Longa and historic forts: Forte dei Castriciani, Batteria Mezzaluna.", it:"Torre del Mulino, Torre della Lanterna, Torre Longa e i forti storici: Forte dei Castriciani e Batteria Mezzaluna.", fr:"Tours et fortins historiques: Torre del Mulino, Torre Lanterna, Forte dei Castriciani.", es:"Torres y fortines históricos: Torre del Mulino, Torre Lanterna, Forte dei Castriciani.", de:"Historische Tuerme und Forts: Torre del Mulino, Torre Lanterna, Forte dei Castriciani.", zh:"历史塔楼与堡垒：风车塔、灯塔塔、长塔及卡斯特里恰尼堡垒等。", ru:"Istoricheskie bashni i forty goroda." },
+      link:"https://maps.app.goo.gl/TorriMilazzo" },
+    { cat:2, emoji:"🏺", title:"Siti Archeologici",
+      descs:{ en:"Necropolis of Piazza Duomo, Hellenistic Mosaic and Neolithic prehistoric sites. Free first Sunday of each month.", it:"Necropoli di Piazza Duomo, Mosaico Ellenistico e siti preistorici del Neolitico. Ingresso gratuito ogni prima domenica del mese.", fr:"Nécropole de Piazza Duomo, mosaïque hellénistique, sites préhistoriques. Gratuit premier dimanche du mois.", es:"Necrópolis de Piazza Duomo, mosaico helenístico, sitios prehistóricos. Gratis primer domingo del mes.", de:"Nekropole, hellenistisches Mosaik, praehistorische Staetten. Erster Sonntag im Monat kostenlos.", zh:"主教座堂广场墓地、希腊化马赛克及新石器时代遗址。每月第一个周日免费。", ru:"Nekropol, ellinisticheskaya mozaika, neoliticheskie stoyanki. Besplatno pervoe voskresen e mesyatsa." },
+      link:"https://maps.app.goo.gl/ArcheoMilazzo" },
+    { cat:2, emoji:"🏛️", title:"Palazzi Storici",
+      descs:{ en:"Palazzo dei Marchesi D Amico (Lungomare Garibaldi), Palazzo del Governatore and Palazzo Bonaccorsi.", it:"Palazzo dei Marchesi D Amico (Lungomare Garibaldi), Palazzo del Governatore e Palazzo Bonaccorsi.", fr:"Palazzo D Amico (Lungomare Garibaldi), Palazzo del Governatore, Palazzo Bonaccorsi.", es:"Palazzo D Amico (Lungomare Garibaldi), Palazzo del Governatore, Palazzo Bonaccorsi.", de:"Palazzo D Amico, Palazzo del Governatore, Palazzo Bonaccorsi.", zh:"达米科侯爵宫（加里波第海滨大道）、总督宫及博纳科西宫。", ru:"Palazzo D Amico, Palazzo del Governatore, Palazzo Bonaccorsi." },
+      link:"https://maps.app.goo.gl/PalazziMilazzo" },
+    { cat:2, emoji:"⛪", title:"Architettura Religiosa",
+      descs:{ en:"Sanctuary of San Francesco di Paola (15th century), Church of Carmine and the rock Sanctuary of Sant Antonio da Padova al Capo.", it:"Santuario di San Francesco di Paola (XV sec.), Chiesa del Carmine e il Santuario rupestre di Sant Antonio da Padova al Capo.", fr:"Sanctuaire de San Francesco di Paola (XVe s.), Église du Carmine, Sanctuaire rupestre de Sant Antonio al Capo.", es:"Santuario de San Francesco di Paola (s. XV), Iglesia del Carmine, santuario rupestre de Sant Antonio al Capo.", de:"Heiligtum San Francesco di Paola (15. Jh.), Kirche del Carmine, Felsheiligtum Sant Antonio al Capo.", zh:"圣弗朗切斯科·德·保拉圣殿（15世纪）、卡尔米内教堂及卡波圣安东尼岩石圣殿。", ru:"Svyatilishche San Francesco di Paola (XV v.), cerkov Carmine, skalnoe svyatilishche Sant Antonio al Capo." },
+      link:"https://maps.app.goo.gl/SantuarioMilazzo" },
+    { cat:2, emoji:"🗿", title:"Altri Monumenti",
+      descs:{ en:"Statue of Liberty (Milazzo), Monument to Luigi Rizzo, the Mela Fountain and the Grotta Polifemo.", it:"La Statua della Liberta, il Monumento a Luigi Rizzo, la Fontana del Mela e la Grotta Polifemo.", fr:"Statue de la Liberté (Milazzo), Monument à Luigi Rizzo, Fontaine du Mela, Grotte de Polyphème.", es:"Estatua de la Libertad (Milazzo), Monumento a Luigi Rizzo, Fuente del Mela, Cueva de Polifemo.", de:"Freiheitsstatue (Milazzo), Luigi-Rizzo-Denkmal, Mela-Brunnen, Polyphem-Hoehle.", zh:"自由女神像（米拉佐版）、路易吉·里佐纪念碑、梅拉喷泉及波吕斐摩斯洞穴。", ru:"Statua della Liberta, pamyatnik Lui-dzhzhi Ritso, fontan Mela, peshchera Polifema." },
+      link:"https://maps.app.goo.gl/MonumentiMilazzo" },
+  ],
+};
+
 // ── Helpers ─────────────────────────────────
 function t() { return allT[state.lang] || allT.en; }
 
@@ -862,26 +914,11 @@ function renderSectionContent() {
     const gPast = groupEvents(pastEvs, false);
     const gUpcoming = groupEvents(upcomingEvs, true);
 
-    const pastToggle = pastEvs.length ? h('button', { className: 'past-toggle', onClick: () => { state.showPast = !state.showPast; render(); } },
+    const pastToggle = h('button', { className: 'past-toggle', onClick: () => { state.showPast = !state.showPast; render(); } },
       h('span', { style: 'font-size:16px' }, state.showPast ? '🙈' : '📅'),
       ' ',
       state.showPast ? tr.events.hidePast : (tr.events.showPast + ' (' + pastEvs.length + ')')
-    ) : null;
-
-    const pastSection = (state.showPast && pastEvs.length) ? [
-      ...gPast.map(g =>
-        h('div', { className: 'month-group' },
-          h('div', { className: 'month-label' }, g.monthName),
-          ...g.events.map(e =>
-            h('div', { className: 'event-card', style: 'opacity:.55' },
-              h('div', { className: 'event-date' }, h('div', { className: 'event-day' }, e.day), h('div', { className: 'event-mon' }, e.monShort)),
-              h('div', { className: 'event-info' }, h('div', { className: 'event-title' }, e.emoji + ' ' + e.title), h('div', { className: 'event-desc' }, e.desc)),
-            )
-          )
-        )
-      ),
-      h('hr', { className: 'past-divider' }),
-    ] : [];
+    );
 
     const upcomingSection = upcomingEvs.length
       ? gUpcoming.map(g =>
@@ -901,28 +938,55 @@ function renderSectionContent() {
       h('h2', { className: 'section-h2' }, tr.tabs.events),
       h('p', { style: 'font-size:13px;color:var(--text-3);font-style:italic;margin-bottom:4px' }, todayLabel()),
       h('p', { style: 'font-size:14px;color:var(--text-3);margin-bottom:16px;line-height:1.6' }, tr.events.desc),
-      pastToggle,
-      ...pastSection,
       ...upcomingSection,
+      pastEvs.length ? h('div', { style: 'margin-top:24px' },
+        pastToggle,
+        ...(state.showPast ? [h('div', { style: 'margin-top:12px' }, ...gPast.map(g =>
+          h('div', { className: 'month-group' },
+            h('div', { className: 'month-label' }, g.monthName),
+            ...g.events.map(e =>
+              h('div', { className: 'event-card', style: 'opacity:.55' },
+                h('div', { className: 'event-date' }, h('div', { className: 'event-day' }, e.day), h('div', { className: 'event-mon' }, e.monShort)),
+                h('div', { className: 'event-info' }, h('div', { className: 'event-title' }, e.emoji + ' ' + e.title), h('div', { className: 'event-desc' }, e.desc)),
+              )
+            )
+          )
+        ))] : []),
+      ) : null,
     );
   }
 
   if (s === 'museums') {
+    const lang = state.lang;
+    const catNames = PLACES.cats[lang] || PLACES.cats.en;
+    const L = (obj) => obj[lang] || obj.it || obj.en || '';
+    const freeNote = { en:'Free entry every first Sunday of the month (national museums).', it:'Ingresso gratuito ogni prima domenica del mese (musei statali).', fr:'Entrée gratuite le premier dimanche du mois (musées nationaux).', es:'Entrada gratuita el primer domingo de mes (museos nacionales).', de:'Erster Sonntag im Monat kostenlos (nationale Museen).', zh:'每月第一个周日国家博物馆免费开放。', ru:'Besplatno pervoe voskresen e kazhdogo mesyatsa (gosudarstvennye muzei).' };
+    const catColors = ['#0284c7','#16a34a','#b45309'];
+    const catIcons  = ['museum','park','location_city'];
     return h('div', { className: 'section-body' },
       h('h2', { className: 'section-h2' }, tr.tabs.museums),
-      ...tr.monuments.map(m =>
-        h('div', { className: 'monument-card' },
-          h('div', { className: 'monument-head' },
-            h('div', { className: 'monument-emoji' }, m.emoji),
-            h('div', {},
-              h('div', { className: 'monument-title' }, m.title),
-              h('div', { className: 'monument-dist' }, m.dist),
-            ),
+      h('p', { style: 'font-size:12px;color:var(--text-3);font-style:italic;margin-bottom:20px;line-height:1.5' }, L(freeNote)),
+      ...[0,1,2].map(catIdx => {
+        const catItems = PLACES.items.filter(p => p.cat === catIdx);
+        return h('div', { style: 'margin-bottom:28px' },
+          h('div', { style: 'display:flex;align-items:center;gap:8px;margin-bottom:10px' },
+            h('div', { style: 'width:28px;height:28px;border-radius:8px;background:' + catColors[catIdx] + ';display:flex;align-items:center;justify-content:center' }, ms(catIcons[catIdx])),
+            h('div', { style: 'font-size:13px;font-weight:700;color:var(--text-1);text-transform:uppercase;letter-spacing:.06em' }, catNames[catIdx]),
           ),
-          h('div', { className: 'monument-desc' }, m.desc),
-          h('a', { className: 'monument-cta', href: m.link, target: '_blank' }, ms('map'), ' ', tr.openMaps),
-        )
-      ),
+          ...catItems.map(m =>
+            h('div', { className: 'monument-card' },
+              h('div', { className: 'monument-head' },
+                h('div', { className: 'monument-emoji' }, m.emoji),
+                h('div', {},
+                  h('div', { className: 'monument-title' }, m.title),
+                ),
+              ),
+              h('div', { className: 'monument-desc' }, L(m.descs)),
+              h('a', { className: 'monument-cta', href: m.link, target: '_blank' }, ms('map'), ' ', tr.openMaps),
+            )
+          ),
+        );
+      }),
     );
   }
 
