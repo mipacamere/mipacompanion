@@ -406,7 +406,7 @@ const PLACES = {
     // ── MUSEI E CENTRI ESPOSITIVI ─────────────────
     { cat:0, emoji:"🏛️", title:"Antiquarium Domenico Ryolo",
       descs:{ en:"Housed in a former Bourbon women's prison on Via Risorgimento. Archaeological collections from the Milazzo area.", it:"Ospitato in un ex carcere femminile borbonico in Via Risorgimento. Collezioni archeologiche del territorio milazzese.", fr:"Ancien prison de femmes bourbonienne. Collections archéologiques de la région.", es:"Antiguo presidio femenino borbónico. Colecciones arqueológicas de la zona.", de:"Ehemaliges bourbonisches Frauengefaengnis. Archaeologische Sammlungen.", zh:"前波旁女子监狱，收藏米拉佐地区考古文物。", ru:"Byvsheya burbonskaya zhenskaya tyurma. Arkheologicheskie kollektsii." },
-      link:"https://maps.app.goo.gl/CrMHFGh5P5M7zHSD8" },
+      link:"https://maps.app.goo.gl/7afrShpiQ7XnY1Vz5" },
     { cat:0, emoji:"⚓", title:"MuMa — Museo del Mare",
       descs:{ en:"Inside Milazzo Castle (Bastione di Santa Maria). Houses the skeleton of a sperm whale and maritime collections.", it:"Nel Castello di Milazzo (Bastione di Santa Maria). Contiene lo scheletro di un capodoglio e collezioni marittime.", fr:"Dans le Château de Milazzo. Squelette de cachalot et collections maritimes.", es:"En el Castillo de Milazzo. Esqueleto de cachalote y colecciones marítimas.", de:"Im Kastell von Milazzo. Pottwal-Skelett und maritime Sammlungen.", zh:"米拉佐城堡内，馆藏抹香鲸骨架和海洋文物。", ru:"V zamke Milazzo. Skelet kashalota i morskie kollektsii." },
       link:"https://maps.app.goo.gl/sBjJGJT8u4E9hD8M6" },
@@ -658,7 +658,7 @@ function renderHome() {
         langSelect(),
       )
     ),
-    h('div', { className: 'home-content' },
+    h('div', { className: 'home-content', style: (!state.installDismissed ? 'padding-bottom:100px' : '') },
       h('div', { className: 'home-greeting' }, tr.home.greeting),
       h('div', { className: 'home-sub' }, tr.home.sub),
       h('div', { className: 'checkin-card' },
@@ -973,7 +973,7 @@ function renderSectionContent() {
     h2.textContent = tr.tabs.events;
     page.appendChild(h2);
 
-    // Oggi
+    // Data di oggi
     var dateLabel = document.createElement('p');
     dateLabel.style.cssText = 'font-size:13px;color:var(--text-3);font-style:italic;margin-bottom:4px';
     dateLabel.textContent = todayLabel();
@@ -981,26 +981,14 @@ function renderSectionContent() {
 
     // Descrizione
     var desc = document.createElement('p');
-    desc.style.cssText = 'font-size:14px;color:var(--text-3);margin-bottom:16px;line-height:1.6';
+    desc.style.cssText = 'font-size:14px;color:var(--text-3);margin-bottom:14px;line-height:1.6';
     desc.textContent = tr.events.desc;
     page.appendChild(desc);
 
-    // Eventi futuri
-    if (futureEvs.length > 0) {
-      gFuture.forEach(function(g) {
-        page.appendChild(renderEventGroup(g, false));
-      });
-    } else {
-      var noEvt = document.createElement('p');
-      noEvt.style.cssText = 'font-size:15px;color:var(--text-3);text-align:center;margin-top:32px';
-      noEvt.textContent = tr.events.noUpcoming;
-      page.appendChild(noEvt);
-    }
-
-    // Toggle eventi passati
+    // ── Toggle eventi passati IN CIMA (prima degli upcoming) ──
     if (pastEvs.length > 0) {
       var pastSection = document.createElement('div');
-      pastSection.style.marginTop = '22px';
+      pastSection.style.marginBottom = '18px';
 
       var toggleBtn = document.createElement('button');
       toggleBtn.className = 'past-toggle';
@@ -1020,9 +1008,25 @@ function renderSectionContent() {
         gPast.forEach(function(g) {
           pastSection.appendChild(renderEventGroup(g, true));
         });
+        var hr2 = document.createElement('hr');
+        hr2.className = 'past-divider';
+        hr2.style.marginBottom = '8px';
+        pastSection.appendChild(hr2);
       }
 
       page.appendChild(pastSection);
+    }
+
+    // ── Eventi futuri ──
+    if (futureEvs.length > 0) {
+      gFuture.forEach(function(g) {
+        page.appendChild(renderEventGroup(g, false));
+      });
+    } else {
+      var noEvt = document.createElement('p');
+      noEvt.style.cssText = 'font-size:15px;color:var(--text-3);text-align:center;margin-top:32px';
+      noEvt.textContent = tr.events.noUpcoming;
+      page.appendChild(noEvt);
     }
 
     return page;

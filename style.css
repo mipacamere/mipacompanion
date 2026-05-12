@@ -169,7 +169,7 @@ a{color:var(--primary);text-decoration:none}
 /* ═══════════════════════════════════════════
    INSTALL BANNER
 ═══════════════════════════════════════════ */
-.install-banner{background:var(--surface);border-top:0.5px solid var(--sep);padding:14px 16px;display:flex;align-items:center;gap:12px;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:300;box-shadow:0 -4px 20px rgba(0,0,0,.1)}
+.install-banner{background:var(--surface);border-top:0.5px solid var(--sep);padding:14px 16px;display:flex;align-items:center;gap:12px;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:400;box-shadow:0 -4px 20px rgba(0,0,0,.14);padding-bottom:calc(14px + env(safe-area-inset-bottom))}
 .install-banner-icon{width:44px;height:44px;border-radius:10px;background:var(--toolbar);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .install-banner-icon .ms{color:#fff;font-size:22px}
 .install-banner-text{flex:1}
