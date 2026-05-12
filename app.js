@@ -476,9 +476,9 @@ function menuItems() {
     { id:'events',       icon:'celebration',  color:'#db2777', label:tabs.events,      sub:'Concerts, festivals & markets' },
     { id:'museums',      icon:'museum',       color:'#b45309', label:tabs.museums,     sub:'Culture & history of Milazzo' },
     { id:'beach',        icon:'beach_access', color:'#0369a1', label:tabs.beach,       sub:'Crystal clear waters await' },
+    { id:'recipes',      icon:'restaurant_menu', color:'#c2410c', label:tabs.recipes,     sub:'10 no-cook recipes' },
     { id:'roomGuide',    icon:'king_bed',     color:'#9333ea', label:tabs.roomGuide,   sub:'Navigate back to MiPA' },
     { id:'checkout',     icon:'logout',       color:'#dc2626', label:tabs.checkout,    sub:'Instructions for departure' },
-    { id:'recipes',      icon:'restaurant_menu', color:'#c2410c', label:tabs.recipes,     sub:'10 no-cook recipes' },
   ];
 }
 
@@ -575,6 +575,9 @@ function installApp() {
   if (state.installPrompt) {
     state.installPrompt.prompt();
     state.installPrompt.userChoice.then(() => { state.installPrompt = null; render(); });
+  } else {
+    state.showIOSHint = true;
+    render();
   }
 }
 
@@ -604,7 +607,7 @@ function renderOfflineBar() {
 }
 
 function renderInstallBanner() {
-  if (!state.installPrompt || state.installDismissed) return null;
+  if (state.installDismissed) return null;
   const banner = h('div', { className: 'install-banner' },
     h('div', { className: 'install-banner-icon' }, ms('install_mobile')),
     h('div', { className: 'install-banner-text' },
@@ -774,6 +777,51 @@ function renderDashboard() {
   );
 }
 
+
+// ── Event group helper ───────────────────────
+function renderEventGroup(g, dimmed) {
+  var cards = g.events.map(function(e) {
+    var card = document.createElement('div');
+    card.className = 'event-card';
+    if (dimmed) card.style.opacity = '0.52';
+
+    var dateEl = document.createElement('div');
+    dateEl.className = 'event-date';
+    var dayEl = document.createElement('div');
+    dayEl.className = 'event-day';
+    dayEl.textContent = e.day;
+    var monEl = document.createElement('div');
+    monEl.className = 'event-mon';
+    monEl.textContent = e.monShort;
+    dateEl.appendChild(dayEl);
+    dateEl.appendChild(monEl);
+
+    var infoEl = document.createElement('div');
+    infoEl.className = 'event-info';
+    var titleEl = document.createElement('div');
+    titleEl.className = 'event-title';
+    titleEl.textContent = e.emoji + ' ' + e.title;
+    var descEl = document.createElement('div');
+    descEl.className = 'event-desc';
+    descEl.textContent = e.desc;
+    infoEl.appendChild(titleEl);
+    infoEl.appendChild(descEl);
+
+    card.appendChild(dateEl);
+    card.appendChild(infoEl);
+    return card;
+  });
+
+  var wrap = document.createElement('div');
+  wrap.className = 'month-group';
+  var label = document.createElement('div');
+  label.className = 'month-label';
+  label.textContent = g.monthName;
+  wrap.appendChild(label);
+  cards.forEach(function(c) { wrap.appendChild(c); });
+  return wrap;
+}
+
 function renderSectionContent() {
   const tr = t();
   const s = state.section;
@@ -908,68 +956,76 @@ function renderSectionContent() {
   }
 
   if (s === 'events') {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const pastEvs   = EVENTS.filter(e => new Date(e.year, e.month-1, e.day) <  today);
-    const futureEvs = EVENTS.filter(e => new Date(e.year, e.month-1, e.day) >= today);
-    const gPast   = groupEvents(pastEvs,   false);
-    const gFuture = groupEvents(futureEvs, true);
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Costruisce le card di un gruppo di eventi
-    function eventGroup(g, dimmed) {
-      return h('div', { className: 'month-group' },
-        h('div', { className: 'month-label' }, g.monthName),
-        ...g.events.map(e =>
-          h('div', { className: 'event-card' + (dimmed ? '' : ''), style: dimmed ? 'opacity:.52' : '' },
-            h('div', { className: 'event-date' },
-              h('div', { className: 'event-day' }, e.day),
-              h('div', { className: 'event-mon' }, e.monShort),
-            ),
-            h('div', { className: 'event-info' },
-              h('div', { className: 'event-title' }, e.emoji + ' ' + e.title),
-              h('div', { className: 'event-desc' }, e.desc),
-            ),
-          )
-        )
-      );
+    var pastEvs   = EVENTS.filter(function(e) { return new Date(e.year, e.month - 1, e.day) < today; });
+    var futureEvs = EVENTS.filter(function(e) { return new Date(e.year, e.month - 1, e.day) >= today; });
+    var gPast   = groupEvents(pastEvs,   false);
+    var gFuture = groupEvents(futureEvs, true);
+
+    var page = document.createElement('div');
+    page.className = 'section-body';
+
+    // Titolo
+    var h2 = document.createElement('h2');
+    h2.className = 'section-h2';
+    h2.textContent = tr.tabs.events;
+    page.appendChild(h2);
+
+    // Oggi
+    var dateLabel = document.createElement('p');
+    dateLabel.style.cssText = 'font-size:13px;color:var(--text-3);font-style:italic;margin-bottom:4px';
+    dateLabel.textContent = todayLabel();
+    page.appendChild(dateLabel);
+
+    // Descrizione
+    var desc = document.createElement('p');
+    desc.style.cssText = 'font-size:14px;color:var(--text-3);margin-bottom:16px;line-height:1.6';
+    desc.textContent = tr.events.desc;
+    page.appendChild(desc);
+
+    // Eventi futuri
+    if (futureEvs.length > 0) {
+      gFuture.forEach(function(g) {
+        page.appendChild(renderEventGroup(g, false));
+      });
+    } else {
+      var noEvt = document.createElement('p');
+      noEvt.style.cssText = 'font-size:15px;color:var(--text-3);text-align:center;margin-top:32px';
+      noEvt.textContent = tr.events.noUpcoming;
+      page.appendChild(noEvt);
     }
 
-    // Sezione eventi futuri
-    const futureNodes = futureEvs.length
-      ? gFuture.map(g => eventGroup(g, false))
-      : [h('p', { style: 'font-size:15px;color:var(--text-3);text-align:center;margin-top:32px' }, tr.events.noUpcoming)];
+    // Toggle eventi passati
+    if (pastEvs.length > 0) {
+      var pastSection = document.createElement('div');
+      pastSection.style.marginTop = '22px';
 
-    // Sezione eventi passati (con toggle)
-    const pastNodes = [];
-    if (pastEvs.length) {
-      const toggleLabel = state.showPast
-        ? tr.events.hidePast
-        : (tr.events.showPast + ' (' + pastEvs.length + ')');
-      pastNodes.push(
-        h('div', { style: 'margin-top:22px' },
-          h('button', { className: 'past-toggle',
-              onClick: () => { state.showPast = !state.showPast; render(); } },
-            h('span', { style: 'font-size:16px' }, state.showPast ? '🙈' : '📅'),
-            ' ',
-            toggleLabel,
-          ),
-          state.showPast
-            ? h('div', { style: 'margin-top:12px' },
-                h('hr', { className: 'past-divider' }),
-                ...gPast.map(g => eventGroup(g, true))
-              )
-            : null,
-        )
-      );
+      var toggleBtn = document.createElement('button');
+      toggleBtn.className = 'past-toggle';
+      toggleBtn.innerHTML = (state.showPast ? '🙈' : '📅') + ' ' +
+        (state.showPast ? tr.events.hidePast : tr.events.showPast + ' (' + pastEvs.length + ')');
+      toggleBtn.addEventListener('click', function() {
+        state.showPast = !state.showPast;
+        render();
+      });
+      pastSection.appendChild(toggleBtn);
+
+      if (state.showPast) {
+        var hr = document.createElement('hr');
+        hr.className = 'past-divider';
+        hr.style.marginTop = '12px';
+        pastSection.appendChild(hr);
+        gPast.forEach(function(g) {
+          pastSection.appendChild(renderEventGroup(g, true));
+        });
+      }
+
+      page.appendChild(pastSection);
     }
 
-    // Assembla la pagina in un wrapper e restituisce
-    const wrapper = h('div', { className: 'section-body' });
-    wrapper.appendChild(h('h2', { className: 'section-h2' }, tr.tabs.events));
-    wrapper.appendChild(h('p', { style: 'font-size:13px;color:var(--text-3);font-style:italic;margin-bottom:4px' }, todayLabel()));
-    wrapper.appendChild(h('p', { style: 'font-size:14px;color:var(--text-3);margin-bottom:16px;line-height:1.6' }, tr.events.desc));
-    futureNodes.forEach(n => wrapper.appendChild(n));
-    pastNodes.forEach(n => wrapper.appendChild(n));
-    return wrapper;
+    return page;
   }
 
   if (s === 'museums') {
