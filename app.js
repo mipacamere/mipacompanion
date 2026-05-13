@@ -26,7 +26,7 @@ const allT = {
     tabs: { info:'Structure Info', philosophy:'Our Philosophy', contacts:'Contacts', directions:'Getting Around', map:'Interactive Map', breakfast:'Daily Itinerary', bookServices:'Book Services', events:'City Events', museums:'Museums & Monuments', beach:'Take Me to the Beach', roomGuide:'Back to My Room', checkout:'Check Out', recipes:'No-Cook Recipes' },
     home: { greeting:'Welcome to MiPA 🌿', sub:'Your digital concierge in Milazzo', checkinNew:'I need to check in', checkinNewDesc:'Upload your ID documents', checkinDone:'I already checked in', checkinDoneDesc:'Go directly to the app' },
     dash: { welcome:'MiPA Companion', sub:'What can we help you with?' },
-    upload: { title:'Upload your ID documents', dropText:'Tap to add photos', dropSub:'Passport, ID card or driving licence', remove:'Remove', sendWa:'Send via WhatsApp', continue:'Continue to property info', sent:'Documents sent ✓' },
+    upload: { title:'Upload your ID documents', dropText:'Tap to add photos', dropSub:'Passport, ID card or driving licence', remove:'Remove', attachNote:'Please attach the photos manually', sendWa:'Hello! I am sending my ID documents for check-in at MiPA, Milazzo. Please find the photos attached. Thank you!', continue:'Continue to property info', sent:'Documents sent ✓' },
     info: { general:'General Info', contacts:'Contacts', address:'Address', phone:'Phone', whatsapp:'Chat on WhatsApp', checkin:'3:00 PM – 10:00 PM', checkout:'By 10:30 AM', wifiConnect:'Connect to WiFi' },
     itinerary: { desc:'Discover the best of the city with this carefully planned itinerary. Explore must-see attractions and enjoy local experiences.', btn:'Explore Milazzo' },
     map: { title:'Milazzo Interactive Map', desc:'Highlights, landmarks and hidden gems.', openMaps:'Open in Google Maps' },
@@ -63,7 +63,7 @@ const allT = {
     tabs: { info:'Info Struttura', philosophy:'La Nostra Filosofia', contacts:'Contatti', directions:'Raggiungere/Lasciare Milazzo', map:'Mappa Interattiva', breakfast:'Itinerario Giornaliero', bookServices:'Prenota Servizi', events:'Eventi in Città', museums:'Musei e Monumenti', beach:'Portami alla Spiaggia', roomGuide:'Riportami alla Camera', checkout:'Check-Out', recipes:'Ricette No-Cook' },
     home: { greeting:'Benvenuto a MiPA 🌿', sub:'Il tuo concierge digitale a Milazzo', checkinNew:'Devo fare il check-in', checkinNewDesc:"Carica i tuoi documenti d'identità", checkinDone:'Ho già fatto il check-in', checkinDoneDesc:"Vai direttamente all'app" },
     dash: { welcome:'MiPA Companion', sub:'Come possiamo aiutarti?' },
-    upload: { title:"Carica i tuoi documenti d'identità", dropText:'Tocca per aggiungere foto', dropSub:"Passaporto, carta d'identità o patente", remove:'Rimuovi', sendWa:'Invia via WhatsApp', continue:'Continua alle info sulla struttura', sent:'Documenti inviati ✓' },
+    upload: { title:"Carica i tuoi documenti d'identità", dropText:'Tocca per aggiungere foto', dropSub:"Passaporto, carta d'identità o patente", remove:'Rimuovi', attachNote:"Si prega di allegare le foto manualmente", sendWa:"Buongiorno! Le invio i documenti d'identità per il check-in presso MiPA, Milazzo. Troverà le foto in allegato. Grazie!", continue:'Continua alle info sulla struttura', sent:'Documenti inviati ✓' },
     info: { general:'Informazioni Generali', contacts:'Contatti', address:'Indirizzo', phone:'Telefono', whatsapp:'Chatta su WhatsApp', checkin:'15:00 – 22:00', checkout:'Entro le 10:30', wifiConnect:'Connetti al WiFi' },
     itinerary: { desc:'Scopri il meglio della città con questo itinerario giornaliero ben pianificato.', btn:'Esplora Milazzo' },
     map: { title:'Mappa Interattiva di Milazzo', desc:'Attrazioni, monumenti e gemme nascoste.', openMaps:'Apri in Google Maps' },
@@ -100,7 +100,7 @@ const allT = {
     tabs:{ info:'Infos Structure', philosophy:'Notre Philosophie', contacts:'Contacts', directions:'Arriver/Quitter Milazzo', map:'Carte Interactive', breakfast:'Itinéraire du Jour', bookServices:'Réserver Services', events:'Événements en Ville', museums:'Musées et Monuments', beach:'Emmène-moi à la Plage', roomGuide:'Retour à ma Chambre', checkout:'Check-Out', recipes:'Recettes Sans Cuisson' },
     home:{ greeting:'Bienvenue à MiPA 🌿', sub:'Votre concierge digital à Milazzo', checkinNew:"Je dois m'enregistrer", checkinNewDesc:"Téléchargez vos pièces d'identité", checkinDone:'Je suis déjà enregistré', checkinDoneDesc:"Accéder directement à l'app" },
     dash:{ welcome:'MiPA Companion', sub:'Comment pouvons-nous vous aider ?' },
-    upload:{ title:"Téléchargez vos pièces d'identité", dropText:'Appuyez pour ajouter des photos', dropSub:"Passeport, carte d'identité ou permis de conduire", remove:'Supprimer', sendWa:'Envoyer via WhatsApp', continue:'Continuer vers les infos hébergement', sent:'Documents envoyés ✓' },
+    upload:{ title:"Téléchargez vos pièces d'identité", dropText:'Appuyez pour ajouter des photos', dropSub:"Passeport, carte d'identité ou permis de conduire", remove:'Supprimer', attachNote:"Veuillez joindre les photos manuellement", sendWa:"Bonjour! Je vous envoie mes documents d'identité pour le check-in à MiPA, Milazzo. Vous trouverez les photos ci-jointes. Merci!", continue:'Continuer vers les infos hébergement', sent:'Documents envoyés ✓' },
     info:{ general:'Informations Générales', contacts:'Contacts', address:'Adresse', phone:'Téléphone', whatsapp:'Chat sur WhatsApp', checkin:'15h00 – 22h00', checkout:'Avant 10h30', wifiConnect:'Se connecter au WiFi' },
     itinerary:{ desc:'Découvrez le meilleur de la ville grâce à cet itinéraire soigneusement planifié.', btn:'Explorer Milazzo' },
     map:{ title:'Carte Interactive de Milazzo', desc:'Attractions, monuments et joyaux cachés.', openMaps:'Ouvrir dans Google Maps' },
@@ -119,7 +119,7 @@ const allT = {
     tabs:{ info:'Info del Alojamiento', philosophy:'Nuestra Filosofía', contacts:'Contactos', directions:'Llegar/Salir de Milazzo', map:'Mapa Interactivo', breakfast:'Itinerario Diario', bookServices:'Reservar Servicios', events:'Eventos en la Ciudad', museums:'Museos y Monumentos', beach:'Llévame a la Playa', roomGuide:'Volver a Mi Habitación', checkout:'Check-Out', recipes:'Recetas Sin Cocinar' },
     home:{ greeting:'Bienvenido a MiPA 🌿', sub:'Tu conserje digital en Milazzo', checkinNew:'Necesito hacer el check-in', checkinNewDesc:'Sube tus documentos de identidad', checkinDone:'Ya hice el check-in', checkinDoneDesc:'Ir directamente a la app' },
     dash:{ welcome:'MiPA Companion', sub:'¿En qué podemos ayudarte?' },
-    upload:{ title:'Sube tus documentos de identidad', dropText:'Toca para añadir fotos', dropSub:'Pasaporte, DNI o carnet de conducir', remove:'Eliminar', sendWa:'Enviar por WhatsApp', continue:'Continuar a info del alojamiento', sent:'Documentos enviados ✓' },
+    upload:{ title:'Sube tus documentos de identidad', dropText:'Toca para añadir fotos', dropSub:'Pasaporte, DNI o carnet de conducir', remove:'Eliminar', attachNote:"Por favor adjunte las fotos manualmente", sendWa:"¡Hola! Le envío mis documentos de identidad para el check-in en MiPA, Milazzo. Encontrará las fotos adjuntas. ¡Gracias!", continue:'Continuar a info del alojamiento', sent:'Documentos enviados ✓' },
     info:{ general:'Información General', contacts:'Contactos', address:'Dirección', phone:'Teléfono', whatsapp:'Chat en WhatsApp', checkin:'15:00 – 22:00', checkout:'Antes de las 10:30', wifiConnect:'Conectar al WiFi' },
     itinerary:{ desc:'Descubre lo mejor de la ciudad con este itinerario cuidadosamente planificado.', btn:'Explorar Milazzo' },
     map:{ title:'Mapa Interactivo de Milazzo', desc:'Atracciones, monumentos y joyas ocultas.', openMaps:'Abrir en Google Maps' },
@@ -138,7 +138,7 @@ const allT = {
     tabs:{ info:'Unterkunftsinfos', philosophy:'Unsere Philosophie', contacts:'Kontakte', directions:'An- und Abreise', map:'Interaktive Karte', breakfast:'Tagesausflug', bookServices:'Services buchen', events:'Stadtveranstaltungen', museums:'Museen & Denkmäler', beach:'Bring mich zum Strand', roomGuide:'Zurück zu meinem Zimmer', checkout:'Check-Out', recipes:'Rezepte Ohne Kochen' },
     home:{ greeting:'Willkommen bei MiPA 🌿', sub:'Ihr digitaler Concierge in Milazzo', checkinNew:'Ich muss einchecken', checkinNewDesc:'Laden Sie Ihre Ausweisdokumente hoch', checkinDone:'Ich habe bereits eingecheckt', checkinDoneDesc:'Direkt zur App' },
     dash:{ welcome:'MiPA Companion', sub:'Wie können wir Ihnen helfen?' },
-    upload:{ title:'Laden Sie Ihre Ausweisdokumente hoch', dropText:'Tippen zum Hinzufügen von Fotos', dropSub:'Reisepass, Personalausweis oder Führerschein', remove:'Entfernen', sendWa:'Per WhatsApp senden', continue:'Weiter zu den Unterkunftsinformationen', sent:'Dokumente gesendet ✓' },
+    upload:{ title:'Laden Sie Ihre Ausweisdokumente hoch', dropText:'Tippen zum Hinzufügen von Fotos', dropSub:'Reisepass, Personalausweis oder Führerschein', remove:'Entfernen', attachNote:"Bitte fügen Sie die Fotos manuell bei", sendWa:"Guten Tag! Ich sende Ihnen meine Ausweisdokumente für den Check-in im MiPA, Milazzo. Die Fotos sind beigefügt. Danke!", continue:'Weiter zu den Unterkunftsinformationen', sent:'Dokumente gesendet ✓' },
     info:{ general:'Allgemeine Informationen', contacts:'Kontakte', address:'Adresse', phone:'Telefon', whatsapp:'WhatsApp Chat', checkin:'15:00 – 22:00 Uhr', checkout:'Bis 10:30 Uhr', wifiConnect:'Mit WLAN verbinden' },
     itinerary:{ desc:'Entdecken Sie das Beste der Stadt mit diesem sorgfältig geplanten Reiseverlauf.', btn:'Milazzo erkunden' },
     map:{ title:'Interaktive Karte von Milazzo', desc:'Sehenswürdigkeiten, Wahrzeichen und versteckte Schätze.', openMaps:'In Google Maps öffnen' },
@@ -157,7 +157,7 @@ const allT = {
     tabs:{ info:'结构信息', philosophy:'我们的理念', contacts:'联系方式', directions:'到达/离开米拉佐', map:'互动地图', breakfast:'每日行程', bookServices:'预订服务', events:'城市活动', museums:'博物馆与古迹', beach:'带我去海滩', roomGuide:'回到我的房间', checkout:'退房', recipes:'免煮食谱' },
     home:{ greeting:'欢迎来到MiPA 🌿', sub:'您在米拉佐的数字礼宾', checkinNew:'我需要办理入住', checkinNewDesc:'上传您的身份证件', checkinDone:'我已经办理了入住', checkinDoneDesc:'直接进入应用' },
     dash:{ welcome:'MiPA Companion', sub:'我们能为您做什么？' },
-    upload:{ title:'上传您的身份证件', dropText:'点击添加照片', dropSub:'护照、身份证或驾照', remove:'删除', sendWa:'通过WhatsApp发送', continue:'继续查看住宿信息', sent:'文件已发送 ✓' },
+    upload:{ title:'上传您的身份证件', dropText:'点击添加照片', dropSub:'护照、身份证或驾照', remove:'删除', attachNote:"请手动附上照片", sendWa:"您好！我发送我的身份证件用于MiPA米拉佐的入住登记。请查收附件中的照片。谢谢！", continue:'继续查看住宿信息', sent:'文件已发送 ✓' },
     info:{ general:'一般信息', contacts:'联系方式', address:'地址', phone:'电话', whatsapp:'WhatsApp聊天', checkin:'下午3:00 – 晚上10:00', checkout:'上午10:30前', wifiConnect:'连接WiFi' },
     itinerary:{ desc:'通过这个精心规划的行程，发现城市的最佳景点。', btn:'探索米拉佐' },
     map:{ title:'米拉佐互动地图', desc:'景点、地标和隐藏宝藏。', openMaps:'在谷歌地图中打开' },
@@ -176,7 +176,7 @@ const allT = {
     tabs:{ info:'Информация об объекте', philosophy:'Наша Философия', contacts:'Контакты', directions:'Приехать/Уехать из Милаццо', map:'Интерактивная карта', breakfast:'Дневной маршрут', bookServices:'Забронировать услуги', events:'Городские мероприятия', museums:'Музеи и памятники', beach:'Отвези меня на пляж', roomGuide:'Обратно в мой номер', checkout:'Выезд', recipes:'Рецепты Без Готовки' },
     home:{ greeting:'Добро пожаловать в MiPA 🌿', sub:'Ваш цифровой консьерж в Милаццо', checkinNew:'Мне нужно зарегистрироваться', checkinNewDesc:'Загрузите ваши документы', checkinDone:'Я уже зарегистрирован', checkinDoneDesc:'Перейти прямо в приложение' },
     dash:{ welcome:'MiPA Companion', sub:'Чем мы можем вам помочь?' },
-    upload:{ title:'Загрузите ваши документы', dropText:'Нажмите, чтобы добавить фото', dropSub:'Паспорт, удостоверение личности или водительские права', remove:'Удалить', sendWa:'Отправить через WhatsApp', continue:'Перейти к информации о размещении', sent:'Документы отправлены ✓' },
+    upload:{ title:'Загрузите ваши документы', dropText:'Нажмите, чтобы добавить фото', dropSub:'Паспорт, удостоверение личности или водительские права', remove:'Удалить', attachNote:"Пожалуйста, прикрепите фотографии вручную", sendWa:"Добрый день! Отправляю документы для заселения в MiPA, Милаццо. Фотографии во вложении. Спасибо!", continue:'Перейти к информации о размещении', sent:'Документы отправлены ✓' },
     info:{ general:'Общая информация', contacts:'Контакты', address:'Адрес', phone:'Телефон', whatsapp:'Чат в WhatsApp', checkin:'15:00 – 22:00', checkout:'До 10:30', wifiConnect:'Подключиться к WiFi' },
     itinerary:{ desc:'Откройте для себя лучшее в городе с этим тщательно спланированным маршрутом.', btn:'Исследовать Милаццо' },
     map:{ title:'Интерактивная карта Милаццо', desc:'Достопримечательности, памятники и скрытые жемчужины.', openMaps:'Открыть в Google Maps' },
@@ -438,9 +438,6 @@ const PLACES = {
     { cat:2, emoji:"🏯", title:"Forte dei Castriciani",
       descs:{ en:"Historic 19th-century coastal fort overlooking the Tyrrhenian Sea, part of Milazzo's military heritage.", it:"Forte ottocentesco affacciato sul Mar Tirreno, parte del patrimonio militare di Milazzo.", fr:"Fort côtier du XIXe siècle dominant la mer Tyrrhénienne.", es:"Fuerte costero del siglo XIX con vistas al mar Tirreno.", de:"Historisches Kuestenfestung aus dem 19. Jahrhundert.", zh:"19世纪海岸堡垒，俯瞰第勒尼安海，是米拉佐军事遗产的一部分。", ru:"Istoricheskiy beregovoy fort XIX veka." },
       link:"https://maps.app.goo.gl/TorriMilazzo" },
-    { cat:2, emoji:"🏺", title:"Siti Archeologici",
-      descs:{ en:"Necropolis of Piazza Duomo, Hellenistic Mosaic and Neolithic prehistoric sites. Free first Sunday of each month.", it:"Necropoli di Piazza Duomo, Mosaico Ellenistico e siti preistorici del Neolitico. Ingresso gratuito ogni prima domenica del mese.", fr:"Nécropole de Piazza Duomo, mosaïque hellénistique. Gratuit premier dimanche du mois.", es:"Necrópolis de Piazza Duomo, mosaico helenístico. Gratis primer domingo del mes.", de:"Nekropole, hellenistisches Mosaik. Erster Sonntag im Monat kostenlos.", zh:"主教座堂广场墓地、希腊化马赛克及新石器时代遗址。每月第一个周日免费。", ru:"Nekropol, ellinisticheskaya mozaika. Besplatno pervoe voskresen e mesyatsa." },
-      link:"https://maps.app.goo.gl/ArcheoMilazzo" },
     { cat:2, emoji:"🏛️", title:"Palazzo D'Amico",
       descs:{ en:"Historic palazzo of the Marchesi D Amico on Lungomare Garibaldi — one of Milazzo's finest 19th-century buildings.", it:"Storico palazzo dei Marchesi D Amico sul Lungomare Garibaldi — uno dei piu bei palazzi ottocenteschi di Milazzo.", fr:"Palazzo des Marchesi D Amico sur le Lungomare Garibaldi.", es:"Palazzo de los Marchesi D Amico en el Lungomare Garibaldi.", de:"Historischer Palazzo der Marchesi D Amico am Lungomare Garibaldi.", zh:"达米科侯爵宫，位于加里波第海滨大道，是米拉佐最精美的19世纪建筑之一。", ru:"Istoricheskiy palazzo na Lungomare Garibaldi." },
       link:"https://maps.app.goo.gl/xnryArmggp9F5YfYA" },
@@ -480,6 +477,46 @@ function t() { return allT[state.lang] || allT.en; }
 function waLink() {
   const msg = t().upload ? t().upload.sendWa : 'Documenti check-in';
   return 'https://wa.me/393339201524?text=' + encodeURIComponent(msg);
+}
+
+async function shareDocuments() {
+  const tr = t();
+  const msg = tr.upload ? tr.upload.sendWa : 'Documenti check-in';
+
+  // Converte le immagini base64 in File objects
+  async function dataURLtoFile(dataUrl, filename) {
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    return new File([blob], filename, { type: blob.type });
+  }
+
+  // Prova prima con Web Share API (condivide le immagini vere)
+  if (navigator.share && navigator.canShare) {
+    try {
+      const files = await Promise.all(
+        state.images.map((img, i) => dataURLtoFile(img, 'documento-' + (i + 1) + '.jpg'))
+      );
+      const shareData = { text: msg, files };
+      if (navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+        state.docsSent = true;
+        localStorage.setItem('mipa_docssent', 'true');
+        render();
+        return;
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') console.warn('Share failed:', err);
+      else return; // utente ha annullato
+    }
+  }
+
+  // Fallback: apre WhatsApp con il testo (senza immagini — avvisa l'utente)
+  const tr2 = t();
+  const fallbackMsg = msg + '\n\n[' + (tr2.upload.attachNote || 'Please attach the photos manually') + ']';
+  window.open('https://wa.me/393339201524?text=' + encodeURIComponent(fallbackMsg), '_blank');
+  state.docsSent = true;
+  localStorage.setItem('mipa_docssent', 'true');
+  render();
 }
 
 function menuItems() {
@@ -733,9 +770,10 @@ function renderUpload() {
     ms('check_circle'), ' ', tr.upload.sent,
   ) : null;
 
-  const waBtn = state.images.length ? h('a', {
-    className: 'btn-wa', href: waLink(), target: '_blank',
-    onClick: () => { state.docsSent = true; localStorage.setItem('mipa_docssent', 'true'); render(); }
+  const waBtn = state.images.length ? h('button', {
+    className: 'btn-wa',
+    onClick: shareDocuments,
+    style: 'border:none;cursor:pointer;width:100%;'
   }, ms('chat'), ' ', tr.upload.sendWa) : null;
 
   return h('div', { className: 'page' },
