@@ -485,40 +485,55 @@ async function shareDocuments() {
   const WA_NUMBER = '393339201524';
   const waUrl = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(waMsg);
 
-  // Converte immagine base64 in File
+  // Converte immagine base64 in File object
   async function dataURLtoFile(dataUrl, filename) {
     const res = await fetch(dataUrl);
     const blob = await res.blob();
-    return new File([blob], filename, { type: blob.type });
+    // Forza JPEG per massima compatibilità WhatsApp
+    const type = blob.type || 'image/jpeg';
+    const ext  = type.includes('png') ? '.png' : '.jpg';
+    return new File([blob], filename + ext, { type });
   }
 
-  // Se ci sono immagini E il browser supporta Web Share con file:
-  // 1. Prima apriamo WhatsApp con il testo (così va direttamente alla chat)
-  // 2. Poi attiviamo la share delle immagini
+  // ── PERCORSO A: Web Share API con file (Chrome Android, Safari iOS 15+)
+  // navigator.share({ files, text }) apre il dialog nativo di condivisione.
+  // L'utente sceglie WhatsApp -> le foto + testo arrivano direttamente nel messaggio.
+  // IMPORTANTE: non chiamare window.open prima, altrimenti il browser blocca la share
+  // come "not triggered by user gesture".
   if (state.images.length > 0 && navigator.share && navigator.canShare) {
     try {
       const files = await Promise.all(
-        state.images.map((img, i) => dataURLtoFile(img, 'documento-' + (i + 1) + '.jpg'))
+        state.images.map((img, i) => dataURLtoFile(img, 'documento-' + (i + 1)))
       );
-      const shareData = { files };
+      // Includiamo sia files che text — Chrome Android passa il testo a WhatsApp
+      const shareData = { files, text: waMsg };
       if (navigator.canShare(shareData)) {
-        // Apri WhatsApp con il messaggio testo
-        window.open(waUrl, '_blank');
-        // Breve pausa poi mostra dialog share per le foto
-        await new Promise(r => setTimeout(r, 800));
         await navigator.share(shareData);
         state.docsSent = true;
         localStorage.setItem('mipa_docssent', 'true');
         render();
         return;
       }
+      // canShare(files) false ma canShare senza files?
+      const shareNoFiles = { text: waMsg };
+      if (navigator.canShare(shareNoFiles)) {
+        await navigator.share(shareNoFiles);
+        // Poi apri WA per le foto
+        window.open(waUrl, '_blank');
+        state.docsSent = true;
+        localStorage.setItem('mipa_docssent', 'true');
+        render();
+        return;
+      }
     } catch (err) {
-      if (err.name === 'AbortError') return; // utente ha annullato
-      // Altri errori: caduta sul fallback diretto
+      if (err.name === 'AbortError') return; // utente ha chiuso il dialog
+      console.warn('Share API error:', err.name, err.message);
+      // Fall through al percorso B
     }
   }
 
-  // Fallback diretto: apre WhatsApp con testo, l'utente allega le foto manualmente
+  // ── PERCORSO B: Fallback diretto wa.me
+  // Apre WhatsApp con messaggio precompilato. Le foto vanno allegate manualmente.
   window.open(waUrl, '_blank');
   state.docsSent = true;
   localStorage.setItem('mipa_docssent', 'true');
