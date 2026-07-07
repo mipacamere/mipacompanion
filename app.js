@@ -11,6 +11,10 @@ const state = {
   isOnline: navigator.onLine,
   images: JSON.parse(localStorage.getItem('mipa_images') || '[]'),
   docsSent: JSON.parse(localStorage.getItem('mipa_docssent') || 'false'),
+  docPhase: 'capture', // 'capture' | 'processing' | 'review' | 'sent'
+  ocrFields: null,     // { docType, surname, givenNames, number, nationality, dob, expiry }
+  ocrRaw: '',
+  ocrError: null,
   showPast: false,
   installPrompt: null,
   installDismissed: false,
@@ -26,7 +30,13 @@ const allT = {
     tabs: { info:'Structure Info', philosophy:'Our Philosophy', contacts:'Contacts', directions:'Getting Around', map:'Interactive Map', breakfast:'Daily Itinerary', bookServices:'Book Services', events:'City Events', museums:'Museums & Monuments', beach:'Take Me to the Beach', roomGuide:'Back to My Room', checkout:'Check Out', recipes:'No-Cook Recipes' },
     home: { greeting:'Welcome to MiPA 🌿', sub:'Your digital concierge in Milazzo', checkinNew:'I need to check in', checkinNewDesc:'Upload your ID documents', checkinDone:'I already checked in', checkinDoneDesc:'Go directly to the app' },
     dash: { welcome:'MiPA Companion', sub:'What can we help you with?' },
-    upload: { title:'Upload your ID documents', dropText:'Tap to add photos', dropSub:'Passport, ID card or driving licence', remove:'Remove', attachNote:'Please attach the photos manually', sendWa:'Send via WhatsApp', waMsg:'Hello! I am sending my ID documents for check-in at MiPA, Milazzo. Please find the photos attached. Thank you!', continue:'Continue to property info', sent:'Documents sent ✓' },
+    upload: { title:'Upload your ID documents', dropText:'Tap to add photos', dropSub:'Passport, ID card or driving licence', remove:'Remove', attachNote:'Please attach the photos manually', sendWa:'Send via WhatsApp', waMsg:'Hello! I am sending my ID documents for check-in at MiPA, Milazzo. Please find the photos attached. Thank you!', continue:'Continue to property info', sent:'Documents sent ✓',
+      ocrButton:'Extract data (OCR)', ocrProcessing:'Reading your documents…', ocrErrorMsg:"Couldn't read the documents automatically. Please fill in the fields manually.",
+      ocrFallbackMsg:"Couldn't reach the online OCR service, so we used the offline engine instead — results may be less accurate. Please double-check every field.",
+      reviewTitle:'Check the extracted data', reviewSub:'Please verify and correct every field before sending — this data will be used for your check-in registration.',
+      fDocType:'Document type', fSurname:'Surname', fGivenNames:'First name(s)', fNumber:'Document number', fNationality:'Nationality', fDob:'Date of birth', fExpiry:'Expiry date',
+      confirmSend:'Confirm and send via WhatsApp', sendEmailBtn:'Send via email instead', backToPhotos:'Back to photos', sharePhotosInstead:'Send the photos directly instead (no data extraction)',
+      ocrSent:'Data sent ✓' },
     info: { general:'General Info', contacts:'Contacts', address:'Address', phone:'Phone', whatsapp:'Chat on WhatsApp', checkin:'3:00 PM – 10:00 PM', checkout:'By 10:30 AM', wifiConnect:'Connect to WiFi' },
     itinerary: { desc:'Discover the best of the city with this carefully planned itinerary. Explore must-see attractions and enjoy local experiences.', btn:'Explore Milazzo' },
     map: { title:'Milazzo Interactive Map', desc:'Highlights, landmarks and hidden gems.', openMaps:'Open in Google Maps' },
@@ -63,7 +73,13 @@ const allT = {
     tabs: { info:'Info Struttura', philosophy:'La Nostra Filosofia', contacts:'Contatti', directions:'Raggiungere/Lasciare Milazzo', map:'Mappa Interattiva', breakfast:'Itinerario Giornaliero', bookServices:'Prenota Servizi', events:'Eventi in Città', museums:'Musei e Monumenti', beach:'Portami alla Spiaggia', roomGuide:'Riportami alla Camera', checkout:'Check-Out', recipes:'Ricette No-Cook' },
     home: { greeting:'Benvenuto a MiPA 🌿', sub:'Il tuo concierge digitale a Milazzo', checkinNew:'Devo fare il check-in', checkinNewDesc:"Carica i tuoi documenti d'identità", checkinDone:'Ho già fatto il check-in', checkinDoneDesc:"Vai direttamente all'app" },
     dash: { welcome:'MiPA Companion', sub:'Come possiamo aiutarti?' },
-    upload: { title:"Carica i tuoi documenti d'identità", dropText:'Tocca per aggiungere foto', dropSub:"Passaporto, carta d'identità o patente", remove:'Rimuovi', attachNote:"Si prega di allegare le foto manualmente", sendWa:"Invia tramite WhatsApp", waMsg:"Buongiorno! Le invio i documenti d'identità per il check-in presso MiPA, Milazzo. Troverà le foto in allegato. Grazie!", continue:'Continua alle info sulla struttura', sent:'Documenti inviati ✓' },
+    upload: { title:"Carica i tuoi documenti d'identità", dropText:'Tocca per aggiungere foto', dropSub:"Passaporto, carta d'identità o patente", remove:'Rimuovi', attachNote:"Si prega di allegare le foto manualmente", sendWa:"Invia tramite WhatsApp", waMsg:"Buongiorno! Le invio i documenti d'identità per il check-in presso MiPA, Milazzo. Troverà le foto in allegato. Grazie!", continue:'Continua alle info sulla struttura', sent:'Documenti inviati ✓',
+      ocrButton:'Estrai dati (OCR)', ocrProcessing:'Lettura dei documenti in corso…', ocrErrorMsg:"Non è stato possibile leggere automaticamente i documenti. Compila i campi manualmente.",
+      ocrFallbackMsg:"Non è stato possibile raggiungere il servizio OCR online, quindi è stato usato il motore offline — i risultati potrebbero essere meno precisi. Verifica bene ogni campo.",
+      reviewTitle:'Controlla i dati estratti', reviewSub:'Verifica e correggi ogni campo prima di inviare: questi dati saranno usati per la registrazione del check-in.',
+      fDocType:'Tipo documento', fSurname:'Cognome', fGivenNames:'Nome/i', fNumber:'Numero documento', fNationality:'Nazionalità', fDob:'Data di nascita', fExpiry:'Data di scadenza',
+      confirmSend:'Conferma e invia su WhatsApp', sendEmailBtn:'Invia via email', backToPhotos:'Torna alle foto', sharePhotosInstead:'Invia direttamente le foto (senza estrazione dati)',
+      ocrSent:'Dati inviati ✓' },
     info: { general:'Informazioni Generali', contacts:'Contatti', address:'Indirizzo', phone:'Telefono', whatsapp:'Chatta su WhatsApp', checkin:'15:00 – 22:00', checkout:'Entro le 10:30', wifiConnect:'Connetti al WiFi' },
     itinerary: { desc:'Scopri il meglio della città con questo itinerario giornaliero ben pianificato.', btn:'Esplora Milazzo' },
     map: { title:'Mappa Interattiva di Milazzo', desc:'Attrazioni, monumenti e gemme nascoste.', openMaps:'Apri in Google Maps' },
@@ -540,6 +556,244 @@ async function shareDocuments() {
   render();
 }
 
+// ── OCR documenti ────────────────────────────
+// La funzione OCR gira come Netlify Function nello stesso sito (netlify/functions/ocr-proxy.js),
+// quindi il percorso è relativo: nessun dominio esterno, nessun problema di CORS.
+const OCR_PROXY_URL = '/api/ocr-proxy';
+const OCR_APP_TOKEN = 'CHANGE-ME'; // deve combaciare con la variabile APP_SHARED_TOKEN su Netlify
+
+// Migliora la leggibilità della foto per l'OCR: scala di grigi + stiramento del contrasto.
+function preprocessImage(dataUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const d = imgData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const gray = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+        d[i] = d[i + 1] = d[i + 2] = gray;
+      }
+      let min = 255, max = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i] < min) min = d[i];
+        if (d[i] > max) max = d[i];
+      }
+      const range = Math.max(1, max - min);
+      for (let i = 0; i < d.length; i += 4) {
+        const v = (d[i] - min) * 255 / range;
+        d[i] = d[i + 1] = d[i + 2] = v;
+      }
+      ctx.putImageData(imgData, 0, 0);
+      resolve(canvas.toDataURL('image/jpeg', 0.92));
+    };
+    img.onerror = () => resolve(dataUrl); // in caso di errore usa l'originale
+    img.src = dataUrl;
+  });
+}
+
+// Chiama il proxy Cloudflare Worker che a sua volta interroga Google Cloud Vision.
+async function callVisionOCR(dataUrl) {
+  const res = await fetch(OCR_PROXY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-App-Token': OCR_APP_TOKEN },
+    body: JSON.stringify({ image: dataUrl }),
+  });
+  if (!res.ok) throw new Error('Vision proxy error: ' + res.status);
+  const json = await res.json();
+  return json.text || '';
+}
+
+let tesseractLoadPromise = null;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (tesseractLoadPromise) return tesseractLoadPromise;
+  tesseractLoadPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+    s.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error('Tesseract non disponibile'));
+    s.onerror = () => reject(new Error('Impossibile caricare il modulo OCR'));
+    document.head.appendChild(s);
+  });
+  return tesseractLoadPromise;
+}
+
+function emptyOcrFields() {
+  return { docType: '', surname: '', givenNames: '', number: '', nationality: '', dob: '', expiry: '' };
+}
+
+// Converte una data MRZ 'YYMMDD' in 'DD/MM/YYYY' (euristica sul secolo: >30 -> 1900+, altrimenti 2000+)
+function formatMrzDate(yymmdd) {
+  if (!/^\d{6}$/.test(yymmdd)) return '';
+  const yy = parseInt(yymmdd.slice(0, 2), 10);
+  const mm = yymmdd.slice(2, 4), dd = yymmdd.slice(4, 6);
+  const yyyy = yy > 30 ? 1900 + yy : 2000 + yy;
+  return dd + '/' + mm + '/' + yyyy;
+}
+
+function splitMrzNames(namesPart) {
+  const clean = namesPart.replace(/<+$/, '');
+  const [surname = '', given = ''] = clean.split('<<');
+  return {
+    surname: surname.replace(/</g, ' ').trim(),
+    givenNames: given.replace(/</g, ' ').trim(),
+  };
+}
+
+// Passaporto (TD3): due righe da 44 caratteri
+function parseTD3(line1, line2) {
+  const country = line1.substr(2, 3).replace(/</g, '');
+  const { surname, givenNames } = splitMrzNames(line1.substr(5));
+  const number = line2.substr(0, 9).replace(/</g, '').trim();
+  const nationality = line2.substr(10, 3).replace(/</g, '');
+  const dob = formatMrzDate(line2.substr(13, 6));
+  const expiry = formatMrzDate(line2.substr(21, 6));
+  return { docType: 'Passaporto / Passport', country, surname, givenNames, number, nationality, dob, expiry };
+}
+
+// Carta d'identità elettronica (TD1): tre righe da 30 caratteri
+function parseTD1(line1, line2, line3) {
+  const country = line1.substr(2, 3).replace(/</g, '');
+  const number = line1.substr(5, 9).replace(/</g, '').trim();
+  const dob = formatMrzDate(line2.substr(0, 6));
+  const expiry = formatMrzDate(line2.substr(8, 6));
+  const nationality = line2.substr(15, 3).replace(/</g, '');
+  const { surname, givenNames } = splitMrzNames(line3);
+  return { docType: "Carta d'identità / ID card", country, surname, givenNames, number, nationality, dob, expiry };
+}
+
+// Fallback generico: cerca etichette note (multi-lingua) riga per riga nel testo OCR grezzo.
+function genericExtract(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const find = (labels) => {
+    for (const line of lines) {
+      for (const label of labels) {
+        const m = line.match(new RegExp(label + '\\s*[:\\-]?\\s*(.{2,40})', 'i'));
+        if (m && m[1]) return m[1].trim();
+      }
+    }
+    return '';
+  };
+  return {
+    docType: '',
+    surname: find(['cognome', 'surname', 'nom']),
+    givenNames: find(['nome', 'given name', 'prénom', 'first name']),
+    number: find(['numero documento', 'n\\.?\\s*documento', 'document no', 'passport no', 'n°']),
+    nationality: find(['nazionalit[aà]', 'nationality']),
+    dob: find(['data di nascita', 'date of birth', 'geburtsdatum']),
+    expiry: find(['scadenza', 'date of expiry', 'expiry']),
+  };
+}
+
+// Individua e interpreta la MRZ nel testo OCR; se non trovata, usa l'estrazione generica.
+function extractFieldsFromText(text) {
+  const candidateLines = text.split('\n')
+    .map(l => l.replace(/\s+/g, '').toUpperCase())
+    .filter(l => l.length >= 28 && l.length <= 46 && /^[A-Z0-9<]+$/.test(l));
+
+  const td3Index = candidateLines.findIndex(l => l.length >= 43 && l.startsWith('P<'));
+  if (td3Index >= 0 && candidateLines[td3Index + 1] && candidateLines[td3Index + 1].length >= 43) {
+    try {
+      return parseTD3(candidateLines[td3Index].padEnd(44, '<'), candidateLines[td3Index + 1].padEnd(44, '<'));
+    } catch (e) { console.warn('Parsing TD3 fallito', e); }
+  }
+
+  for (let i = 0; i < candidateLines.length - 2; i++) {
+    const [a, b, c] = [candidateLines[i], candidateLines[i + 1], candidateLines[i + 2]];
+    if (a.length >= 29 && a.length <= 31 && b.length >= 29 && b.length <= 31 && c.length >= 29 && c.length <= 31) {
+      try {
+        return parseTD1(a.padEnd(30, '<'), b.padEnd(30, '<'), c.padEnd(30, '<'));
+      } catch (e) { console.warn('Parsing TD1 fallito', e); }
+    }
+  }
+
+  return { ...emptyOcrFields(), ...genericExtract(text) };
+}
+
+async function runOCR() {
+  state.docPhase = 'processing';
+  state.ocrError = null;
+  render();
+
+  let combinedText = '';
+  let usedFallback = false;
+
+  try {
+    // ── Motore primario: Google Cloud Vision (via proxy) ──
+    for (const img of state.images) {
+      const pre = await preprocessImage(img);
+      const text = await callVisionOCR(pre);
+      combinedText += '\n' + text;
+    }
+  } catch (err) {
+    console.warn('Vision OCR non disponibile, passo a Tesseract offline:', err);
+    usedFallback = true;
+    combinedText = '';
+    try {
+      // ── Fallback offline: Tesseract.js (nessuna connessione richiesta) ──
+      const Tesseract = await loadTesseract();
+      for (const img of state.images) {
+        const pre = await preprocessImage(img);
+        const { data } = await Tesseract.recognize(pre, 'eng');
+        combinedText += '\n' + (data && data.text ? data.text : '');
+      }
+    } catch (err2) {
+      console.warn('Anche Tesseract ha fallito:', err2);
+      state.ocrError = 'both';
+    }
+  }
+
+  state.ocrRaw = combinedText;
+  state.ocrFields = extractFieldsFromText(combinedText);
+  if (usedFallback && !state.ocrError) state.ocrError = 'fallback';
+  state.docPhase = 'review';
+  render();
+}
+
+function updateOcrField(key, value) {
+  if (!state.ocrFields) state.ocrFields = emptyOcrFields();
+  state.ocrFields[key] = value; // niente render(): evita di perdere il focus mentre si digita
+}
+
+function ocrFieldsToMessage(tr) {
+  const f = state.ocrFields || emptyOcrFields();
+  const base = (tr.upload && tr.upload.waMsg) ? tr.upload.waMsg : 'Documenti check-in MiPA Milazzo';
+  const rows = [
+    [tr.upload.fDocType, f.docType], [tr.upload.fSurname, f.surname], [tr.upload.fGivenNames, f.givenNames],
+    [tr.upload.fNumber, f.number], [tr.upload.fNationality, f.nationality],
+    [tr.upload.fDob, f.dob], [tr.upload.fExpiry, f.expiry],
+  ].filter(([, v]) => v);
+  return base + '\n\n' + rows.map(([label, v]) => label + ': ' + v).join('\n');
+}
+
+function sendOcrWhatsApp() {
+  const tr = t();
+  const WA_NUMBER = '393339201524';
+  const msg = ocrFieldsToMessage(tr);
+  window.open('https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
+  state.docsSent = true;
+  localStorage.setItem('mipa_docssent', 'true');
+  state.docPhase = 'sent';
+  render();
+}
+
+function sendOcrEmail() {
+  const tr = t();
+  const msg = ocrFieldsToMessage(tr);
+  const subject = 'MiPA Milazzo — Check-in guest documents';
+  // Nessun indirizzo destinatario impostato: si apre il client di posta dell'ospite con oggetto e testo
+  // precompilati; il campo "A" va impostato lato configurazione se si vuole un destinatario fisso.
+  window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(msg);
+  state.docsSent = true;
+  localStorage.setItem('mipa_docssent', 'true');
+  state.docPhase = 'sent';
+  render();
+}
+
 function menuItems() {
   const tabs = t().tabs;
   return [
@@ -643,6 +897,10 @@ function doCheckout() {
   localStorage.clear();
   state.images = [];
   state.docsSent = false;
+  state.docPhase = 'capture';
+  state.ocrFields = null;
+  state.ocrRaw = '';
+  state.ocrError = null;
   navigate('home');
   alert(t().co ? t().co.btn : 'Thank you!');
 }
@@ -673,6 +931,7 @@ function onFiles(files) {
 function removeImage(i) {
   state.images.splice(i, 1);
   localStorage.setItem('mipa_images', JSON.stringify(state.images));
+  if (state.images.length === 0) { state.docPhase = 'capture'; state.ocrFields = null; }
   render();
 }
 
@@ -770,8 +1029,7 @@ function renderHome() {
   return wrap;
 }
 
-function renderUpload() {
-  const tr = t();
+function renderCaptureStep(tr) {
   const fileInput = h('input', { type: 'file', accept: 'image/*', multiple: '' });
   fileInput.style.display = 'none';
   fileInput.addEventListener('change', e => onFiles(e.target.files));
@@ -787,15 +1045,93 @@ function renderUpload() {
     )
   ) : null;
 
-  const sentBadge = state.docsSent ? h('div', { className: 'sent-badge' },
-    ms('check_circle'), ' ', tr.upload.sent,
-  ) : null;
+  const ocrBtn = state.images.length ? h('button', {
+    className: 'btn-wa', style: 'border:none;cursor:pointer;width:100%;', onClick: runOCR,
+  }, ms('document_scanner'), ' ', tr.upload.ocrButton) : null;
 
-  const waBtn = state.images.length ? h('button', {
-    className: 'btn-wa',
-    onClick: shareDocuments,
-    style: 'border:none;cursor:pointer;width:100%;'
-  }, ms('chat'), ' ', tr.upload.sendWa) : null;
+  const shareRaw = state.images.length ? h('button', {
+    className: 'btn-link', onClick: shareDocuments,
+  }, tr.upload.sharePhotosInstead) : null;
+
+  return [
+    h('div', { className: 'upload-drop', onClick: () => fileInput.click() },
+      h('span', { className: 'upload-drop-icon' }, '📸'),
+      h('div', { className: 'upload-drop-text' }, tr.upload.dropText),
+      h('div', { className: 'upload-drop-sub' }, tr.upload.dropSub),
+      fileInput,
+    ),
+    previews,
+    ocrBtn,
+    shareRaw,
+    h('button', { className: 'btn-primary', onClick: () => navigate('dashboard') },
+      ms('arrow_forward'), ' ', tr.upload.continue,
+    ),
+  ];
+}
+
+function renderProcessingStep(tr) {
+  return [
+    h('div', { className: 'ocr-processing' },
+      h('div', { className: 'ocr-spinner' }),
+      h('div', {}, tr.upload.ocrProcessing),
+    ),
+  ];
+}
+
+function ocrField(tr, key, label) {
+  const input = h('input', {
+    className: 'field-input', type: 'text',
+    value: (state.ocrFields && state.ocrFields[key]) || '',
+  });
+  input.addEventListener('input', e => updateOcrField(key, e.target.value));
+  return h('div', { className: 'field-group' },
+    h('label', { className: 'field-label' }, label),
+    input,
+  );
+}
+
+function renderReviewStep(tr) {
+  let errorNote = null;
+  if (state.ocrError === 'fallback') {
+    errorNote = h('div', { className: 'ocr-error-note' }, tr.upload.ocrFallbackMsg);
+  } else if (state.ocrError === 'both') {
+    errorNote = h('div', { className: 'ocr-error-note' }, tr.upload.ocrErrorMsg);
+  }
+  return [
+    h('h2', { className: 'section-h2' }, tr.upload.reviewTitle),
+    h('div', { className: 'field-sub' }, tr.upload.reviewSub),
+    errorNote,
+    ocrField(tr, 'docType', tr.upload.fDocType),
+    ocrField(tr, 'surname', tr.upload.fSurname),
+    ocrField(tr, 'givenNames', tr.upload.fGivenNames),
+    ocrField(tr, 'number', tr.upload.fNumber),
+    ocrField(tr, 'nationality', tr.upload.fNationality),
+    ocrField(tr, 'dob', tr.upload.fDob),
+    ocrField(tr, 'expiry', tr.upload.fExpiry),
+    h('button', { className: 'btn-wa', style: 'border:none;cursor:pointer;width:100%;', onClick: sendOcrWhatsApp },
+      ms('chat'), ' ', tr.upload.confirmSend),
+    h('button', { className: 'btn-primary', style: 'background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-xs);', onClick: sendOcrEmail },
+      ms('mail'), ' ', tr.upload.sendEmailBtn),
+    h('button', { className: 'btn-link', onClick: () => { state.docPhase = 'capture'; render(); } }, tr.upload.backToPhotos),
+  ];
+}
+
+function renderSentStep(tr) {
+  return [
+    h('div', { className: 'sent-badge' }, ms('check_circle'), ' ', tr.upload.ocrSent),
+    h('button', { className: 'btn-primary', onClick: () => navigate('dashboard') },
+      ms('arrow_forward'), ' ', tr.upload.continue,
+    ),
+  ];
+}
+
+function renderUpload() {
+  const tr = t();
+  let body;
+  if (state.docPhase === 'processing') body = renderProcessingStep(tr);
+  else if (state.docPhase === 'review') body = renderReviewStep(tr);
+  else if (state.docPhase === 'sent') body = renderSentStep(tr);
+  else body = renderCaptureStep(tr);
 
   return h('div', { className: 'page' },
     h('div', { className: 'toolbar toolbar-section' },
@@ -803,19 +1139,8 @@ function renderUpload() {
       langSelect(),
     ),
     h('div', { className: 'upload-page' },
-      h('h2', { className: 'section-h2' }, tr.upload.title),
-      h('div', { className: 'upload-drop', onClick: () => fileInput.click() },
-        h('span', { className: 'upload-drop-icon' }, '📸'),
-        h('div', { className: 'upload-drop-text' }, tr.upload.dropText),
-        h('div', { className: 'upload-drop-sub' }, tr.upload.dropSub),
-        fileInput,
-      ),
-      previews,
-      sentBadge,
-      waBtn,
-      h('button', { className: 'btn-primary', onClick: () => navigate('dashboard') },
-        ms('arrow_forward'), ' ', tr.upload.continue,
-      ),
+      state.docPhase === 'capture' ? h('h2', { className: 'section-h2' }, tr.upload.title) : null,
+      ...body,
     ),
   );
 }
