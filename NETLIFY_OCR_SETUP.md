@@ -1,7 +1,5 @@
 # Attivare l'OCR (Google Vision) su Netlify — tutto da browser
 
-AIzaSyA4zq6GP4lhQV3WNKEEQKBXpg1Ll_7KQ34
-
 Il progetto ora include una **Netlify Function** (`netlify/functions/ocr-proxy.js`)
 che fa da intermediario sicuro verso Google Cloud Vision: la API key resta
 sul server di Netlify, non è mai visibile nel codice del sito.
