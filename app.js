@@ -560,7 +560,7 @@ async function shareDocuments() {
 // La funzione OCR gira come Netlify Function nello stesso sito (netlify/functions/ocr-proxy.js),
 // quindi il percorso è relativo: nessun dominio esterno, nessun problema di CORS.
 const OCR_PROXY_URL = '/api/ocr-proxy';
-const OCR_APP_TOKEN = 'CHANGE-ME'; // deve combaciare con la variabile APP_SHARED_TOKEN su Netlify
+const OCR_APP_TOKEN = 'mipa2026xk93'; // deve combaciare con la variabile APP_SHARED_TOKEN su Netlify
 
 // Migliora la leggibilità della foto per l'OCR: scala di grigi + stiramento del contrasto.
 function preprocessImage(dataUrl) {
