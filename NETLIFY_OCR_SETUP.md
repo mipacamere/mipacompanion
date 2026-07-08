@@ -1,6 +1,6 @@
 # Attivare l'OCR (Google Vision) su Netlify — tutto da browser
 
-Il progetto ora include una **Netlify Function** (`netlify/functions/ocr-proxy.js`)
+Il progetto ora include una **Netlify Function** (`netlify/functions/ocr-proxy.mjs`)
 che fa da intermediario sicuro verso Google Cloud Vision: la API key resta
 sul server di Netlify, non è mai visibile nel codice del sito.
 
@@ -16,7 +16,7 @@ sul server di Netlify, non è mai visibile nel codice del sito.
 ## 2. Pubblicare la funzione su Netlify
 
 Non serve nessun comando da terminale: la funzione è già dentro la cartella
-del sito (`netlify/functions/ocr-proxy.js`) e viene pubblicata automaticamente
+del sito (`netlify/functions/ocr-proxy.mjs`) e viene pubblicata automaticamente
 insieme al resto del sito, con lo stesso identico metodo che usi già oggi per
 aggiornare MiPA (che tu faccia push su Git o un deploy manuale trascinando la
 cartella su app.netlify.com).
@@ -51,3 +51,29 @@ Cambia solo `OCR_APP_TOKEN` con il valore scelto al punto 3, ripubblica il sito.
 Dopo il deploy, apri `https://tuosito.netlify.app/api/ocr-proxy` da browser:
 dovresti vedere un errore "Method not allowed" (è normale, la funzione accetta
 solo richieste POST) — significa che è stata pubblicata correttamente.
+
+## Se l'OCR online non funziona: checklist di diagnosi
+
+1. **Estensione del file**: la function deve chiamarsi `ocr-proxy.mjs` (non `.js`).
+   Senza un `package.json` con `"type": "module"`, Netlify potrebbe non
+   interpretare correttamente la sintassi `export default` in un file `.js`
+   semplice, e la function non parte per niente (errore silenzioso o 404/500
+   su ogni richiesta). Se avevi ancora `ocr-proxy.js`, sostituiscilo con
+   `ocr-proxy.mjs` (contenuto identico) e ripubblica.
+2. **Verifica che la function compaia**: pannello Netlify → **Functions** →
+   dovresti vedere `ocr-proxy` nell'elenco. Se non c'è, il file non è stato
+   riconosciuto (percorso sbagliato, o problema al punto 1).
+3. **Guarda i log della function**: pannello Netlify → Functions → ocr-proxy →
+   scheda **Logs**. Qui trovi eventuali errori di esecuzione (es. variabili
+   d'ambiente mancanti, chiamata a Google Vision fallita).
+4. **Controlla le variabili d'ambiente**: Site configuration → Environment
+   variables → devono esserci `GOOGLE_VISION_API_KEY` e `APP_SHARED_TOKEN`;
+   verifica che lo scope di entrambe includa "Functions" e che sia stato
+   fatto un nuovo deploy DOPO averle aggiunte (non si applicano retroattivamente).
+5. **Controlla il token nel frontend**: in `app.js`, `OCR_APP_TOKEN` deve
+   essere identico al valore di `APP_SHARED_TOKEN` su Netlify. Se non
+   combaciano ottieni un errore 401.
+6. **Nell'app**, quando l'OCR fallisce, nella schermata di revisione compare
+   un blocco "Dettagli tecnici": aprilo, copia il testo esatto — indica lo
+   status HTTP e una spiegazione mirata (401/404/502) di cosa controllare.
+

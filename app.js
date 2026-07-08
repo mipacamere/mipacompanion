@@ -30,7 +30,7 @@ const allT = {
     back: 'Back', openMaps: 'Open in Maps', bookWa: 'Book via WhatsApp',
     offline: 'You are offline — some content may not load.',
     install: { title: 'Install MiPA App', sub: 'Add to your home screen for quick access', btn: 'Install', dismiss: 'Dismiss', iosStep1: '1. Tap the Share button in Safari (□↑)', iosStep2: '2. Scroll down and tap "Add to Home Screen"' },
-    tabs: { info:'Structure Info', philosophy:'Our Philosophy', contacts:'Contacts', directions:'Getting Around', map:'Interactive Map', breakfast:'Daily Itinerary', bookServices:'Book Services', events:'City Events', museums:'Museums & Monuments', beach:'Take Me to the Beach', roomGuide:'Back to My Room', checkout:'Check Out', recipes:'No-Cook Recipes' },
+    tabs: { info:'Structure Info', philosophy:'Our Philosophy', contacts:'Contacts', directions:'Getting Around', map:'Interactive Map', breakfast:'Daily Itinerary', bookServices:'Book Services', events:'City Events', museums:'Museums & Monuments', beach:'Take Me to the Beach', roomGuide:'Back to My Room', checkout:'Check Out', recipes:'No-Cook Recipes', schedine:'Guest documents / Alloggiati Web' },
     home: { greeting:'Welcome to MiPA 🌿', sub:'Your digital concierge in Milazzo', checkinNew:'Guest documents / Alloggiati Web', checkinNewDesc:'Add guests and send the registration file', checkinDone:'I already checked in', checkinDoneDesc:'Go directly to the app' },
     dash: { welcome:'MiPA Companion', sub:'What can we help you with?' },
     upload: { title:'Guest documents / Alloggiati Web', dropText:'Tap to add photos', dropSub:'Passport, ID card or driving licence', remove:'Remove', attachNote:'Please attach the photos manually', sendWa:'Send via WhatsApp', waMsg:'Hello! Please find attached the guest registration file (schedine alloggiati). Thank you!', continue:'Continue to property info', sent:'Documents sent ✓',
@@ -48,7 +48,10 @@ const allT = {
       manualCodePlaceholder:'code', codeResolved:'Code found', codeNotFound:'Code not found automatically — please enter it manually (check the official table).',
       confirmAdd:'Add guest to the list', backToPhotos:'Back to photos', backToList:'Back to guest list',
       listTitle:'Guests in this booking', listEmpty:'No guests added yet.', addGuestBtn:'Add a guest',
-      sendTxtBtn:'Send file via WhatsApp', showPreview:'Preview TXT file', hidePreview:'Hide preview',
+      sendWhatsAppBtn:'Send via WhatsApp', showPreview:'Preview TXT file', hidePreview:'Hide preview',
+      sendEmailBtn:'Send via email', incompleteBadge:'incomplete data', validationProceed:'Do you want to add it anyway? You can fix it later from the list, but the file won\'t be complete until you do.',
+      incompleteWarning:'{n} guest(s) have incomplete data.', txtDownloadedNoteWa:'The file has been downloaded: please attach it manually in the WhatsApp chat that just opened.',
+      txtDownloadedNoteEmail:'The file has been downloaded: please attach it manually in the email that just opened.',
       txtShareMsg:'Guest registration file (schedine alloggiati) attached.', txtDownloadedNote:'The file has been downloaded: please attach it manually on WhatsApp.',
       validationTitle:'Please check these fields:' },
     info: { general:'General Info', contacts:'Contacts', address:'Address', phone:'Phone', whatsapp:'Chat on WhatsApp', checkin:'3:00 PM – 10:00 PM', checkout:'By 10:30 AM', wifiConnect:'Connect to WiFi' },
@@ -84,7 +87,7 @@ const allT = {
     back: 'Indietro', openMaps: 'Apri in Maps', bookWa: 'Prenota via WhatsApp',
     offline: 'Sei offline — alcuni contenuti potrebbero non caricarsi.',
     install: { title: 'Installa app MiPA', sub: 'Aggiungila alla schermata home', btn: 'Installa', dismiss: 'Ignora', iosStep1: '1. Tocca il pulsante Condividi in Safari (□↑)', iosStep2: '2. Scorri e tocca "Aggiungi alla schermata Home"' },
-    tabs: { info:'Info Struttura', philosophy:'La Nostra Filosofia', contacts:'Contatti', directions:'Raggiungere/Lasciare Milazzo', map:'Mappa Interattiva', breakfast:'Itinerario Giornaliero', bookServices:'Prenota Servizi', events:'Eventi in Città', museums:'Musei e Monumenti', beach:'Portami alla Spiaggia', roomGuide:'Riportami alla Camera', checkout:'Check-Out', recipes:'Ricette No-Cook' },
+    tabs: { info:'Info Struttura', philosophy:'La Nostra Filosofia', contacts:'Contatti', directions:'Raggiungere/Lasciare Milazzo', map:'Mappa Interattiva', breakfast:'Itinerario Giornaliero', bookServices:'Prenota Servizi', events:'Eventi in Città', museums:'Musei e Monumenti', beach:'Portami alla Spiaggia', roomGuide:'Riportami alla Camera', checkout:'Check-Out', recipes:'Ricette No-Cook', schedine:'Documenti ospiti / Schedine Alloggiati' },
     home: { greeting:'Benvenuto a MiPA 🌿', sub:'Il tuo concierge digitale a Milazzo', checkinNew:'Documenti ospiti / Schedine Alloggiati', checkinNewDesc:"Aggiungi gli ospiti e invia il file di registrazione", checkinDone:'Ho già fatto il check-in', checkinDoneDesc:"Vai direttamente all'app" },
     dash: { welcome:'MiPA Companion', sub:'Come possiamo aiutarti?' },
     upload: { title:"Documenti ospiti / Alloggiati Web", dropText:'Tocca per aggiungere foto', dropSub:"Passaporto, carta d'identità o patente", remove:'Rimuovi', attachNote:"Si prega di allegare le foto manualmente", sendWa:"Invia tramite WhatsApp", waMsg:"Buongiorno! In allegato il file per la registrazione ospiti (schedine alloggiati). Grazie!", continue:'Continua alle info sulla struttura', sent:'Documenti inviati ✓',
@@ -102,7 +105,10 @@ const allT = {
       manualCodePlaceholder:'codice', codeResolved:'Codice trovato', codeNotFound:'Codice non trovato automaticamente: inseriscilo a mano (verifica la tabella ufficiale).',
       confirmAdd:'Aggiungi ospite alla lista', backToPhotos:'Torna alle foto', backToList:'Torna alla lista ospiti',
       listTitle:'Ospiti di questa pratica', listEmpty:'Nessun ospite ancora aggiunto.', addGuestBtn:'Aggiungi un ospite',
-      sendTxtBtn:'Invia file su WhatsApp', showPreview:'Anteprima file TXT', hidePreview:'Nascondi anteprima',
+      sendWhatsAppBtn:'Invia su WhatsApp', showPreview:'Anteprima file TXT', hidePreview:'Nascondi anteprima',
+      sendEmailBtn:'Invia via email', incompleteBadge:'dati incompleti', validationProceed:'Vuoi aggiungerlo comunque? Potrai correggerlo più tardi dalla lista, ma il file non sarà completo finché non lo fai.',
+      incompleteWarning:'{n} ospite/i hanno dati incompleti.', txtDownloadedNoteWa:'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.',
+      txtDownloadedNoteEmail:'Il file è stato scaricato: allegalo manualmente nella email che si è aperta.',
       txtShareMsg:'In allegato il file per la registrazione ospiti (schedine alloggiati).', txtDownloadedNote:'Il file è stato scaricato: allegalo manualmente su WhatsApp.',
       validationTitle:'Controlla questi campi:' },
     info: { general:'Informazioni Generali', contacts:'Contatti', address:'Indirizzo', phone:'Telefono', whatsapp:'Chatta su WhatsApp', checkin:'15:00 – 22:00', checkout:'Entro le 10:30', wifiConnect:'Connetti al WiFi' },
@@ -643,7 +649,7 @@ function isItaliaCode(codiceStato) {
 
 
 // ── OCR documenti ────────────────────────────
-// La funzione OCR gira come Netlify Function nello stesso sito (netlify/functions/ocr-proxy.js),
+// La funzione OCR gira come Netlify Function nello stesso sito (netlify/functions/ocr-proxy.mjs),
 // quindi il percorso è relativo: nessun dominio esterno, nessun problema di CORS.
 const OCR_PROXY_URL = '/api/ocr-proxy';
 const OCR_APP_TOKEN = 'CHANGE-ME'; // deve combaciare con la variabile APP_SHARED_TOKEN su Netlify
@@ -703,7 +709,7 @@ async function callVisionOCR(dataUrl) {
     const bodyText = await res.text().catch(() => '');
     const detail = 'HTTP ' + res.status + ' da ' + OCR_PROXY_URL + (bodyText ? ' — ' + bodyText.slice(0, 300) : '')
       + (res.status === 401 ? ' (probabile disallineamento tra OCR_APP_TOKEN e APP_SHARED_TOKEN)' : '')
-      + (res.status === 404 ? ' (funzione non trovata: verifica che netlify.toml e netlify/functions/ocr-proxy.js siano stati pubblicati)' : '')
+      + (res.status === 404 ? ' (funzione non trovata: verifica che netlify.toml e netlify/functions/ocr-proxy.mjs siano stati pubblicati)' : '')
       + (res.status === 502 ? ' (la funzione ha risposto ma la chiamata a Google Vision è fallita: verifica GOOGLE_VISION_API_KEY e la fatturazione del progetto Google Cloud)' : '');
     console.warn('Vision proxy error:', detail);
     state.ocrErrorDetail = detail;
@@ -943,9 +949,13 @@ function addGuestToList() {
   const draft = state.ocrFields || emptyGuestDraft();
   const errors = validateGuest(draft);
   if (errors.length) {
-    alert((t().upload.validationTitle || 'Controlla questi campi:') + '\n\n- ' + errors.join('\n- '));
-    return;
+    const proceed = confirm(
+      (t().upload.validationTitle || 'Controlla questi campi:') + '\n\n- ' + errors.join('\n- ') +
+      '\n\n' + (t().upload.validationProceed || "Vuoi aggiungerlo comunque? Potrai correggerlo più tardi dalla lista, ma il file non sarà completo finché non lo fai.")
+    );
+    if (!proceed) return;
   }
+  draft._incomplete = errors.length > 0;
   state.schedine.push(draft);
   localStorage.setItem('mipa_schedine', JSON.stringify(state.schedine));
   state.ocrFields = null;
@@ -973,11 +983,36 @@ function editGuestFromList(id) {
 
 // Genera il TXT cumulativo e lo condivide su WhatsApp come allegato (Web Share API),
 // con fallback al download manuale se il browser non supporta la condivisione di file.
-async function sendAlloggiatiTxt() {
-  if (!state.schedine.length) return;
+function downloadTxtFile(file, filename) {
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function buildAlloggiatiFile() {
   const content = generateAlloggiatiTxt(state.schedine);
   const filename = alloggiatiFilename();
-  const file = new File([content], filename, { type: 'text/plain' });
+  return { file: new File([content], filename, { type: 'text/plain' }), filename };
+}
+
+function warnIfIncomplete() {
+  const incomplete = state.schedine.filter(g => g._incomplete).length;
+  if (!incomplete) return true;
+  return confirm(
+    (t().upload.incompleteWarning || '{n} ospite/i hanno dati incompleti.').replace('{n}', incomplete) +
+    '\n' + (t().upload.validationProceed || 'Vuoi procedere comunque?')
+  );
+}
+
+// Invia il TXT su WhatsApp: prova prima la condivisione nativa (Web Share API, l'ospite
+// sceglie WhatsApp e il file arriva come allegato); se il browser non la supporta
+// (tipicamente su desktop), scarica il file e apre wa.me perché l'operatore lo alleghi a mano.
+async function sendViaWhatsApp() {
+  if (!state.schedine.length) return;
+  if (!warnIfIncomplete()) return;
+  const { file, filename } = buildAlloggiatiFile();
   const shareText = (t().upload && t().upload.txtShareMsg) || 'Schedine alloggiati MiPA';
 
   if (navigator.share && navigator.canShare) {
@@ -996,14 +1031,30 @@ async function sendAlloggiatiTxt() {
     }
   }
 
-  // Fallback: nessun supporto alla condivisione di file (es. desktop) -> scarica il file
-  // così l'utente può allegarlo manualmente su WhatsApp.
-  const url = URL.createObjectURL(file);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  alert(t().upload.txtDownloadedNote || 'Il file è stato scaricato: allegalo manualmente su WhatsApp.');
+  // Fallback: scarica il file e apre WhatsApp Web/app con un messaggio pronto;
+  // l'allegato va aggiunto a mano (limite del browser, non aggirabile senza un backend
+  // con WhatsApp Business API — vedi la conversazione precedente per i dettagli).
+  downloadTxtFile(file, filename);
+  window.open('https://wa.me/393339201524?text=' + encodeURIComponent(shareText), '_blank');
+  alert(t().upload.txtDownloadedNoteWa || 'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.');
+  state.docsSent = true;
+  localStorage.setItem('mipa_docssent', 'true');
+  render();
+}
+
+// Invia il TXT via email: nessun mailto: può allegare file per limiti del browser, quindi
+// scarica il file e apre il client di posta con oggetto/corpo pronti; l'allegato va
+// aggiunto a mano (per un invio automatico servirebbe un backend dedicato — se ti serve,
+// possiamo aggiungerlo in un secondo momento).
+function sendViaEmail() {
+  if (!state.schedine.length) return;
+  if (!warnIfIncomplete()) return;
+  const { file, filename } = buildAlloggiatiFile();
+  downloadTxtFile(file, filename);
+  const subject = 'MiPA — Schedine Alloggiati ' + filename;
+  const body = (t().upload && t().upload.txtShareMsg) || 'Schedine alloggiati MiPA';
+  window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  alert(t().upload.txtDownloadedNoteEmail || 'Il file è stato scaricato: allegalo manualmente nella email che si è aperta.');
   state.docsSent = true;
   localStorage.setItem('mipa_docssent', 'true');
   render();
@@ -1012,6 +1063,7 @@ async function sendAlloggiatiTxt() {
 function menuItems() {
   const tabs = t().tabs;
   return [
+    { id:'schedine',     icon:'badge',        color:'#334155', label:tabs.schedine,    sub: t().upload ? t().upload.title : '', external:true },
     { id:'info',         icon:'home',         color:'#4f7d65', label:tabs.info,        sub: t().info ? t().info.general : '' },
     { id:'philosophy',   icon:'eco',          color:'#3d8c5e', label:tabs.philosophy,  sub:'Eco-friendly & sustainable' },
     { id:'directions',   icon:'navigation',   color:'#0284c7', label:tabs.directions,  sub:'How to arrive & depart' },
@@ -1403,7 +1455,10 @@ function renderReviewStep(tr) {
 function renderGuestListStep(tr) {
   const rows = state.schedine.map(g => h('div', { className: 'guest-row' },
     h('div', { className: 'guest-row-info' },
-      h('div', { className: 'guest-row-name' }, (g.cognome || '—') + ' ' + (g.nome || '')),
+      h('div', { className: 'guest-row-name' },
+        (g.cognome || '—') + ' ' + (g.nome || ''),
+        g._incomplete ? h('span', { className: 'guest-row-warning' }, ' ⚠ ' + tr.upload.incompleteBadge) : null,
+      ),
       h('div', { className: 'guest-row-sub' }, g.dataArrivo + ' · ' + g.giorniPermanenza + 'gg · tipo ' + g.tipoAlloggiato),
     ),
     h('div', { className: 'guest-row-actions' },
@@ -1420,8 +1475,12 @@ function renderGuestListStep(tr) {
       : h('div', { className: 'field-sub' }, tr.upload.listEmpty),
     h('button', { className: 'btn-primary', style: 'background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-xs);', onClick: () => { state.docPhase = 'capture'; render(); } },
       ms('add_a_photo'), ' ', tr.upload.addGuestBtn),
-    state.schedine.length ? h('button', { className: 'btn-wa', style: 'border:none;cursor:pointer;width:100%;', onClick: sendAlloggiatiTxt },
-      ms('chat'), ' ', tr.upload.sendTxtBtn) : null,
+    state.schedine.length ? h('div', { className: 'send-choice' },
+      h('button', { className: 'btn-wa', style: 'border:none;cursor:pointer;', onClick: sendViaWhatsApp },
+        ms('chat'), ' ', tr.upload.sendWhatsAppBtn),
+      h('button', { className: 'btn-primary', style: 'background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-xs);', onClick: sendViaEmail },
+        ms('mail'), ' ', tr.upload.sendEmailBtn),
+    ) : null,
     state.schedine.length ? h('button', { className: 'btn-link', onClick: () => { state.showTxtPreview = !state.showTxtPreview; render(); } },
       state.showTxtPreview ? tr.upload.hidePreview : tr.upload.showPreview) : null,
     preview,
@@ -1477,7 +1536,7 @@ function renderDashboard() {
           h('button', {
             className: 'card',
             style: { '--i': i },
-            onClick: () => navigate('section', item.id),
+            onClick: () => item.external ? openSchedineFlow() : navigate('section', item.id),
           },
             h('div', { className: 'card-icon', style: { background: item.color } }, ms(item.icon)),
             h('div', { className: 'card-text' },
