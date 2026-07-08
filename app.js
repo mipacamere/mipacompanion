@@ -652,7 +652,7 @@ function isItaliaCode(codiceStato) {
 // La funzione OCR gira come Netlify Function nello stesso sito (netlify/functions/ocr-proxy.mjs),
 // quindi il percorso è relativo: nessun dominio esterno, nessun problema di CORS.
 const OCR_PROXY_URL = '/api/ocr-proxy';
-const OCR_APP_TOKEN = 'mipa2026xk93'; // deve combaciare con la variabile APP_SHARED_TOKEN su Netlify
+const OCR_APP_TOKEN = 'CHANGE-ME'; // deve combaciare con la variabile APP_SHARED_TOKEN su Netlify
 
 // Migliora la leggibilità della foto per l'OCR: scala di grigi + stiramento del contrasto.
 function preprocessImage(dataUrl) {
@@ -781,6 +781,12 @@ function ocrResultToGuestDraft(ocrResult) {
   draft.numeroDocumento = ocrResult.number || '';
   draft.sesso = ocrResult.sex || '';
 
+  // Comune e provincia di nascita: presenti solo se l'OCR ha riconosciuto il formato
+  // italiano "Comune (PR) gg.mm.aaaa" (carte d'identità); il codice ISTAT del comune
+  // resta comunque da inserire a mano, perché non deducibile senza la tabella ufficiale.
+  if (ocrResult.comuneNascita) draft.comuneNascitaLabel = ocrResult.comuneNascita;
+  if (ocrResult.provinciaNascita) draft.provinciaNascita = ocrResult.provinciaNascita;
+
   const docKey = mrzDocTypeToKey(ocrResult.docType);
   const docEntry = ALLOGGIATI_DOCUMENTI.find(d => d.key === docKey);
   if (docEntry) draft.tipoDocumentoLabel = docEntry.label;
@@ -791,6 +797,7 @@ function ocrResultToGuestDraft(ocrResult) {
     draft.codiceCittadinanza = lookupStatoCode(statoNome);
     // Il paese di nascita spesso coincide con la cittadinanza dichiarata sul documento,
     // ma NON è garantito: lo usiamo solo come suggerimento da verificare, non come dato certo.
+    // Se abbiamo già un comune di nascita italiano riconosciuto, questo è comunque coerente.
     draft.statoNascitaLabel = statoNome;
     draft.codiceStatoNascita = lookupStatoCode(statoNome);
   }
@@ -869,36 +876,97 @@ function looksLikeAnotherLabel(str) {
   return GENERIC_LABEL_WORDS.some(w => low.includes(w));
 }
 
-function genericExtract(text) {
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  const find = (labels) => {
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      for (const label of labels) {
-        const sameLine = line.match(new RegExp(label + '\\s*[:\\-]?\\s*(.{2,40})$', 'i'));
-        if (sameLine && sameLine[1] && !looksLikeAnotherLabel(sameLine[1])) {
-          return sameLine[1].trim();
-        }
-        // L'etichetta occupa (quasi) tutta la riga, oppure quel che segue è un'altra
-        // etichetta: il vero valore è probabilmente sulla riga successiva.
-        const labelOnly = new RegExp('^' + label + '\\s*[:\\-]?\\s*$', 'i').test(line);
-        const sameLineWasLabel = sameLine && sameLine[1] && looksLikeAnotherLabel(sameLine[1]);
-        if ((labelOnly || sameLineWasLabel) && lines[i + 1] && !looksLikeAnotherLabel(lines[i + 1])) {
-          return lines[i + 1].trim();
-        }
+// Cerca un'etichetta (con confini di parola, per evitare falsi positivi tipo "nome"
+// dentro "cognome") e restituisce il valore associato: prima prova sulla stessa riga,
+// altrimenti sulla riga successiva (utile quando etichetta e valore sono su righe diverse,
+// come "LUOGO E DATA DI NASCITA" seguito, sulla riga sotto, dal vero valore).
+function findLabelValue(lines, labels) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    for (const label of labels) {
+      const hasLabel = new RegExp('\\b' + label + '\\b', 'i').test(line);
+      if (!hasLabel) continue;
+      const sameLine = line.match(new RegExp('\\b' + label + '\\b\\s*[:\\-/]?\\s*(.{2,40})$', 'i'));
+      if (sameLine && sameLine[1] && !looksLikeAnotherLabel(sameLine[1])) {
+        return sameLine[1].trim();
+      }
+      // L'etichetta è presente ma sulla stessa riga non c'è un valore utilizzabile
+      // (riga finita, o quel che segue è un'altra etichetta): prova la riga successiva.
+      if (lines[i + 1] && !looksLikeAnotherLabel(lines[i + 1])) {
+        return lines[i + 1].trim();
       }
     }
-    return '';
-  };
-  return {
-    docType: '',
+  }
+  return '';
+}
+
+// Riconosce il formato tipico delle carte d'identità italiane:
+// "COMUNE (PR) gg.mm.aaaa" oppure "gg/mm/aaaa". Lavora riga per riga (non sull'intero
+// testo) per evitare che lo spazio bianco della regex "ingoi" righe precedenti non
+// correlate attraverso gli a-capo.
+function extractItalianBirthLine(lines) {
+  for (const line of lines) {
+    const m = line.match(/([A-ZÀ-Ú][A-ZÀ-Ú'\s]{1,30}?)\s*\(\s*([A-Z]{2})\s*\)\s*(\d{2})[.\/](\d{2})[.\/](\d{4})/i);
+    if (m) return { comune: m[1].trim(), provincia: m[2].toUpperCase(), dob: m[3] + '/' + m[4] + '/' + m[5] };
+  }
+  return null;
+}
+
+// Il sesso spesso condivide la riga/colonna con un'altra informazione (es. "SESSO STATURA"
+// seguito da "M 180" = sesso + altezza): cerchiamo un token isolato M/F entro poche righe
+// dopo l'etichetta, invece di fidarci ciecamente di quel che segue sulla stessa riga.
+function extractSesso(lines) {
+  for (let i = 0; i < lines.length; i++) {
+    if (/\bsesso\b|\bsex\b/i.test(lines[i])) {
+      for (let j = i; j < Math.min(i + 4, lines.length); j++) {
+        const m = lines[j].match(/\b([MF])\b/);
+        if (m) return m[1].toUpperCase();
+      }
+    }
+  }
+  return '';
+}
+
+// Riconosce il tipo di documento dal testo libero (percorso generico, senza MRZ).
+function detectDocType(text) {
+  const low = text.toLowerCase();
+  if (low.includes('patente nautica')) return 'Patente nautica';
+  if (low.includes('patente') || low.includes('driving licence') || low.includes('driver')) return 'Patente di guida';
+  if (low.includes('porto d\'armi') || low.includes('porto darmi')) return "Porto d'armi";
+  if (low.includes('passaporto') || low.includes('passport')) return 'Passaporto / Passport';
+  if (low.includes('elettronica') && (low.includes('identit') || low.includes('identity'))) return "Carta d'identità / ID card";
+  if (low.includes('identit') || low.includes('identity card')) return "Carta d'identità / ID card";
+  return '';
+}
+
+function genericExtract(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const find = (labels) => findLabelValue(lines, labels);
+
+  const result = {
+    docType: detectDocType(text),
     surname: find(['cognome', 'surname', 'nom']),
     givenNames: find(['nome', 'given name', 'prénom', 'first name']),
     number: find(['numero documento', 'n\\.?\\s*documento', 'document no', 'passport no', 'n°']),
     nationality: find(['nazionalit[aà]', 'nationality']),
     dob: find(['data di nascita', 'date of birth', 'geburtsdatum']),
     expiry: find(['scadenza', 'date of expiry', 'expiry']),
+    comuneNascita: '', provinciaNascita: '',
   };
+
+  result.sex = extractSesso(lines);
+
+  // Formato italiano "Comune (PR) gg.mm.aaaa": se trovato, ha priorità perché più affidabile
+  // della ricerca per etichette separate (e ci dà anche comune/provincia, che altrimenti
+  // resterebbero sempre da inserire a mano).
+  const birthLine = extractItalianBirthLine(lines);
+  if (birthLine) {
+    result.comuneNascita = birthLine.comune;
+    result.provinciaNascita = birthLine.provincia;
+    result.dob = birthLine.dob;
+  }
+
+  return result;
 }
 
 // Individua e interpreta la MRZ nel testo OCR; se non trovata, usa l'estrazione generica.
@@ -923,7 +991,7 @@ function extractFieldsFromText(text) {
     }
   }
 
-  const emptyRaw = { docType: '', surname: '', givenNames: '', number: '', nationality: '', sex: '', dob: '', expiry: '' };
+  const emptyRaw = { docType: '', surname: '', givenNames: '', number: '', nationality: '', sex: '', dob: '', expiry: '', comuneNascita: '', provinciaNascita: '' };
   return { ...emptyRaw, ...genericExtract(text) };
 }
 
