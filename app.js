@@ -855,13 +855,37 @@ function parseTD1(line1, line2, line3) {
 }
 
 // Fallback generico: cerca etichette note (multi-lingua) riga per riga nel testo OCR grezzo.
+// Parole che indicano che il testo "catturato" è in realtà un'altra etichetta stampata
+// sul documento (es. intestazioni bilingue "Cognome/Surname"), non il dato vero e proprio.
+const GENERIC_LABEL_WORDS = [
+  'cognome', 'surname', 'nom', 'nome', 'name', 'given', 'prénom', 'first',
+  'data', 'date', 'nascita', 'birth', 'naissance', 'nazionalit', 'nationality',
+  'documento', 'document', 'numero', 'number', 'scadenza', 'expiry', 'sesso', 'sex',
+  'luogo', 'place', 'rilascio', 'issue', 'residenza', 'residence',
+];
+
+function looksLikeAnotherLabel(str) {
+  const low = str.toLowerCase();
+  return GENERIC_LABEL_WORDS.some(w => low.includes(w));
+}
+
 function genericExtract(text) {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const find = (labels) => {
-    for (const line of lines) {
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
       for (const label of labels) {
-        const m = line.match(new RegExp(label + '\\s*[:\\-]?\\s*(.{2,40})', 'i'));
-        if (m && m[1]) return m[1].trim();
+        const sameLine = line.match(new RegExp(label + '\\s*[:\\-]?\\s*(.{2,40})$', 'i'));
+        if (sameLine && sameLine[1] && !looksLikeAnotherLabel(sameLine[1])) {
+          return sameLine[1].trim();
+        }
+        // L'etichetta occupa (quasi) tutta la riga, oppure quel che segue è un'altra
+        // etichetta: il vero valore è probabilmente sulla riga successiva.
+        const labelOnly = new RegExp('^' + label + '\\s*[:\\-]?\\s*$', 'i').test(line);
+        const sameLineWasLabel = sameLine && sameLine[1] && looksLikeAnotherLabel(sameLine[1]);
+        if ((labelOnly || sameLineWasLabel) && lines[i + 1] && !looksLikeAnotherLabel(lines[i + 1])) {
+          return lines[i + 1].trim();
+        }
       }
     }
     return '';
