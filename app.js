@@ -45,11 +45,10 @@ const allT = {
       confirmAdd:'Add guest to the list', backToPhotos:'Back to photos', backToList:'Back to guest list',
       listTitle:'Guests in this booking', listEmpty:'No guests added yet.', addGuestBtn:'Add a guest',
       sendWhatsAppBtn:'Send via WhatsApp', showPreview:'Preview JSON file', hidePreview:'Hide preview',
-      sendEmailBtn:'Send via email', incompleteBadge:'incomplete data', validationProceed:'Do you want to add it anyway? You can fix it later from the list, but the export won\'t be complete until you do.',
-      incompleteWarning:'{n} guest(s) have incomplete data.', txtDownloadedNoteWa:'The file has been downloaded: please attach it manually in the WhatsApp chat that just opened.',
+      sendEmailBtn:'Send via email', txtDownloadedNoteWa:'The file has been downloaded: please attach it manually in the WhatsApp chat that just opened.',
       txtDownloadedNoteEmail:'The file has been downloaded: please attach it manually in the email that just opened.',
       txtShareMsg:'Guest registration file (schedine alloggiati) attached.', txtDownloadedNote:'The file has been downloaded: please attach it manually on WhatsApp.',
-      validationTitle:'Please check these fields:' },
+      validationTitle:'Please complete these fields before continuing:', yesterday:'yesterday', today:'today', tomorrow:'tomorrow' },
     info: { general:'General Info', contacts:'Contacts', address:'Address', phone:'Phone', whatsapp:'Chat on WhatsApp', checkin:'3:00 PM – 10:00 PM', checkout:'By 10:30 AM', wifiConnect:'Connect to WiFi' },
     itinerary: { desc:'Discover the best of the city with this carefully planned itinerary. Explore must-see attractions and enjoy local experiences.', btn:'Explore Milazzo' },
     map: { title:'Milazzo Interactive Map', desc:'Highlights, landmarks and hidden gems.', openMaps:'Open in Google Maps' },
@@ -98,11 +97,10 @@ const allT = {
       confirmAdd:'Aggiungi ospite alla lista', backToPhotos:'Torna alle foto', backToList:'Torna alla lista ospiti',
       listTitle:'Ospiti di questa pratica', listEmpty:'Nessun ospite ancora aggiunto.', addGuestBtn:'Aggiungi un ospite',
       sendWhatsAppBtn:'Invia su WhatsApp', showPreview:'Anteprima file JSON', hidePreview:'Nascondi anteprima',
-      sendEmailBtn:'Invia via email', incompleteBadge:'dati incompleti', validationProceed:'Vuoi aggiungerlo comunque? Potrai correggerlo più tardi dalla lista, ma l\'export non sarà completo finché non lo fai.',
-      incompleteWarning:'{n} ospite/i hanno dati incompleti.', txtDownloadedNoteWa:'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.',
+      sendEmailBtn:'Invia via email', txtDownloadedNoteWa:'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.',
       txtDownloadedNoteEmail:'Il file è stato scaricato: allegalo manualmente nella email che si è aperta.',
       txtShareMsg:'In allegato il file per la registrazione ospiti (schedine alloggiati).', txtDownloadedNote:'Il file è stato scaricato: allegalo manualmente su WhatsApp.',
-      validationTitle:'Controlla questi campi:' },
+      validationTitle:'Completa questi campi prima di continuare:', yesterday:'ieri', today:'oggi', tomorrow:'domani' },
     info: { general:'Informazioni Generali', contacts:'Contatti', address:'Indirizzo', phone:'Telefono', whatsapp:'Chatta su WhatsApp', checkin:'15:00 – 22:00', checkout:'Entro le 10:30', wifiConnect:'Connetti al WiFi' },
     itinerary: { desc:'Scopri il meglio della città con questo itinerario giornaliero ben pianificato.', btn:'Esplora Milazzo' },
     map: { title:'Mappa Interattiva di Milazzo', desc:'Attrazioni, monumenti e gemme nascoste.', openMaps:'Apri in Google Maps' },
@@ -530,12 +528,33 @@ const STRUCTURE_CIN = 'IT083049C2UKATRA95'; // Codice Identificativo Nazionale (
 function validateGuest(g) {
   const errors = [];
   const dateRe = /^\d{2}\/\d{2}\/\d{4}$/;
+
+  // Soggiorno
+  if (!dateRe.test(g.stay.arrivalDate || '')) errors.push('Data di arrivo mancante o non valida');
+  if (!dateRe.test(g.stay.departureDate || '')) errors.push('Data di partenza mancante o non valida');
+  if (g.stay.arrivalDate && g.stay.departureDate && g.stay.arrivalDate === g.stay.departureDate) {
+    errors.push('La data di partenza non può coincidere con quella di arrivo');
+  }
+  if (!g.stay.guestType) errors.push('Tipo alloggiato mancante');
+
+  // Dati anagrafici
   if (!g.personal.lastName) errors.push('Cognome mancante');
   if (!g.personal.firstName) errors.push('Nome mancante');
-  if (!dateRe.test(g.personal.birthDate || '')) errors.push('Data di nascita non valida (formato gg/mm/aaaa)');
+  if (g.personal.gender !== 'M' && g.personal.gender !== 'F') errors.push('Sesso mancante');
+  if (!dateRe.test(g.personal.birthDate || '')) errors.push('Data di nascita mancante o non valida');
+
+  // Nascita e cittadinanza
+  if (!g.personal.birthPlace) errors.push('Comune/luogo di nascita mancante');
+  if (!g.personal.birthCountry) errors.push('Stato di nascita mancante');
+  if (!g.personal.nationality) errors.push('Cittadinanza mancante');
+
+  // Documento
+  if (!g.document.type) errors.push('Tipo documento mancante');
   if (!g.document.number) errors.push('Numero documento mancante');
-  if (!dateRe.test(g.stay.arrivalDate || '')) errors.push('Data di arrivo non valida (formato gg/mm/aaaa)');
-  if (!dateRe.test(g.stay.departureDate || '')) errors.push('Data di partenza non valida (formato gg/mm/aaaa)');
+  if (!dateRe.test(g.document.issueDate || '')) errors.push('Data di rilascio del documento mancante o non valida');
+  if (!g.document.issuePlace) errors.push('Luogo di rilascio del documento mancante');
+  if (!dateRe.test(g.document.expiryDate || '')) errors.push('Data di scadenza del documento mancante o non valida');
+
   return errors;
 }
 
@@ -652,13 +671,185 @@ function tomorrowFormatted() {
 
 const GUEST_TYPE_OPTIONS = ['OSPITE SINGOLO', 'CAPOFAMIGLIA', 'CAPOGRUPPO', 'FAMILIARE', 'MEMBRO GRUPPO'];
 
-// Suggerimenti per il tipo documento (autocompletamento, ma il campo resta testo libero:
-// ci sono documenti diversi per ogni paese, quindi non forziamo un elenco chiuso).
-const DOCUMENT_TYPE_SUGGESTIONS = [
-  "PASSAPORTO ORDINARIO", "CARTA DI IDENTITA'", "CARTA DI IDENTITA' ELETTRONICA",
-  "PATENTE DI GUIDA", "PATENTE NAUTICA", "PORTO D'ARMI",
-  "PASSPORT", "NATIONAL ID CARD", "DRIVING LICENCE",
+// Elenco ufficiale degli stati (da stati.csv, 236 voci) e dei tipi documento (da
+// documenti.csv, 95 voci): sono le uniche opzioni selezionabili nei relativi menu a
+// tendina, così il testo salvato è sempre un valore ufficiale coerente, mai libero.
+const STATI_LIST = [
+  'AFGHANISTAN', 'ALBANIA', 'ALGERIA', 'ANDORRA',
+  'ANGOLA', 'ANGUILLA (ISOLA)', 'ANTIGUA E BARBUDA', 'APOLIDE',
+  'ARABIA SAUDITA', 'ARGENTINA', 'ARMENIA', 'AUSTRALIA',
+  'AUSTRIA', 'AZERBAIGIAN', 'BAHAMAS', 'BAHREIN',
+  'BANGLADESH', 'BARBADOS', 'BELGIO', 'BELIZE',
+  'BENIN', 'BERMUDE', 'BHUTAN', 'BIELORUSSIA',
+  'BOLIVIA', 'BOPHUTHATSWANA', 'BOSNIA ED ERZEGOVINA', 'BOTSWANA',
+  'BRASILE', 'BRUNEI DARUSSALAM', 'BULGARIA', 'BURKINA FASO',
+  'BURUNDI', 'CAMBOGIA', 'CAMERUN', 'CANADA',
+  'CAPO VERDE', 'CAYMAN (ISOLE)', 'CECOSLOVACCHIA', 'CHRISTMAS',
+  'CIAD', 'CILE', 'CINA', 'CIPRO',
+  'COCOS', 'COLOMBIA', 'COMORE', 'CONGO',
+  'COREA DEL NORD', 'COREA DEL SUD', 'COSTA D\'AVORIO', 'COSTA RICA',
+  'CROAZIA', 'CUBA', 'DANIMARCA', 'DOMINICA',
+  'ECUADOR', 'EGITTO', 'EL SALVADOR', 'EMIRATI ARABI UNITI',
+  'ERITREA', 'ESTONIA', 'ETIOPIA', 'FAER OER',
+  'FEDERAZIONE RUSSA', 'FIGI', 'FILIPPINE', 'FINLANDIA',
+  'FRANCIA', 'GABON', 'GAMBIA', 'GEORGIA',
+  'GEORGIA SUD E ISOLE SANDWICH AUSTRALI', 'GERMANIA', 'GHANA', 'GIAMAICA',
+  'GIAPPONE', 'GIBUTI', 'GIORDANIA', 'GRECIA',
+  'GRENADA', 'GROENLANDIA', 'GUADALUPA', 'GUAM',
+  'GUATEMALA', 'GUAYANA FRANCESE', 'GUERNSEY', 'GUINEA',
+  'GUINEA BISSAU', 'GUINEA EQUATORIALE', 'GUYANA', 'HAITI',
+  'HONDURAS', 'HONG KONG', 'INDIA', 'INDONESIA',
+  'IRAN', 'IRAQ', 'IRLANDA', 'ISLANDA',
+  'ISOLE VERGINI', 'ISRAELE', 'ITALIA', 'KAZAKISTAN',
+  'KENYA', 'KIRGHIZISTAN', 'KIRIBATI', 'KOSOVO',
+  'KUWAIT', 'LA REUNION', 'LAOS', 'LESOTHO',
+  'LETTONIA', 'LIBANO', 'LIBERIA', 'LIBIA',
+  'LIECHTENSTEIN', 'LITUANIA', 'LUSSEMBURGO', 'MACAO',
+  'MACEDONIA', 'MACEDONIA DEL NORD', 'MADAGASCAR', 'MALAWI',
+  'MALAYSIA', 'MALDIVE', 'MALI', 'MALTA',
+  'MALVINE', 'MAN', 'MAROCCO', 'MARSHALL',
+  'MARTINICA', 'MAURITANIA', 'MAURIZIO', 'MAYOTTE',
+  'MESSICO', 'MICRONESIA STATI FEDERALI', 'MOLDAVIA', 'MONACO',
+  'MONGOLIA', 'MONTENEGRO', 'MONTSERRAT', 'MOZAMBICO',
+  'MYANMAR-BIRMANIA', 'NAMIBIA', 'NAURU', 'NEPAL',
+  'NICARAGUA', 'NIGER', 'NIGERIA', 'NORFOLK',
+  'NORVEGIA', 'NUOVA CALEDONIA', 'NUOVA ZELANDA', 'OMAN',
+  'PAESI BASSI', 'PAKISTAN', 'PALAU REPUBBLICA', 'PALESTINA',
+  'PANAMA', 'PAPUASIA-N.GUINEA', 'PARAGUAY', 'PERU\'',
+  'PITCAIRN', 'POLINESIA', 'POLONIA', 'PORTOGALLO',
+  'PUERTO RICO', 'QATAR', 'REGNO UNITO', 'REPUBBLICA CECA',
+  'REPUBBLICA CENTRAFRICANA', 'REPUBBLICA DEMOCRATICA DEL CONGO', 'REPUBBLICA DOMINICANA', 'REPUBBLICA SLOVACCA',
+  'ROMANIA', 'RUANDA', 'S. CHRISTOPHER E NEVIS', 'S. VINCENT E GRENADINE',
+  'SAHARA SPAGNOLO', 'SAINT LUCIA', 'SAINT PIERRE ET MIQUELON', 'SAINT VINCENT E GRENADINE',
+  'SALOMONE', 'SAMOA', 'SAMOA AMERICANE', 'SAN MARINO',
+  'SANT ELENA', 'SAO TOME\' E PRINCIPE', 'SENEGAL', 'SERBIA',
+  'SEYCHELLES', 'SIERRA LEONE', 'SINGAPORE', 'SIRIA',
+  'SLOVENIA', 'SOMALIA', 'SPAGNA', 'SRI LANKA (CEYLON)',
+  'STATI UNITI D\'AMERICA', 'STATO DELLA CITTA\' DEL VATICANO', 'SUD SUDAN', 'SUDAFRICA',
+  'SUDAN', 'SURINAME', 'SVEZIA', 'SVIZZERA',
+  'SWAZILAND', 'TAGIKISTAN', 'TAIWAN', 'TANZANIA',
+  'THAILANDIA', 'TIMOR', 'TOGO', 'TOKELAU',
+  'TONGA', 'TRINIDAD E TOBAGO', 'TUNISIA', 'TURCHIA',
+  'TURKMENISTAN', 'TURKS', 'TUVALU', 'UCRAINA',
+  'UGANDA', 'UNGHERIA', 'URUGUAY', 'UZBEKISTAN',
+  'VANUATU', 'VENEZUELA', 'VERGINI BRITANNICHE (ISOLE)', 'VIETNAM',
+  'WALLIS', 'YEMEN', 'ZAMBIA', 'ZIMBABWE',
 ];
+
+const DOCUMENTI_LIST = [
+  'CARTA DI IDENTITA\'', 'CARTA ID. DIPLOMATICA', 'CARTA IDENTITA\' ELETTRONICA',
+  'CERTIFICATO D\'IDENTITA\'', 'PASSAPORTO DI SERVIZIO', 'PASSAPORTO DIPLOMATICO',
+  'PASSAPORTO ORDINARIO', 'PATENTE DI GUIDA', 'PATENTE NAUTICA',
+  'PORTO D\'ARMI GUARDIE GIUR', 'PORTO D\'ARMI USO SPORTIVO', 'PORTO FUCILE DIF. PERSON.',
+  'PORTO FUCILE USO CACCIA', 'PORTO PISTOLA DIF. PERSON', 'TES. ENTE NAZ. ASSIS.VOLO',
+  'TES. FERROV. EX DEPUTATI', 'TES. FERROVIARIA DEPUTATI', 'TES. POSTE E TELECOMUNIC.',
+  'TES. UNICO PER LA CAMERA', 'TES.DOGANALE RIL.MIN.FIN.', 'TESS. AG. E AG.SC. C.F.S.',
+  'TESS. AGENTI/ASS.TI P.P.', 'TESS. AGENTI/ASS.TI P.S.', 'TESS. APP.TO AG.CUSTODIA',
+  'TESS. APP.TO CARABINIERI', 'TESS. APP.TO FINANZIERE', 'TESS. APP.TO/VIG. URBANO',
+  'TESS. APP.TO/VIG. VV.FF.', 'TESS. CONSIGLIO DI STATO', 'TESS. CORTE D\'APPELLO',
+  'TESS. CORTE DEI CONTI', 'TESS. FERROV. SENATO', 'TESS. FUNZIONARI P.S.',
+  'TESS. IDENTIF.TELECOM IT.', 'TESS. ISCR. ALBO MED/CHI.', 'TESS. ISCRIZ. ALBO ODONT.',
+  'TESS. ISPETTORI P.P.', 'TESS. ISPETTORI P.S.', 'TESS. MEMBRO EQUIP. AEREO',
+  'TESS. MILIT. M.M.', 'TESS. MILIT. TRUPPA SISMI', 'TESS. MILITARE E.I.',
+  'TESS. MILITARE NATO', 'TESS. MILITARE TRUPPA A.M', 'TESS. MIN. AFFARI ESTERI',
+  'TESS. MIN.BEN.E ATT.CULT.', 'TESS. MIN.PUBB.ISTRUZIONE', 'TESS. MINIST. TRASP/NAVIG',
+  'TESS. MINISTERO DIFESA', 'TESS. MINISTERO FINANZE', 'TESS. MINISTERO GIUSTIZIA',
+  'TESS. MINISTERO INTERNO', 'TESS. MINISTERO LAVORI PU', 'TESS. MINISTERO SANITA\'',
+  'TESS. MINISTERO TESORO', 'TESS. ORDINE GIORNALISTI', 'TESS. PARLAMENTARI',
+  'TESS. PERS. MAGISTRATI', 'TESS. POL. TRIB. G.D.F.', 'TESS. POLIZIA FEMMINILE',
+  'TESS. PRES.ZA CONS. MIN.', 'TESS. PUBBLICA ISTRUZIONE', 'TESS. S.I.S.D.E.',
+  'TESS. SOTT.LI AG.CUSTODIA', 'TESS. SOTT.LI G.D.F.', 'TESS. SOTT.LI VIG. URBANI',
+  'TESS. SOTTUFF.LI VV.FF.', 'TESS. SOTTUFFICIALI A.M.', 'TESS. SOTTUFFICIALI CC',
+  'TESS. SOTTUFFICIALI E.I.', 'TESS. SOTTUFFICIALI SISMI', 'TESS. SOTTUFICIALI C.F.S.',
+  'TESS. SOTTUFICIALI M.M.', 'TESS. SOVRINTENDENTI P.P.', 'TESS. SOVRINTENDENTI P.S.',
+  'TESS. UFF.LI AG.CUSTODIA', 'TESS. UFF.LI VIG.URBANI', 'TESS. UFFICIALE',
+  'TESS. UFFICIALI A.M.', 'TESS. UFFICIALI C.F.S.', 'TESS. UFFICIALI E.I.',
+  'TESS. UFFICIALI G.D.F.', 'TESS. UFFICIALI M.M.', 'TESS. UFFICIALI P.P.',
+  'TESS. UFFICIALI P.S.', 'TESS. UFFICIALI SISMI', 'TESS. UFFICIALI VV.FF.',
+  'TESS.ISCR. ALBO INGEGNERI', 'TESS.ISCR.ALBO ARCHITETTI', 'TESS.MIN.POLIT.AGRIC.FOR.',
+  'TESSERA DELL\'ORDINE NOTAI', 'TESSERA ISCR. ALBO AVVOC.', 'TESSERA RICONOSC. D.I.A.',
+  'TESSERA U.N.U.C.I.', 'TITOLO VIAGGIO RIF.POLIT.',
+];
+
+// Mappa dei codici MRZ (alpha-3, quelli stampati sulla riga leggibile a macchina dei
+// passaporti/CIE) verso il nome ufficiale nella tabella Stati — verificata a mano contro
+// stati.csv per i paesi più comuni. Per i codici non presenti qui, si usa il confronto
+// testuale generico (findBestMatch) come piano B.
+const MRZ_ALPHA3_TO_STATO = {
+  ITA: 'ITALIA', FRA: 'FRANCIA', DEU: 'GERMANIA', ESP: 'SPAGNA', GBR: 'REGNO UNITO',
+  USA: "STATI UNITI D'AMERICA", CHE: 'SVIZZERA', AUT: 'AUSTRIA', BEL: 'BELGIO',
+  NLD: 'PAESI BASSI', PRT: 'PORTOGALLO', POL: 'POLONIA', ROU: 'ROMANIA',
+  RUS: 'FEDERAZIONE RUSSA', UKR: 'UCRAINA', GRC: 'GRECIA', IRL: 'IRLANDA',
+  SWE: 'SVEZIA', NOR: 'NORVEGIA', DNK: 'DANIMARCA', FIN: 'FINLANDIA',
+  CHN: 'CINA', JPN: 'GIAPPONE', BRA: 'BRASILE', CAN: 'CANADA', AUS: 'AUSTRALIA',
+  MEX: 'MESSICO', ARG: 'ARGENTINA', IND: 'INDIA', MAR: 'MAROCCO', TUN: 'TUNISIA',
+  ALB: 'ALBANIA', HRV: 'CROAZIA', SRB: 'SERBIA', HUN: 'UNGHERIA', BGR: 'BULGARIA',
+  TUR: 'TURCHIA', BLR: 'BIELORUSSIA',
+};
+
+
+// Confronto testuale approssimato: toglie accenti/punteggiatura e confronta in maiuscolo.
+function normalizeForMatch(s) {
+  return (s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z0-9 ]/g, '').trim();
+}
+
+function levenshtein(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+    }
+  }
+  return dp[m][n];
+}
+
+// Trova nella lista ufficiale la voce che più somiglia al testo letto dall'OCR: prova prima
+// corrispondenza esatta, poi prefisso/contenuto, infine distanza di Levenshtein entro una
+// soglia ragionevole. Restituisce '' se non trova nulla di abbastanza simile (l'operatore
+// sceglierà a mano dal menu).
+function findBestMatch(text, list) {
+  if (!text) return '';
+  const norm = normalizeForMatch(text);
+  if (!norm) return '';
+  const exact = list.find(item => normalizeForMatch(item) === norm);
+  if (exact) return exact;
+  const starts = list.find(item => {
+    const n = normalizeForMatch(item);
+    return n.startsWith(norm) || norm.startsWith(n);
+  });
+  if (starts) return starts;
+  const includes = list.find(item => {
+    const n = normalizeForMatch(item);
+    return n.includes(norm) || norm.includes(n);
+  });
+  if (includes) return includes;
+  let best = '', bestDist = Infinity;
+  for (const item of list) {
+    const d = levenshtein(norm, normalizeForMatch(item));
+    if (d < bestDist) { bestDist = d; best = item; }
+  }
+  const threshold = Math.max(2, Math.floor(norm.length * 0.35));
+  return bestDist <= threshold ? best : '';
+}
+
+// Stato/nazionalità: prova prima la mappa MRZ (codici alpha-3 come "ITA", "FRA"...),
+// poi il confronto testuale generico (utile per il percorso senza MRZ, dove l'OCR legge
+// direttamente un nome per esteso).
+function matchStato(text) {
+  if (!text) return '';
+  const code = text.trim().toUpperCase();
+  if (MRZ_ALPHA3_TO_STATO[code]) return MRZ_ALPHA3_TO_STATO[code];
+  return findBestMatch(text, STATI_LIST);
+}
+
+function matchDocumento(text) {
+  if (!text) return '';
+  if (DOCUMENTI_LIST.includes(text)) return text;
+  return findBestMatch(text, DOCUMENTI_LIST);
+}
 
 // Guest "vuoto", nella stessa forma annidata dell'export JSON finale: acquisiamo i dati
 // così come compaiono sul documento, senza convertirli in codici — la conversione nel
@@ -683,16 +874,21 @@ function ocrResultToGuestDraft(ocrResult, confidence) {
   draft.personal.firstName = (ocrResult.givenNames || '').trim();
   draft.personal.birthDate = ocrResult.dob || '';
   draft.personal.gender = ocrResult.sex || '';
-  // Cittadinanza/stato di nascita: riportiamo il valore grezzo così com'è sul documento
-  // (es. il codice MRZ a 3 lettere "ITA", oppure il nome per esteso se letto in chiaro
-  // da una carta senza MRZ) — nessuna espansione o traduzione automatica.
-  draft.personal.nationality = ocrResult.nationality || '';
+  // Cittadinanza/stato di nascita: l'OCR può leggere un codice MRZ a 3 lettere ("ITA")
+  // o un nome per esteso — in entrambi i casi cerchiamo la voce più vicina nella tabella
+  // ufficiale Stati, così il menu a tendina si preseleziona da solo; l'operatore corregge
+  // se il risultato non è quello giusto.
+  draft.personal.nationality = matchStato(ocrResult.nationality);
   if (ocrResult.comuneNascita) {
     draft.personal.birthPlace = ocrResult.comuneNascita + (ocrResult.provinciaNascita ? ' (' + ocrResult.provinciaNascita + ')' : '');
     draft.personal.birthCountry = 'ITALIA'; // il formato "Comune (PR)" compare solo su documenti italiani
+  } else if (ocrResult.nationality) {
+    // Nessun indizio di nascita in Italia: come suggerimento di partenza usiamo la stessa
+    // corrispondenza della cittadinanza (spesso coincidono, ma l'operatore verifica sempre).
+    draft.personal.birthCountry = matchStato(ocrResult.nationality);
   }
 
-  draft.document.type = ocrResult.docType || '';
+  draft.document.type = matchDocumento(ocrResult.docType);
   draft.document.number = ocrResult.number || '';
   draft.document.expiryDate = ocrResult.expiry || '';
   draft.document.issueDate = ocrResult.issueDate || '';
@@ -742,7 +938,7 @@ function parseTD3(line1, line2) {
   const dob = formatMrzDate(line2.substr(13, 6));
   const sex = line2.substr(20, 1) === 'F' ? 'F' : (line2.substr(20, 1) === 'M' ? 'M' : '');
   const expiry = formatMrzDate(line2.substr(21, 6));
-  return { docType: 'Passaporto / Passport', country, surname, givenNames, number, nationality, sex, dob, expiry };
+  return { docType: 'PASSAPORTO ORDINARIO', country, surname, givenNames, number, nationality, sex, dob, expiry };
 }
 
 // Carta d'identità elettronica (TD1): tre righe da 30 caratteri
@@ -754,7 +950,7 @@ function parseTD1(line1, line2, line3) {
   const expiry = formatMrzDate(line2.substr(8, 6));
   const nationality = line2.substr(15, 3).replace(/</g, '');
   const { surname, givenNames } = splitMrzNames(line3);
-  return { docType: "Carta d'identità / ID card", country, surname, givenNames, number, nationality, sex, dob, expiry };
+  return { docType: "CARTA IDENTITA' ELETTRONICA", country, surname, givenNames, number, nationality, sex, dob, expiry };
 }
 
 // Fallback generico: cerca etichette note (multi-lingua) riga per riga nel testo OCR grezzo.
@@ -824,15 +1020,16 @@ function extractSesso(lines) {
   return '';
 }
 
-// Riconosce il tipo di documento dal testo libero (percorso generico, senza MRZ).
+// Riconosce il tipo di documento dal testo libero (percorso generico, senza MRZ) e
+// restituisce direttamente l'etichetta ufficiale della tabella Documenti.
 function detectDocType(text) {
   const low = text.toLowerCase();
-  if (low.includes('patente nautica')) return 'Patente nautica';
-  if (low.includes('patente') || low.includes('driving licence') || low.includes('driver')) return 'Patente di guida';
-  if (low.includes('porto d\'armi') || low.includes('porto darmi')) return "Porto d'armi";
-  if (low.includes('passaporto') || low.includes('passport')) return 'Passaporto / Passport';
-  if (low.includes('elettronica') && (low.includes('identit') || low.includes('identity'))) return "Carta d'identità / ID card";
-  if (low.includes('identit') || low.includes('identity card')) return "Carta d'identità / ID card";
+  if (low.includes('patente nautica')) return 'PATENTE NAUTICA';
+  if (low.includes('patente') || low.includes('driving licence') || low.includes('driver')) return 'PATENTE DI GUIDA';
+  if (low.includes('porto d\'armi') || low.includes('porto darmi')) return "PORTO D'ARMI GUARDIE GIUR";
+  if (low.includes('passaporto') || low.includes('passport')) return 'PASSAPORTO ORDINARIO';
+  if (low.includes('elettronica') && (low.includes('identit') || low.includes('identity'))) return "CARTA IDENTITA' ELETTRONICA";
+  if (low.includes('identit') || low.includes('identity card')) return "CARTA DI IDENTITA'";
   return '';
 }
 
@@ -928,18 +1125,17 @@ async function runOCR() {
 }
 
 // Aggiunge l'ospite in revisione alla lista della pratica corrente (persistita in localStorage)
-// e torna alla schermata di acquisizione per un eventuale ospite successivo.
+// e torna alla schermata di acquisizione per un eventuale ospite successivo. A differenza di
+// prima, qui non si può più "procedere comunque": se l'OCR non ha letto un campo (per
+// qualsiasi motivo — non solo Vision irraggiungibile, anche un singolo dato illeggibile),
+// l'operatore deve completarlo a mano prima di poter aggiungere l'ospite.
 function addGuestToList() {
   const draft = state.ocrFields || emptyGuestDraft();
   const errors = validateGuest(draft);
   if (errors.length) {
-    const proceed = confirm(
-      (t().upload.validationTitle || 'Controlla questi campi:') + '\n\n- ' + errors.join('\n- ') +
-      '\n\n' + (t().upload.validationProceed || "Vuoi aggiungerlo comunque? Potrai correggerlo più tardi dalla lista, ma l'export non sarà completo finché non lo fai.")
-    );
-    if (!proceed) return;
+    alert((t().upload.validationTitle || 'Completa questi campi prima di continuare:') + '\n\n- ' + errors.join('\n- '));
+    return;
   }
-  draft._incomplete = errors.length > 0;
   state.schedine.push(draft);
   localStorage.setItem('mipa_schedine', JSON.stringify(state.schedine));
   state.ocrFields = null;
@@ -979,21 +1175,11 @@ function buildExportFile() {
   return { file: new File([content], filename, { type: 'application/json' }), filename };
 }
 
-function warnIfIncomplete() {
-  const incomplete = state.schedine.filter(g => g._incomplete).length;
-  if (!incomplete) return true;
-  return confirm(
-    (t().upload.incompleteWarning || '{n} ospite/i hanno dati incompleti.').replace('{n}', incomplete) +
-    '\n' + (t().upload.validationProceed || 'Vuoi procedere comunque?')
-  );
-}
-
 // Invia il JSON su WhatsApp: prova prima la condivisione nativa (Web Share API, l'utente
 // sceglie WhatsApp e il file arriva come allegato); se il browser non la supporta
 // (tipicamente su desktop), scarica il file e apre wa.me perché l'operatore lo alleghi a mano.
 async function sendViaWhatsApp() {
   if (!state.schedine.length) return;
-  if (!warnIfIncomplete()) return;
   const { file, filename } = buildExportFile();
   const shareText = (t().upload && t().upload.txtShareMsg) || 'Dati ospiti MiPA';
 
@@ -1029,7 +1215,6 @@ async function sendViaWhatsApp() {
 // aggiunto a mano (per un invio automatico servirebbe un backend dedicato).
 function sendViaEmail() {
   if (!state.schedine.length) return;
-  if (!warnIfIncomplete()) return;
   const { file, filename } = buildExportFile();
   downloadExportFile(file, filename);
   const subject = 'MiPA — Export ospiti ' + filename;
@@ -1358,12 +1543,56 @@ function guestSelect(tr, path, label, options) {
   );
 }
 
-// Piccolo elenco di suggerimenti per il tipo documento (autocompletamento, non una tabella
-// codici): il campo resta testo libero perché ogni paese ha i suoi tipi di documento.
-const DOC_TYPE_DATALIST_ID = 'doc-type-suggestions';
-function docTypeDatalist() {
-  return h('datalist', { id: DOC_TYPE_DATALIST_ID },
-    ...DOCUMENT_TYPE_SUGGESTIONS.map(v => h('option', { value: v }))
+// Restituisce la data (gg/mm/aaaa) a "offset" giorni da oggi (0 = oggi, -1 = ieri, +1 = domani...).
+function dateFromOffset(offsetDays) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+}
+
+// Data di arrivo: solo oggi o ieri, mai altre date.
+function arrivalDateField(tr) {
+  const options = [
+    { value: dateFromOffset(-1), label: dateFromOffset(-1) + ' — ' + tr.upload.yesterday },
+    { value: dateFromOffset(0), label: dateFromOffset(0) + ' — ' + tr.upload.today },
+  ];
+  const current = (state.ocrFields && state.ocrFields.stay.arrivalDate) || '';
+  const select = h('select', { className: 'field-input' },
+    ...options.map(o => h('option', { value: o.value }, o.label))
+  );
+  select.value = options.some(o => o.value === current) ? current : dateFromOffset(0);
+  select.addEventListener('change', e => {
+    updateGuestField('stay.arrivalDate', e.target.value);
+    // Se la partenza coincide ora con l'arrivo appena scelto, la spostiamo al giorno dopo.
+    const dep = state.ocrFields.stay.departureDate;
+    if (dep === e.target.value) updateGuestField('stay.departureDate', dateFromOffset(1));
+    render();
+  });
+  return h('div', { className: 'field-group' },
+    h('label', { className: 'field-label' }, tr.upload.fDataArrivo),
+    select,
+  );
+}
+
+// Data di partenza: da oggi fino a 30 giorni avanti, mai uguale alla data di arrivo scelta.
+function departureDateField(tr) {
+  const arrival = (state.ocrFields && state.ocrFields.stay.arrivalDate) || dateFromOffset(0);
+  const options = [];
+  for (let i = 0; i <= 30; i++) {
+    const value = dateFromOffset(i);
+    if (value === arrival) continue;
+    const suffix = i === 0 ? ' — ' + tr.upload.today : i === 1 ? ' — ' + tr.upload.tomorrow : '';
+    options.push({ value, label: value + suffix });
+  }
+  const current = (state.ocrFields && state.ocrFields.stay.departureDate) || '';
+  const select = h('select', { className: 'field-input' },
+    ...options.map(o => h('option', { value: o.value }, o.label))
+  );
+  select.value = options.some(o => o.value === current) ? current : options[0].value;
+  select.addEventListener('change', e => { updateGuestField('stay.departureDate', e.target.value); render(); });
+  return h('div', { className: 'field-group' },
+    h('label', { className: 'field-label' }, tr.upload.fDataPartenza),
+    select,
   );
 }
 
@@ -1382,15 +1611,14 @@ function renderReviewStep(tr) {
   ) : null;
 
   return [
-    docTypeDatalist(),
     h('h2', { className: 'section-h2' }, tr.upload.reviewTitle),
     h('div', { className: 'field-sub' }, tr.upload.reviewSub),
     errorNote,
     techDetail,
 
     h('div', { className: 'field-section-title' }, tr.upload.sectionStay),
-    guestField(tr, 'stay.arrivalDate', tr.upload.fDataArrivo, { placeholder: 'gg/mm/aaaa' }),
-    guestField(tr, 'stay.departureDate', tr.upload.fDataPartenza, { placeholder: 'gg/mm/aaaa' }),
+    arrivalDateField(tr),
+    departureDateField(tr),
     guestSelect(tr, 'stay.guestType', tr.upload.fTipoAlloggiato, GUEST_TYPE_OPTIONS.map(v => ({ value: v, label: v }))),
 
     h('div', { className: 'field-section-title' }, tr.upload.sectionAnagrafica),
@@ -1401,11 +1629,11 @@ function renderReviewStep(tr) {
 
     h('div', { className: 'field-section-title' }, tr.upload.sectionNascita),
     guestField(tr, 'personal.birthPlace', tr.upload.fComuneNascita),
-    guestField(tr, 'personal.birthCountry', tr.upload.fStatoNascita, { placeholder: 'es. ITALIA' }),
-    guestField(tr, 'personal.nationality', tr.upload.fCittadinanza, { placeholder: 'es. ITA / ITALIA' }),
+    guestSelect(tr, 'personal.birthCountry', tr.upload.fStatoNascita, [{ value: '', label: '—' }, ...STATI_LIST.map(v => ({ value: v, label: v }))]),
+    guestSelect(tr, 'personal.nationality', tr.upload.fCittadinanza, [{ value: '', label: '—' }, ...STATI_LIST.map(v => ({ value: v, label: v }))]),
 
     h('div', { className: 'field-section-title' }, tr.upload.sectionDocumento),
-    guestField(tr, 'document.type', tr.upload.fDocType, { list: DOC_TYPE_DATALIST_ID }),
+    guestSelect(tr, 'document.type', tr.upload.fDocType, [{ value: '', label: '—' }, ...DOCUMENTI_LIST.map(v => ({ value: v, label: v }))]),
     guestField(tr, 'document.number', tr.upload.fNumber),
     guestField(tr, 'document.issueDate', tr.upload.fDataRilascio, { placeholder: 'gg/mm/aaaa' }),
     guestField(tr, 'document.issuePlace', tr.upload.fLuogoRilascio),
@@ -1421,10 +1649,7 @@ function renderReviewStep(tr) {
 function renderGuestListStep(tr) {
   const rows = state.schedine.map(g => h('div', { className: 'guest-row' },
     h('div', { className: 'guest-row-info' },
-      h('div', { className: 'guest-row-name' },
-        (g.personal.lastName || '—') + ' ' + (g.personal.firstName || ''),
-        g._incomplete ? h('span', { className: 'guest-row-warning' }, ' ⚠ ' + tr.upload.incompleteBadge) : null,
-      ),
+      h('div', { className: 'guest-row-name' }, (g.personal.lastName || '—') + ' ' + (g.personal.firstName || '')),
       h('div', { className: 'guest-row-sub' }, g.stay.arrivalDate + ' → ' + g.stay.departureDate + ' · ' + g.stay.guestType),
     ),
     h('div', { className: 'guest-row-actions' },
