@@ -34,22 +34,18 @@ const allT = {
     home: { greeting:'Welcome to MiPA 🌿', sub:'Your digital concierge in Milazzo', checkinNew:'Guest documents / Alloggiati Web', checkinNewDesc:'Add guests and send the registration file', checkinDone:'I already checked in', checkinDoneDesc:'Go directly to the app' },
     dash: { welcome:'MiPA Companion', sub:'What can we help you with?' },
     upload: { title:'Guest documents / Alloggiati Web', dropText:'Tap to add photos', dropSub:'Passport, ID card or driving licence', remove:'Remove', attachNote:'Please attach the photos manually', sendWa:'Send via WhatsApp', waMsg:'Hello! Please find attached the guest registration file (schedine alloggiati). Thank you!', continue:'Continue to property info', sent:'Documents sent ✓',
-      ocrButton:'Extract data (OCR)', ocrProcessing:'Reading your documents…', ocrErrorMsg:"Couldn't read the documents automatically. Please fill in the fields manually.",
-      ocrFallbackMsg:"Couldn't reach the online OCR service, so we used the offline engine instead — results may be less accurate. Please double-check every field.",
+      ocrButton:'Extract data (OCR)', ocrProcessing:'Reading your documents…', ocrErrorMsg:"Couldn't reach the online OCR service. Please fill in all fields manually.",
       techDetailsToggle:'Technical details',
-      reviewTitle:'Check the guest data', reviewSub:'Please verify and complete every field before adding this guest — this data will be used for the official guest registration (Alloggiati Web).',
+      reviewTitle:'Check the guest data', reviewSub:'Please verify and complete every field before adding this guest — data is captured exactly as it appears on the document.',
       sectionStay:'Stay', sectionAnagrafica:'Personal data', sectionNascita:'Place of birth & citizenship', sectionDocumento:'Identity document',
-      fDocType:'Document type', fDocCode:'Document type code (5 digits)', docCodeHint:'If not auto-filled, check the official code table on the portal.',
-      fSurname:'Surname', fGivenNames:'First name(s)', fNumber:'Document number', fNationality:'Nationality', fDob:'Date of birth', fExpiry:'Expiry date',
-      fSesso:'Sex', fTipoAlloggiato:'Guest type', fDataArrivo:'Arrival date', fPermanenza:'Nights of stay',
-      fStatoNascita:'Country of birth', fComuneNascita:'Municipality of birth (Italy only)', fComuneNascitaCode:'Municipality code (9 digits)',
-      fProvinciaNascita:'Province of birth (2-letter code)', fCittadinanza:'Citizenship', fLuogoRilascio:'Place document was issued', fLuogoRilascioCode:'Issue place code (9 digits)',
-      groupMemberNote:'For family members / group members the document fields are left blank on purpose — only the main guest\'s document is recorded, as required by the official format.',
-      manualCodePlaceholder:'code', codeResolved:'Code found', codeNotFound:'Code not found automatically — please enter it manually (check the official table).',
+      fDocType:'Document type', fSurname:'Surname', fGivenNames:'First name(s)', fNumber:'Document number', fDob:'Date of birth', fExpiry:'Expiry date',
+      fSesso:'Sex', fTipoAlloggiato:'Guest type', fDataArrivo:'Arrival date', fDataPartenza:'Departure date', fDataRilascio:'Issue date',
+      fStatoNascita:'Birth country', fComuneNascita:'Place of birth', fCittadinanza:'Nationality', fLuogoRilascio:'Place document was issued',
+      ocrConfidenceLabel:'OCR confidence',
       confirmAdd:'Add guest to the list', backToPhotos:'Back to photos', backToList:'Back to guest list',
       listTitle:'Guests in this booking', listEmpty:'No guests added yet.', addGuestBtn:'Add a guest',
-      sendWhatsAppBtn:'Send via WhatsApp', showPreview:'Preview TXT file', hidePreview:'Hide preview',
-      sendEmailBtn:'Send via email', incompleteBadge:'incomplete data', validationProceed:'Do you want to add it anyway? You can fix it later from the list, but the file won\'t be complete until you do.',
+      sendWhatsAppBtn:'Send via WhatsApp', showPreview:'Preview JSON file', hidePreview:'Hide preview',
+      sendEmailBtn:'Send via email', incompleteBadge:'incomplete data', validationProceed:'Do you want to add it anyway? You can fix it later from the list, but the export won\'t be complete until you do.',
       incompleteWarning:'{n} guest(s) have incomplete data.', txtDownloadedNoteWa:'The file has been downloaded: please attach it manually in the WhatsApp chat that just opened.',
       txtDownloadedNoteEmail:'The file has been downloaded: please attach it manually in the email that just opened.',
       txtShareMsg:'Guest registration file (schedine alloggiati) attached.', txtDownloadedNote:'The file has been downloaded: please attach it manually on WhatsApp.',
@@ -91,22 +87,18 @@ const allT = {
     home: { greeting:'Benvenuto a MiPA 🌿', sub:'Il tuo concierge digitale a Milazzo', checkinNew:'Documenti ospiti / Schedine Alloggiati', checkinNewDesc:"Aggiungi gli ospiti e invia il file di registrazione", checkinDone:'Ho già fatto il check-in', checkinDoneDesc:"Vai direttamente all'app" },
     dash: { welcome:'MiPA Companion', sub:'Come possiamo aiutarti?' },
     upload: { title:"Documenti ospiti / Alloggiati Web", dropText:'Tocca per aggiungere foto', dropSub:"Passaporto, carta d'identità o patente", remove:'Rimuovi', attachNote:"Si prega di allegare le foto manualmente", sendWa:"Invia tramite WhatsApp", waMsg:"Buongiorno! In allegato il file per la registrazione ospiti (schedine alloggiati). Grazie!", continue:'Continua alle info sulla struttura', sent:'Documenti inviati ✓',
-      ocrButton:'Estrai dati (OCR)', ocrProcessing:'Lettura dei documenti in corso…', ocrErrorMsg:"Non è stato possibile leggere automaticamente i documenti. Compila i campi manualmente.",
-      ocrFallbackMsg:"Non è stato possibile raggiungere il servizio OCR online, quindi è stato usato il motore offline — i risultati potrebbero essere meno precisi. Verifica bene ogni campo.",
+      ocrButton:'Estrai dati (OCR)', ocrProcessing:'Lettura dei documenti in corso…', ocrErrorMsg:"Non è stato possibile raggiungere il servizio OCR online. Compila tutti i campi manualmente.",
       techDetailsToggle:'Dettagli tecnici',
-      reviewTitle:'Controlla i dati dell\'ospite', reviewSub:'Verifica e completa ogni campo prima di aggiungere questo ospite: questi dati verranno usati per la comunicazione ufficiale (Alloggiati Web).',
+      reviewTitle:'Controlla i dati dell\'ospite', reviewSub:'Verifica e completa ogni campo prima di aggiungere questo ospite: i dati vengono acquisiti così come compaiono sul documento.',
       sectionStay:'Soggiorno', sectionAnagrafica:'Dati anagrafici', sectionNascita:'Nascita e cittadinanza', sectionDocumento:'Documento di riconoscimento',
-      fDocType:'Tipo documento', fDocCode:'Codice tipo documento (5 cifre)', docCodeHint:'Se non è stato compilato in automatico, verifica la tabella codici ufficiale sul portale.',
-      fSurname:'Cognome', fGivenNames:'Nome/i', fNumber:'Numero documento', fNationality:'Nazionalità', fDob:'Data di nascita', fExpiry:'Data di scadenza',
-      fSesso:'Sesso', fTipoAlloggiato:'Tipo alloggiato', fDataArrivo:'Data di arrivo', fPermanenza:'Giorni di permanenza',
-      fStatoNascita:'Stato di nascita', fComuneNascita:'Comune di nascita (solo se nato in Italia)', fComuneNascitaCode:'Codice comune (9 cifre)',
-      fProvinciaNascita:'Provincia di nascita (sigla)', fCittadinanza:'Cittadinanza', fLuogoRilascio:'Luogo di rilascio del documento', fLuogoRilascioCode:'Codice luogo di rilascio (9 cifre)',
-      groupMemberNote:'Per familiari/membri di gruppo i campi del documento restano volutamente vuoti: fa fede solo il documento del capofamiglia/capogruppo, come richiesto dal tracciato ufficiale.',
-      manualCodePlaceholder:'codice', codeResolved:'Codice trovato', codeNotFound:'Codice non trovato automaticamente: inseriscilo a mano (verifica la tabella ufficiale).',
+      fDocType:'Tipo documento', fSurname:'Cognome', fGivenNames:'Nome/i', fNumber:'Numero documento', fDob:'Data di nascita', fExpiry:'Data di scadenza',
+      fSesso:'Sesso', fTipoAlloggiato:'Tipo ospite', fDataArrivo:'Data di arrivo', fDataPartenza:'Data di partenza', fDataRilascio:'Data di rilascio',
+      fStatoNascita:'Stato di nascita', fComuneNascita:'Luogo di nascita', fCittadinanza:'Cittadinanza', fLuogoRilascio:'Luogo di rilascio del documento',
+      ocrConfidenceLabel:'Affidabilità OCR',
       confirmAdd:'Aggiungi ospite alla lista', backToPhotos:'Torna alle foto', backToList:'Torna alla lista ospiti',
       listTitle:'Ospiti di questa pratica', listEmpty:'Nessun ospite ancora aggiunto.', addGuestBtn:'Aggiungi un ospite',
-      sendWhatsAppBtn:'Invia su WhatsApp', showPreview:'Anteprima file TXT', hidePreview:'Nascondi anteprima',
-      sendEmailBtn:'Invia via email', incompleteBadge:'dati incompleti', validationProceed:'Vuoi aggiungerlo comunque? Potrai correggerlo più tardi dalla lista, ma il file non sarà completo finché non lo fai.',
+      sendWhatsAppBtn:'Invia su WhatsApp', showPreview:'Anteprima file JSON', hidePreview:'Nascondi anteprima',
+      sendEmailBtn:'Invia via email', incompleteBadge:'dati incompleti', validationProceed:'Vuoi aggiungerlo comunque? Potrai correggerlo più tardi dalla lista, ma l\'export non sarà completo finché non lo fai.',
       incompleteWarning:'{n} ospite/i hanno dati incompleti.', txtDownloadedNoteWa:'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.',
       txtDownloadedNoteEmail:'Il file è stato scaricato: allegalo manualmente nella email che si è aperta.',
       txtShareMsg:'In allegato il file per la registrazione ospiti (schedine alloggiati).', txtDownloadedNote:'Il file è stato scaricato: allegalo manualmente su WhatsApp.',
@@ -522,130 +514,56 @@ const PLACES = {
 function t() { return allT[state.lang] || allT.en; }
 
 // ══════════════════════════════════════════════
-// ALLOGGIATI WEB — validazione
+// Configurazione struttura (per l'export JSON)
 // ══════════════════════════════════════════════
-// Restituisce un array di messaggi di errore (vuoto = ospite valido e pronto per il TXT).
+const STRUCTURE_NAME = 'MiPA Milazzo'; // <-- personalizza col nome reale della struttura
+const STRUCTURE_CODE = 'ME006995';      // codice struttura Alloggiati Web
+const STRUCTURE_CIN = 'IT083049C2UKATRA95'; // Codice Identificativo Nazionale (CIN)
+
+// ══════════════════════════════════════════════
+// Ospiti — validazione leggera
+// ══════════════════════════════════════════════
+// Qui NON si generano codici né si valida secondo il tracciato Alloggiati Web: i dati
+// vengono acquisiti così come compaiono sul documento ed esportati in JSON grezzo; la
+// conversione nel formato ufficiale avviene in un'altra app. La validazione si limita
+// quindi ai campi minimi perché l'export abbia senso.
 function validateGuest(g) {
   const errors = [];
-  const isPrincipal = ['16', '17', '18'].includes(g.tipoAlloggiato);
   const dateRe = /^\d{2}\/\d{2}\/\d{4}$/;
-
-  if (!g.tipoAlloggiato) errors.push('Tipo alloggiato mancante');
-  if (!dateRe.test(g.dataArrivo || '')) errors.push('Data di arrivo non valida (formato gg/mm/aaaa)');
-  const perm = parseInt(g.giorniPermanenza, 10);
-  if (!perm || perm < 1 || perm > 30) errors.push('Giorni di permanenza non validi (1-30)');
-  if (!g.cognome) errors.push('Cognome mancante');
-  if (!g.nome) errors.push('Nome mancante');
-  if (g.sesso !== 'M' && g.sesso !== 'F') errors.push('Sesso non specificato');
-  if (!dateRe.test(g.dataNascita || '')) errors.push('Data di nascita non valida (formato gg/mm/aaaa)');
-  if (!g.codiceStatoNascita) errors.push('Codice stato di nascita mancante (verifica tabella Stati)');
-  if (isItaliaCode(g.codiceStatoNascita)) {
-    if (!g.codiceComuneNascita) errors.push('Codice comune di nascita mancante (verifica tabella Comuni)');
-    if (!g.provinciaNascita) errors.push('Provincia di nascita mancante');
-  }
-  if (!g.codiceCittadinanza) errors.push('Codice cittadinanza mancante (verifica tabella Stati)');
-  if (isPrincipal) {
-    if (!g.codiceTipoDocumento) errors.push('Codice tipo documento mancante (verifica tabella Documenti)');
-    if (!g.numeroDocumento) errors.push('Numero documento mancante');
-    if (!g.codiceLuogoRilascio) errors.push('Codice luogo di rilascio mancante');
-  }
+  if (!g.personal.lastName) errors.push('Cognome mancante');
+  if (!g.personal.firstName) errors.push('Nome mancante');
+  if (!dateRe.test(g.personal.birthDate || '')) errors.push('Data di nascita non valida (formato gg/mm/aaaa)');
+  if (!g.document.number) errors.push('Numero documento mancante');
+  if (!dateRe.test(g.stay.arrivalDate || '')) errors.push('Data di arrivo non valida (formato gg/mm/aaaa)');
+  if (!dateRe.test(g.stay.departureDate || '')) errors.push('Data di partenza non valida (formato gg/mm/aaaa)');
   return errors;
 }
 
 // ══════════════════════════════════════════════
-// ALLOGGIATI WEB — generazione TXT (Tracciato Tabella 1, 168 caratteri/riga)
+// Export JSON cumulativo
 // ══════════════════════════════════════════════
-function padRight(value, len) {
-  const s = (value == null ? '' : String(value)).slice(0, len);
-  return s + ' '.repeat(Math.max(0, len - s.length));
+function buildExportJson() {
+  return {
+    version: '1.0',
+    exportDate: new Date().toISOString(),
+    structure: { name: STRUCTURE_NAME, code: STRUCTURE_CODE, cin: STRUCTURE_CIN },
+    guests: state.schedine.map(g => ({
+      id: g.id,
+      document: { ...g.document },
+      personal: { ...g.personal },
+      stay: { ...g.stay },
+    })),
+  };
 }
 
-function formatGuestLine(g) {
-  const isPrincipal = ['16', '17', '18'].includes(g.tipoAlloggiato);
-  const italia = isItaliaCode(g.codiceStatoNascita);
-  const fields = [
-    padRight(g.tipoAlloggiato, 2),                                    // 0-1
-    padRight(g.dataArrivo, 10),                                       // 2-11
-    padRight(g.giorniPermanenza, 2),                                  // 12-13
-    padRight((g.cognome || '').toUpperCase(), 50),                    // 14-63
-    padRight((g.nome || '').toUpperCase(), 30),                       // 64-93
-    padRight(g.sesso === 'F' ? '2' : '1', 1),                         // 94
-    padRight(g.dataNascita, 10),                                      // 95-104
-    padRight(italia ? g.codiceComuneNascita : '', 9),                 // 105-113
-    padRight(italia ? g.provinciaNascita : '', 2),                    // 114-115
-    padRight(g.codiceStatoNascita, 9),                                // 116-124
-    padRight(g.codiceCittadinanza, 9),                                // 125-133
-    padRight(isPrincipal ? g.codiceTipoDocumento : '', 5),            // 134-138
-    padRight(isPrincipal ? g.numeroDocumento : '', 20),               // 139-158
-    padRight(isPrincipal ? g.codiceLuogoRilascio : '', 9),            // 159-167
-  ];
-  const line = fields.join('');
-  if (line.length !== 168) console.warn('Riga Alloggiati Web di lunghezza inattesa:', line.length, g);
-  return line;
-}
-
-function generateAlloggiatiTxt(guests) {
-  return guests.map(formatGuestLine).join('\r\n');
-}
-
-function alloggiatiFilename() {
+function exportFilename() {
   const d = new Date();
   const yyyy = d.getFullYear();
   const mm = String(d.getMonth() + 1).padStart(2, '0');
   const dd = String(d.getDate()).padStart(2, '0');
-  return 'alloggiati_' + yyyy + mm + dd + '.txt';
+  return 'export_alloggiati_' + yyyy + mm + dd + '.json';
 }
 
-
-// ══════════════════════════════════════════════
-// ALLOGGIATI WEB — tabelle codici ufficiali
-// ══════════════════════════════════════════════
-// Fonte: "Documento di Descrizione WS_ALLOGGIATI" (Polizia di Stato) e tabelle
-// scaricabili da https://alloggiatiweb.poliziadistato.it/portalealloggiati/tabelle.aspx
-//
-// NOTA IMPORTANTE: le tabelle "Comuni", "Stati" e "Documenti" complete (migliaia di righe,
-// codici ISTAT-like) sono pubblicate SOLO dalla Polizia di Stato e vanno scaricate dal tuo
-// account sul portale — non è corretto inventarle. Qui c'è solo un seed minimo verificato
-// (l'Italia) più un meccanismo di codice manuale per tutto il resto: se il testo digitato
-// non è nel seed, il campo "codice" va compilato a mano dall'operatore consultando la
-// tabella ufficiale scaricata.
-const ALLOGGIATI_STATI_SEED = {
-  'ITALIA': '100000100',
-};
-
-// Codici "Tipo Alloggiato" (ruolo dell'ospite nella schedina). I codici 16, 19 e 20 sono
-// confermati da più fonti; per 17/18 (capofamiglia vs capogruppo) le fonti secondarie non
-// concordano fra loro — verifica il significato esatto sul tuo account Alloggiati Web o
-// nella tabella "Tipi Alloggiato" scaricabile dal portale prima di un uso massivo.
-const ALLOGGIATI_TIPO_OPTIONS = [
-  { code: '16', label: 'Ospite singolo' },
-  { code: '17', label: 'Capofamiglia / capogruppo (verifica sul portale)' },
-  { code: '18', label: 'Capogruppo / capofamiglia — ruolo alternativo (verifica sul portale)' },
-  { code: '19', label: 'Familiare' },
-  { code: '20', label: 'Membro di gruppo' },
-];
-
-// Documenti gestiti: qui mappiamo solo l'ETICHETTA parlata dall'app; il CODICE numerico
-// a 5 cifre della "Tabella Documenti" ufficiale va inserito manualmente dall'operatore
-// (si trova nella tabella scaricabile dal portale) finché non viene importata la tabella completa.
-const ALLOGGIATI_DOCUMENTI = [
-  { key: 'CI', label: "Carta d'identità" },
-  { key: 'CIE', label: "Carta d'identità elettronica" },
-  { key: 'PASS', label: 'Passaporto' },
-  { key: 'PAT', label: 'Patente di guida' },
-  { key: 'PATN', label: 'Patente nautica' },
-  { key: 'PORTO', label: "Porto d'armi" },
-];
-
-function lookupStatoCode(nomeStato) {
-  if (!nomeStato) return '';
-  const key = nomeStato.trim().toUpperCase();
-  return ALLOGGIATI_STATI_SEED[key] || '';
-}
-
-function isItaliaCode(codiceStato) {
-  return codiceStato === ALLOGGIATI_STATI_SEED['ITALIA'];
-}
 
 
 // ── OCR documenti ────────────────────────────
@@ -717,21 +635,7 @@ async function callVisionOCR(dataUrl) {
   }
   const json = await res.json();
   state.ocrErrorDetail = '';
-  return json.text || '';
-}
-
-let tesseractLoadPromise = null;
-function loadTesseract() {
-  if (window.Tesseract) return Promise.resolve(window.Tesseract);
-  if (tesseractLoadPromise) return tesseractLoadPromise;
-  tesseractLoadPromise = new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
-    s.onload = () => window.Tesseract ? resolve(window.Tesseract) : reject(new Error('Tesseract non disponibile'));
-    s.onerror = () => reject(new Error('Impossibile caricare il modulo OCR'));
-    document.head.appendChild(s);
-  });
-  return tesseractLoadPromise;
+  return { text: json.text || '', confidence: typeof json.confidence === 'number' ? json.confidence : null };
 }
 
 function todayFormatted() {
@@ -739,84 +643,76 @@ function todayFormatted() {
   return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
 }
 
-// Guest "vuoto": tutti i campi richiesti dal tracciato Alloggiati Web (Tabella 1).
+// Un giorno dopo oggi, come default ragionevole per la data di partenza.
+function tomorrowFormatted() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
+}
+
+const GUEST_TYPE_OPTIONS = ['OSPITE SINGOLO', 'CAPOFAMIGLIA', 'CAPOGRUPPO', 'FAMILIARE', 'MEMBRO GRUPPO'];
+
+// Suggerimenti per il tipo documento (autocompletamento, ma il campo resta testo libero:
+// ci sono documenti diversi per ogni paese, quindi non forziamo un elenco chiuso).
+const DOCUMENT_TYPE_SUGGESTIONS = [
+  "PASSAPORTO ORDINARIO", "CARTA DI IDENTITA'", "CARTA DI IDENTITA' ELETTRONICA",
+  "PATENTE DI GUIDA", "PATENTE NAUTICA", "PORTO D'ARMI",
+  "PASSPORT", "NATIONAL ID CARD", "DRIVING LICENCE",
+];
+
+// Guest "vuoto", nella stessa forma annidata dell'export JSON finale: acquisiamo i dati
+// così come compaiono sul documento, senza convertirli in codici — la conversione nel
+// tracciato ufficiale Alloggiati Web avviene in un'altra app.
 function emptyGuestDraft() {
   return {
-    id: 'g' + Date.now() + Math.random().toString(16).slice(2),
-    tipoAlloggiato: '16',
-    dataArrivo: todayFormatted(),
-    giorniPermanenza: '1',
-    cognome: '', nome: '', sesso: '',
-    dataNascita: '',
-    comuneNascitaLabel: '', codiceComuneNascita: '',
-    provinciaNascita: '',
-    statoNascitaLabel: 'ITALIA', codiceStatoNascita: ALLOGGIATI_STATI_SEED['ITALIA'],
-    cittadinanzaLabel: '', codiceCittadinanza: '',
-    tipoDocumentoLabel: '', codiceTipoDocumento: '',
-    numeroDocumento: '',
-    luogoRilascioLabel: '', codiceLuogoRilascio: '',
+    id: 'guest-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    document: { type: '', number: '', issueDate: '', issuePlace: '', expiryDate: '', ocrConfidence: null },
+    personal: { lastName: '', firstName: '', gender: '', birthDate: '', birthPlace: '', birthCountry: '', nationality: '' },
+    stay: { arrivalDate: todayFormatted(), departureDate: tomorrowFormatted(), guestType: 'OSPITE SINGOLO' },
   };
 }
 
-// Alpha-3 MRZ -> nome stato (seed minimo; solo ITA è collegato a un codice verificato).
-const MRZ_NATIONALITY_TO_STATO = { ITA: 'ITALIA' };
-
-function mrzDocTypeToKey(docType) {
-  if (!docType) return '';
-  if (docType.includes('Passaporto')) return 'PASS';
-  if (docType.includes("elettronica")) return 'CIE';
-  if (docType.includes("identità")) return 'CI';
-  return '';
-}
-
 // Traduce il risultato grezzo dell'OCR (extractFieldsFromText) in una bozza di ospite
-// pronta per la revisione manuale. Solo i campi che l'OCR può davvero leggere vengono
-// precompilati; tutto il resto (arrivo, permanenza, luogo nascita/rilascio, codici) resta
-// da compilare o verificare a mano, perché non deducibile in modo affidabile dal documento.
-function ocrResultToGuestDraft(ocrResult) {
+// pronta per la revisione manuale — riportando i valori così come letti sul documento,
+// senza alcuna conversione in codice. Solo i campi che l'OCR può davvero leggere vengono
+// precompilati; il resto (arrivo, partenza, luogo nascita se non riconosciuto, ecc.) resta
+// da compilare o verificare a mano.
+function ocrResultToGuestDraft(ocrResult, confidence) {
   const draft = emptyGuestDraft();
-  draft.cognome = (ocrResult.surname || '').trim();
-  draft.nome = (ocrResult.givenNames || '').trim();
-  draft.dataNascita = ocrResult.dob || '';
-  draft.numeroDocumento = ocrResult.number || '';
-  draft.sesso = ocrResult.sex || '';
-
-  // Comune e provincia di nascita: presenti solo se l'OCR ha riconosciuto il formato
-  // italiano "Comune (PR) gg.mm.aaaa" (carte d'identità); il codice ISTAT del comune
-  // resta comunque da inserire a mano, perché non deducibile senza la tabella ufficiale.
-  if (ocrResult.comuneNascita) draft.comuneNascitaLabel = ocrResult.comuneNascita;
-  if (ocrResult.provinciaNascita) draft.provinciaNascita = ocrResult.provinciaNascita;
-
-  const docKey = mrzDocTypeToKey(ocrResult.docType);
-  const docEntry = ALLOGGIATI_DOCUMENTI.find(d => d.key === docKey);
-  if (docEntry) draft.tipoDocumentoLabel = docEntry.label;
-
-  const statoNome = MRZ_NATIONALITY_TO_STATO[ocrResult.nationality] || '';
-  if (statoNome) {
-    draft.cittadinanzaLabel = statoNome;
-    draft.codiceCittadinanza = lookupStatoCode(statoNome);
-    // Il paese di nascita spesso coincide con la cittadinanza dichiarata sul documento,
-    // ma NON è garantito: lo usiamo solo come suggerimento da verificare, non come dato certo.
-    // Se abbiamo già un comune di nascita italiano riconosciuto, questo è comunque coerente.
-    draft.statoNascitaLabel = statoNome;
-    draft.codiceStatoNascita = lookupStatoCode(statoNome);
+  draft.personal.lastName = (ocrResult.surname || '').trim();
+  draft.personal.firstName = (ocrResult.givenNames || '').trim();
+  draft.personal.birthDate = ocrResult.dob || '';
+  draft.personal.gender = ocrResult.sex || '';
+  // Cittadinanza/stato di nascita: riportiamo il valore grezzo così com'è sul documento
+  // (es. il codice MRZ a 3 lettere "ITA", oppure il nome per esteso se letto in chiaro
+  // da una carta senza MRZ) — nessuna espansione o traduzione automatica.
+  draft.personal.nationality = ocrResult.nationality || '';
+  if (ocrResult.comuneNascita) {
+    draft.personal.birthPlace = ocrResult.comuneNascita + (ocrResult.provinciaNascita ? ' (' + ocrResult.provinciaNascita + ')' : '');
+    draft.personal.birthCountry = 'ITALIA'; // il formato "Comune (PR)" compare solo su documenti italiani
   }
+
+  draft.document.type = ocrResult.docType || '';
+  draft.document.number = ocrResult.number || '';
+  draft.document.expiryDate = ocrResult.expiry || '';
+  draft.document.issueDate = ocrResult.issueDate || '';
+  if (ocrResult.luogoRilascio) draft.document.issuePlace = ocrResult.luogoRilascio;
+  if (typeof confidence === 'number') draft.document.ocrConfidence = Math.round(confidence * 100) / 100;
+
   return draft;
 }
 
-function updateGuestField(key, value) {
-  if (!state.ocrFields) state.ocrFields = emptyGuestDraft();
-  state.ocrFields[key] = value; // niente render(): evita di perdere il focus mentre si digita
+// Imposta un valore in un campo annidato (es. "document.number", "personal.lastName")
+// senza mai chiamare render(): evita di perdere il focus/cursore mentre si digita.
+function setNestedField(obj, path, value) {
+  const [group, key] = path.split('.');
+  if (!obj[group]) obj[group] = {};
+  obj[group][key] = value;
 }
 
-// Quando l'operatore digita/seleziona uno stato (nascita o cittadinanza), prova ad
-// agganciare il codice dal seed; se non trovato resta vuoto e va inserito a mano.
-function updateGuestStato(field, label) {
+function updateGuestField(path, value) {
   if (!state.ocrFields) state.ocrFields = emptyGuestDraft();
-  const codeField = field === 'statoNascitaLabel' ? 'codiceStatoNascita' : 'codiceCittadinanza';
-  state.ocrFields[field] = label;
-  const code = lookupStatoCode(label);
-  if (code) state.ocrFields[codeField] = code;
+  setNestedField(state.ocrFields, path, value);
 }
 
 // Converte una data MRZ 'YYMMDD' in 'DD/MM/YYYY' (euristica sul secolo: >30 -> 1900+, altrimenti 2000+)
@@ -869,6 +765,7 @@ const GENERIC_LABEL_WORDS = [
   'data', 'date', 'nascita', 'birth', 'naissance', 'nazionalit', 'nationality',
   'documento', 'document', 'numero', 'number', 'scadenza', 'expiry', 'sesso', 'sex',
   'luogo', 'place', 'rilascio', 'issue', 'residenza', 'residence',
+  'comune', 'municipality', 'emissione', 'issuing',
 ];
 
 function looksLikeAnotherLabel(str) {
@@ -945,12 +842,17 @@ function genericExtract(text) {
 
   const result = {
     docType: detectDocType(text),
-    surname: find(['cognome', 'surname', 'nom']),
-    givenNames: find(['nome', 'given name', 'prénom', 'first name']),
+    surname: find(['cognome', 'surname', 'nom', 'apellido', 'nachname']),
+    givenNames: find(['nome', 'given name', 'prénom', 'first name', 'nombre', 'vorname']),
     number: find(['numero documento', 'n\\.?\\s*documento', 'document no', 'passport no', 'n°']),
-    nationality: find(['nazionalit[aà]', 'nationality']),
-    dob: find(['data di nascita', 'date of birth', 'geburtsdatum']),
-    expiry: find(['scadenza', 'date of expiry', 'expiry']),
+    nationality: find(['nazionalit[aà]', 'nationality', 'nacionalidad', 'staatsangehörigkeit']),
+    dob: find(['data di nascita', 'date of birth', 'geburtsdatum', 'fecha de nacimiento']),
+    expiry: find(['scadenza', 'date of expiry', 'expiry', 'fecha de caducidad']),
+    issueDate: find(['emissione', 'issuing', 'data di rilascio', 'date of issue']),
+    // Sulla carta d'identità italiana "COMUNE DI / MUNICIPALITY" indica il comune che ha
+    // rilasciato il documento — è il nome del luogo di rilascio (il codice numerico resta
+    // comunque da inserire a mano, serve la tabella ufficiale).
+    luogoRilascio: find(['comune di', 'municipality']),
     comuneNascita: '', provinciaNascita: '',
   };
 
@@ -991,7 +893,7 @@ function extractFieldsFromText(text) {
     }
   }
 
-  const emptyRaw = { docType: '', surname: '', givenNames: '', number: '', nationality: '', sex: '', dob: '', expiry: '', comuneNascita: '', provinciaNascita: '' };
+  const emptyRaw = { docType: '', surname: '', givenNames: '', number: '', nationality: '', sex: '', dob: '', expiry: '', issueDate: '', comuneNascita: '', provinciaNascita: '', luogoRilascio: '' };
   return { ...emptyRaw, ...genericExtract(text) };
 }
 
@@ -1001,36 +903,26 @@ async function runOCR() {
   render();
 
   let combinedText = '';
-  let usedFallback = false;
+  const confidences = [];
 
   try {
-    // ── Motore primario: Google Cloud Vision (via proxy) ──
+    // ── Google Cloud Vision (via proxy) — unico motore OCR ──
     for (const img of state.images) {
       const pre = await preprocessImage(img);
-      const text = await callVisionOCR(pre);
+      const { text, confidence } = await callVisionOCR(pre);
       combinedText += '\n' + text;
+      if (typeof confidence === 'number') confidences.push(confidence);
     }
   } catch (err) {
-    console.warn('Vision OCR non disponibile, passo a Tesseract offline:', err);
-    usedFallback = true;
+    console.warn('Vision OCR non disponibile:', err);
+    state.ocrError = 'vision_failed';
     combinedText = '';
-    try {
-      // ── Fallback offline: Tesseract.js (nessuna connessione richiesta) ──
-      const Tesseract = await loadTesseract();
-      for (const img of state.images) {
-        const pre = await preprocessImage(img);
-        const { data } = await Tesseract.recognize(pre, 'eng');
-        combinedText += '\n' + (data && data.text ? data.text : '');
-      }
-    } catch (err2) {
-      console.warn('Anche Tesseract ha fallito:', err2);
-      state.ocrError = 'both';
-    }
   }
 
+  const avgConfidence = confidences.length ? confidences.reduce((a, b) => a + b, 0) / confidences.length : null;
+
   state.ocrRaw = combinedText;
-  state.ocrFields = ocrResultToGuestDraft(extractFieldsFromText(combinedText));
-  if (usedFallback && !state.ocrError) state.ocrError = 'fallback';
+  state.ocrFields = ocrResultToGuestDraft(extractFieldsFromText(combinedText), avgConfidence);
   state.docPhase = 'review';
   render();
 }
@@ -1043,7 +935,7 @@ function addGuestToList() {
   if (errors.length) {
     const proceed = confirm(
       (t().upload.validationTitle || 'Controlla questi campi:') + '\n\n- ' + errors.join('\n- ') +
-      '\n\n' + (t().upload.validationProceed || "Vuoi aggiungerlo comunque? Potrai correggerlo più tardi dalla lista, ma il file non sarà completo finché non lo fai.")
+      '\n\n' + (t().upload.validationProceed || "Vuoi aggiungerlo comunque? Potrai correggerlo più tardi dalla lista, ma l'export non sarà completo finché non lo fai.")
     );
     if (!proceed) return;
   }
@@ -1066,16 +958,14 @@ function removeGuestFromList(id) {
 function editGuestFromList(id) {
   const guest = state.schedine.find(g => g.id === id);
   if (!guest) return;
-  state.ocrFields = { ...guest };
+  state.ocrFields = JSON.parse(JSON.stringify(guest)); // copia profonda: niente riferimenti condivisi
   state.schedine = state.schedine.filter(g => g.id !== id);
   localStorage.setItem('mipa_schedine', JSON.stringify(state.schedine));
   state.docPhase = 'review';
   render();
 }
 
-// Genera il TXT cumulativo e lo condivide su WhatsApp come allegato (Web Share API),
-// con fallback al download manuale se il browser non supporta la condivisione di file.
-function downloadTxtFile(file, filename) {
+function downloadExportFile(file, filename) {
   const url = URL.createObjectURL(file);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
@@ -1083,10 +973,10 @@ function downloadTxtFile(file, filename) {
   URL.revokeObjectURL(url);
 }
 
-function buildAlloggiatiFile() {
-  const content = generateAlloggiatiTxt(state.schedine);
-  const filename = alloggiatiFilename();
-  return { file: new File([content], filename, { type: 'text/plain' }), filename };
+function buildExportFile() {
+  const content = JSON.stringify(buildExportJson(), null, 2);
+  const filename = exportFilename();
+  return { file: new File([content], filename, { type: 'application/json' }), filename };
 }
 
 function warnIfIncomplete() {
@@ -1098,14 +988,14 @@ function warnIfIncomplete() {
   );
 }
 
-// Invia il TXT su WhatsApp: prova prima la condivisione nativa (Web Share API, l'ospite
+// Invia il JSON su WhatsApp: prova prima la condivisione nativa (Web Share API, l'utente
 // sceglie WhatsApp e il file arriva come allegato); se il browser non la supporta
 // (tipicamente su desktop), scarica il file e apre wa.me perché l'operatore lo alleghi a mano.
 async function sendViaWhatsApp() {
   if (!state.schedine.length) return;
   if (!warnIfIncomplete()) return;
-  const { file, filename } = buildAlloggiatiFile();
-  const shareText = (t().upload && t().upload.txtShareMsg) || 'Schedine alloggiati MiPA';
+  const { file, filename } = buildExportFile();
+  const shareText = (t().upload && t().upload.txtShareMsg) || 'Dati ospiti MiPA';
 
   if (navigator.share && navigator.canShare) {
     try {
@@ -1126,7 +1016,7 @@ async function sendViaWhatsApp() {
   // Fallback: scarica il file e apre WhatsApp Web/app con un messaggio pronto;
   // l'allegato va aggiunto a mano (limite del browser, non aggirabile senza un backend
   // con WhatsApp Business API — vedi la conversazione precedente per i dettagli).
-  downloadTxtFile(file, filename);
+  downloadExportFile(file, filename);
   window.open('https://wa.me/393339201524?text=' + encodeURIComponent(shareText), '_blank');
   alert(t().upload.txtDownloadedNoteWa || 'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.');
   state.docsSent = true;
@@ -1134,17 +1024,16 @@ async function sendViaWhatsApp() {
   render();
 }
 
-// Invia il TXT via email: nessun mailto: può allegare file per limiti del browser, quindi
+// Invia il JSON via email: nessun mailto: può allegare file per limiti del browser, quindi
 // scarica il file e apre il client di posta con oggetto/corpo pronti; l'allegato va
-// aggiunto a mano (per un invio automatico servirebbe un backend dedicato — se ti serve,
-// possiamo aggiungerlo in un secondo momento).
+// aggiunto a mano (per un invio automatico servirebbe un backend dedicato).
 function sendViaEmail() {
   if (!state.schedine.length) return;
   if (!warnIfIncomplete()) return;
-  const { file, filename } = buildAlloggiatiFile();
-  downloadTxtFile(file, filename);
-  const subject = 'MiPA — Schedine Alloggiati ' + filename;
-  const body = (t().upload && t().upload.txtShareMsg) || 'Schedine alloggiati MiPA';
+  const { file, filename } = buildExportFile();
+  downloadExportFile(file, filename);
+  const subject = 'MiPA — Export ospiti ' + filename;
+  const body = (t().upload && t().upload.txtShareMsg) || 'Dati ospiti MiPA';
   window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
   alert(t().upload.txtDownloadedNoteEmail || 'Il file è stato scaricato: allegalo manualmente nella email che si è aperta.');
   state.docsSent = true;
@@ -1438,14 +1327,17 @@ function renderProcessingStep(tr) {
 }
 
 // ── Campi del form di revisione ospite ──
-function guestField(tr, key, label, opts) {
+function guestField(tr, path, label, opts) {
   opts = opts || {};
-  const input = h('input', {
+  const [group, key] = path.split('.');
+  const attrs = {
     className: 'field-input', type: opts.type || 'text',
     placeholder: opts.placeholder || '',
-    value: (state.ocrFields && state.ocrFields[key]) || '',
-  });
-  input.addEventListener('input', e => updateGuestField(key, e.target.value));
+    value: (state.ocrFields && state.ocrFields[group] && state.ocrFields[group][key]) || '',
+  };
+  if (opts.list) attrs.list = opts.list;
+  const input = h('input', attrs);
+  input.addEventListener('input', e => updateGuestField(path, e.target.value));
   return h('div', { className: 'field-group' },
     h('label', { className: 'field-label' }, label),
     input,
@@ -1453,90 +1345,72 @@ function guestField(tr, key, label, opts) {
   );
 }
 
-function guestSelect(tr, key, label, options) {
+function guestSelect(tr, path, label, options) {
+  const [group, key] = path.split('.');
   const select = h('select', { className: 'field-input' },
     ...options.map(o => h('option', { value: o.value }, o.label))
   );
-  select.value = (state.ocrFields && state.ocrFields[key]) || '';
-  select.addEventListener('change', e => { updateGuestField(key, e.target.value); render(); });
+  select.value = (state.ocrFields && state.ocrFields[group] && state.ocrFields[group][key]) || '';
+  select.addEventListener('change', e => { updateGuestField(path, e.target.value); render(); });
   return h('div', { className: 'field-group' },
     h('label', { className: 'field-label' }, label),
     select,
   );
 }
 
-// Campo Stato (nascita o cittadinanza): input testuale + tentativo di aggancio automatico
-// al codice dal seed; mostra il codice risolto (o l'invito a inserirlo a mano).
-function guestStatoField(tr, labelKey, label) {
-  const codeKey = labelKey === 'statoNascitaLabel' ? 'codiceStatoNascita' : 'codiceCittadinanza';
-  const input = h('input', {
-    className: 'field-input', type: 'text', placeholder: 'es. ITALIA',
-    value: (state.ocrFields && state.ocrFields[labelKey]) || '',
-  });
-  input.addEventListener('input', e => { updateGuestStato(labelKey, e.target.value.toUpperCase()); render(); });
-  const codeInput = h('input', {
-    className: 'field-input', type: 'text', placeholder: tr.upload.manualCodePlaceholder,
-    value: (state.ocrFields && state.ocrFields[codeKey]) || '',
-  });
-  codeInput.addEventListener('input', e => updateGuestField(codeKey, e.target.value));
-  const resolved = state.ocrFields && state.ocrFields[codeKey];
-  return h('div', { className: 'field-group' },
-    h('label', { className: 'field-label' }, label),
-    input,
-    h('div', { className: 'field-hint' }, resolved ? (tr.upload.codeResolved + ': ' + resolved) : tr.upload.codeNotFound),
-    codeInput,
+// Piccolo elenco di suggerimenti per il tipo documento (autocompletamento, non una tabella
+// codici): il campo resta testo libero perché ogni paese ha i suoi tipi di documento.
+const DOC_TYPE_DATALIST_ID = 'doc-type-suggestions';
+function docTypeDatalist() {
+  return h('datalist', { id: DOC_TYPE_DATALIST_ID },
+    ...DOCUMENT_TYPE_SUGGESTIONS.map(v => h('option', { value: v }))
   );
 }
 
 function renderReviewStep(tr) {
-  let errorNote = null;
-  if (state.ocrError === 'fallback') {
-    errorNote = h('div', { className: 'ocr-error-note' }, tr.upload.ocrFallbackMsg);
-  } else if (state.ocrError === 'both') {
-    errorNote = h('div', { className: 'ocr-error-note' }, tr.upload.ocrErrorMsg);
-  }
+  const errorNote = state.ocrError === 'vision_failed'
+    ? h('div', { className: 'ocr-error-note' }, tr.upload.ocrErrorMsg)
+    : null;
   const techDetail = state.ocrErrorDetail ? h('details', { className: 'tech-detail' },
     h('summary', {}, tr.upload.techDetailsToggle),
     h('div', { className: 'tech-detail-body' }, state.ocrErrorDetail),
   ) : null;
 
-  const isPrincipal = ['16', '17', '18'].includes((state.ocrFields || {}).tipoAlloggiato);
-  const docFields = isPrincipal ? [
-    guestSelect(tr, 'tipoDocumentoLabel', tr.upload.fDocType, ALLOGGIATI_DOCUMENTI.map(d => ({ value: d.label, label: d.label }))),
-    guestField(tr, 'codiceTipoDocumento', tr.upload.fDocCode, { hint: tr.upload.docCodeHint }),
-    guestField(tr, 'numeroDocumento', tr.upload.fNumber),
-    guestField(tr, 'luogoRilascioLabel', tr.upload.fLuogoRilascio),
-    guestField(tr, 'codiceLuogoRilascio', tr.upload.fLuogoRilascioCode, { hint: tr.upload.docCodeHint }),
-  ] : [
-    h('div', { className: 'field-sub' }, tr.upload.groupMemberNote),
-  ];
+  const confidence = state.ocrFields && state.ocrFields.document ? state.ocrFields.document.ocrConfidence : null;
+  const confidenceNote = (typeof confidence === 'number') ? h('div', { className: 'field-hint' },
+    tr.upload.ocrConfidenceLabel + ': ' + Math.round(confidence * 100) + '%'
+  ) : null;
 
   return [
+    docTypeDatalist(),
     h('h2', { className: 'section-h2' }, tr.upload.reviewTitle),
     h('div', { className: 'field-sub' }, tr.upload.reviewSub),
     errorNote,
     techDetail,
 
     h('div', { className: 'field-section-title' }, tr.upload.sectionStay),
-    guestSelect(tr, 'tipoAlloggiato', tr.upload.fTipoAlloggiato, ALLOGGIATI_TIPO_OPTIONS.map(o => ({ value: o.code, label: o.code + ' — ' + o.label }))),
-    guestField(tr, 'dataArrivo', tr.upload.fDataArrivo, { placeholder: 'gg/mm/aaaa' }),
-    guestField(tr, 'giorniPermanenza', tr.upload.fPermanenza, { type: 'number' }),
+    guestField(tr, 'stay.arrivalDate', tr.upload.fDataArrivo, { placeholder: 'gg/mm/aaaa' }),
+    guestField(tr, 'stay.departureDate', tr.upload.fDataPartenza, { placeholder: 'gg/mm/aaaa' }),
+    guestSelect(tr, 'stay.guestType', tr.upload.fTipoAlloggiato, GUEST_TYPE_OPTIONS.map(v => ({ value: v, label: v }))),
 
     h('div', { className: 'field-section-title' }, tr.upload.sectionAnagrafica),
-    guestField(tr, 'cognome', tr.upload.fSurname),
-    guestField(tr, 'nome', tr.upload.fGivenNames),
-    guestSelect(tr, 'sesso', tr.upload.fSesso, [{ value: '', label: '—' }, { value: 'M', label: 'M' }, { value: 'F', label: 'F' }]),
-    guestField(tr, 'dataNascita', tr.upload.fDob, { placeholder: 'gg/mm/aaaa' }),
+    guestField(tr, 'personal.lastName', tr.upload.fSurname),
+    guestField(tr, 'personal.firstName', tr.upload.fGivenNames),
+    guestSelect(tr, 'personal.gender', tr.upload.fSesso, [{ value: '', label: '—' }, { value: 'M', label: 'M' }, { value: 'F', label: 'F' }]),
+    guestField(tr, 'personal.birthDate', tr.upload.fDob, { placeholder: 'gg/mm/aaaa' }),
 
     h('div', { className: 'field-section-title' }, tr.upload.sectionNascita),
-    guestStatoField(tr, 'statoNascitaLabel', tr.upload.fStatoNascita),
-    guestField(tr, 'comuneNascitaLabel', tr.upload.fComuneNascita),
-    guestField(tr, 'codiceComuneNascita', tr.upload.fComuneNascitaCode, { hint: tr.upload.docCodeHint }),
-    guestField(tr, 'provinciaNascita', tr.upload.fProvinciaNascita, { placeholder: 'es. ME' }),
-    guestStatoField(tr, 'cittadinanzaLabel', tr.upload.fCittadinanza),
+    guestField(tr, 'personal.birthPlace', tr.upload.fComuneNascita),
+    guestField(tr, 'personal.birthCountry', tr.upload.fStatoNascita, { placeholder: 'es. ITALIA' }),
+    guestField(tr, 'personal.nationality', tr.upload.fCittadinanza, { placeholder: 'es. ITA / ITALIA' }),
 
     h('div', { className: 'field-section-title' }, tr.upload.sectionDocumento),
-    ...docFields,
+    guestField(tr, 'document.type', tr.upload.fDocType, { list: DOC_TYPE_DATALIST_ID }),
+    guestField(tr, 'document.number', tr.upload.fNumber),
+    guestField(tr, 'document.issueDate', tr.upload.fDataRilascio, { placeholder: 'gg/mm/aaaa' }),
+    guestField(tr, 'document.issuePlace', tr.upload.fLuogoRilascio),
+    guestField(tr, 'document.expiryDate', tr.upload.fExpiry, { placeholder: 'gg/mm/aaaa' }),
+    confidenceNote,
 
     h('button', { className: 'btn-wa', style: 'border:none;cursor:pointer;width:100%;', onClick: addGuestToList },
       ms('person_add'), ' ', tr.upload.confirmAdd),
@@ -1548,10 +1422,10 @@ function renderGuestListStep(tr) {
   const rows = state.schedine.map(g => h('div', { className: 'guest-row' },
     h('div', { className: 'guest-row-info' },
       h('div', { className: 'guest-row-name' },
-        (g.cognome || '—') + ' ' + (g.nome || ''),
+        (g.personal.lastName || '—') + ' ' + (g.personal.firstName || ''),
         g._incomplete ? h('span', { className: 'guest-row-warning' }, ' ⚠ ' + tr.upload.incompleteBadge) : null,
       ),
-      h('div', { className: 'guest-row-sub' }, g.dataArrivo + ' · ' + g.giorniPermanenza + 'gg · tipo ' + g.tipoAlloggiato),
+      h('div', { className: 'guest-row-sub' }, g.stay.arrivalDate + ' → ' + g.stay.departureDate + ' · ' + g.stay.guestType),
     ),
     h('div', { className: 'guest-row-actions' },
       h('button', { className: 'guest-row-btn', onClick: () => editGuestFromList(g.id) }, ms('edit')),
@@ -1559,7 +1433,7 @@ function renderGuestListStep(tr) {
     ),
   ));
 
-  const preview = state.showTxtPreview ? h('pre', { className: 'txt-preview' }, generateAlloggiatiTxt(state.schedine)) : null;
+  const preview = state.showTxtPreview ? h('pre', { className: 'txt-preview' }, JSON.stringify(buildExportJson(), null, 2)) : null;
 
   return [
     h('h2', { className: 'section-h2' }, tr.upload.listTitle),
