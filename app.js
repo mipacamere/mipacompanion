@@ -20,6 +20,7 @@ const state = {
   showTxtPreview: false,
   sendStatus: 'idle', // 'idle' | 'sending' | 'sent' | 'error'
   sendErrorDetail: '',
+  disclaimerReturnPhase: 'capture',
   showPast: false,
   installPrompt: null,
   installDismissed: false,
@@ -51,7 +52,22 @@ const allT = {
       sendErrorMsg:"Couldn't send automatically. Try WhatsApp or download the file below.", downloadBtn:'Download file',
       txtDownloadedNoteWa:'The file has been downloaded: please attach it manually in the WhatsApp chat that just opened.',
       txtShareMsg:'Guest registration file (schedine alloggiati) attached.', txtDownloadedNote:'The file has been downloaded: please attach it manually on WhatsApp.',
-      validationTitle:'Please complete these fields before continuing:', yesterday:'yesterday', today:'today', tomorrow:'tomorrow' },
+      validationTitle:'Please complete these fields before continuing:', yesterday:'yesterday', today:'today', tomorrow:'tomorrow',
+      disclaimerShort:'Photos are processed by a third-party OCR service, and results may contain errors.',
+      disclaimerLinkText:'Read more', disclaimerBack:'Back to guest entry',
+      manualEntryBtn:'Fill in manually (no photos, no OCR)',
+      downloadedManualMsg:'File downloaded. Send it with whichever tool you prefer: WhatsApp, Telegram, email, or another app.',
+      disclaimer: {
+        title:'How your data is handled',
+        paragraphs:[
+          "When you use automatic data extraction (OCR), the photos you take are sent to Google Cloud Vision, a third-party service, to read the text on the document. Google processes them only to return the result and, per its stated policy, does not use them to train its models.",
+          "Once you confirm a guest and choose to send the data, the resulting file is transmitted to the property either by email (through the Resend service) or, if you choose that option, shared directly via WhatsApp from your device.",
+          "Automatic extraction is a convenience, not a guarantee: OCR results can contain errors, especially with damaged, glare-affected, or unusually formatted documents. Every field is always shown to you for review and must be checked and corrected before adding a guest — the app will not let you proceed if required fields are empty.",
+          "By choosing to use automatic OCR extraction, you accept that the document photo will be processed by the third-party service described above, and that you are responsible for verifying the accuracy of every field before it is sent. If you would rather not use this feature, you can fill in all fields by hand instead — no photo is taken or sent anywhere in that case.",
+          "Data entered in this app is kept only on your device (in the browser's local storage) until you choose to send it, and is cleared when you use the checkout function.",
+        ],
+      },
+    },
     info: { general:'General Info', contacts:'Contacts', address:'Address', phone:'Phone', whatsapp:'Chat on WhatsApp', checkin:'3:00 PM – 10:00 PM', checkout:'By 10:30 AM', wifiConnect:'Connect to WiFi' },
     itinerary: { desc:'Discover the best of the city with this carefully planned itinerary. Explore must-see attractions and enjoy local experiences.', btn:'Explore Milazzo' },
     map: { title:'Milazzo Interactive Map', desc:'Highlights, landmarks and hidden gems.', openMaps:'Open in Google Maps' },
@@ -104,7 +120,22 @@ const allT = {
       sendErrorMsg:'Non è stato possibile inviare automaticamente. Prova con WhatsApp o scarica il file qui sotto.', downloadBtn:'Scarica il file',
       txtDownloadedNoteWa:'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.',
       txtShareMsg:'In allegato il file per la registrazione ospiti (schedine alloggiati).', txtDownloadedNote:'Il file è stato scaricato: allegalo manualmente su WhatsApp.',
-      validationTitle:'Completa questi campi prima di continuare:', yesterday:'ieri', today:'oggi', tomorrow:'domani' },
+      validationTitle:'Completa questi campi prima di continuare:', yesterday:'ieri', today:'oggi', tomorrow:'domani',
+      disclaimerShort:'Le foto vengono elaborate da un servizio OCR di terze parti, e il risultato può contenere errori.',
+      disclaimerLinkText:'Scopri di più', disclaimerBack:'Torna all\'inserimento ospite',
+      manualEntryBtn:'Compila manualmente (senza foto né OCR)',
+      downloadedManualMsg:'File scaricato. Invialo con lo strumento che preferisci: WhatsApp, Telegram, email o un\'altra app.',
+      disclaimer: {
+        title:'Come vengono trattati i tuoi dati',
+        paragraphs:[
+          "Quando usi l'estrazione automatica dei dati (OCR), le foto che scatti vengono inviate a Google Cloud Vision, un servizio di terze parti, per leggere il testo sul documento. Google le elabora solo per restituire il risultato e, secondo la sua policy dichiarata, non le usa per addestrare i propri modelli.",
+          "Una volta confermato un ospite e scelto di inviare i dati, il file risultante viene trasmesso alla struttura via email (tramite il servizio Resend) oppure, se scegli questa opzione, condiviso direttamente su WhatsApp dal tuo dispositivo.",
+          "L'estrazione automatica è una comodità, non una garanzia: i risultati dell'OCR possono contenere errori, specialmente con documenti danneggiati, con riflessi di luce o con formati insoliti. Ogni campo ti viene sempre mostrato per la revisione e va controllato e corretto prima di aggiungere un ospite — l'app non ti lascia proseguire se mancano campi obbligatori.",
+          "Scegliendo di usare l'estrazione automatica OCR, accetti che la foto del documento venga elaborata dal servizio di terze parti sopra descritto, e sei responsabile della verifica dell'esattezza di ogni campo prima dell'invio. Se preferisci non usare questa funzione, puoi compilare tutti i campi a mano: in quel caso nessuna foto viene scattata né inviata da nessuna parte.",
+          "I dati inseriti in questa app restano solo sul tuo dispositivo (nella memoria locale del browser) finché non scegli di inviarli, e vengono cancellati quando usi la funzione di checkout.",
+        ],
+      },
+    },
     info: { general:'Informazioni Generali', contacts:'Contatti', address:'Indirizzo', phone:'Telefono', whatsapp:'Chatta su WhatsApp', checkin:'15:00 – 22:00', checkout:'Entro le 10:30', wifiConnect:'Connetti al WiFi' },
     itinerary: { desc:'Scopri il meglio della città con questo itinerario giornaliero ben pianificato.', btn:'Esplora Milazzo' },
     map: { title:'Mappa Interattiva di Milazzo', desc:'Attrazioni, monumenti e gemme nascoste.', openMaps:'Apri in Google Maps' },
@@ -1259,6 +1290,7 @@ function downloadOnly() {
   if (!state.schedine.length) return;
   const { file, filename } = buildExportFile();
   downloadExportFile(file, filename);
+  alert(t().upload.downloadedManualMsg || 'File scaricato. Invialo con lo strumento che preferisci: WhatsApp, Telegram, email o un altro ancora.');
 }
 
 function menuItems() {
@@ -1516,15 +1548,25 @@ function renderCaptureStep(tr) {
     )
   ) : null;
 
+  const disclaimerNote = h('div', { className: 'disclaimer-note' },
+    h('span', {}, tr.upload.disclaimerShort),
+    h('button', { className: 'disclaimer-link', onClick: openDisclaimer }, tr.upload.disclaimerLinkText),
+  );
+
   const ocrBtn = state.images.length ? h('button', {
     className: 'btn-wa', style: 'border:none;cursor:pointer;width:100%;', onClick: runOCR,
   }, ms('document_scanner'), ' ', tr.upload.ocrButton) : null;
+
+  const manualBtn = h('button', {
+    className: 'btn-link', onClick: startManualEntry,
+  }, tr.upload.manualEntryBtn);
 
   const backToList = state.schedine.length ? h('button', {
     className: 'btn-link', onClick: () => { state.docPhase = 'list'; render(); },
   }, tr.upload.backToList) : null;
 
   return [
+    disclaimerNote,
     h('div', { className: 'upload-drop', onClick: () => fileInput.click() },
       h('span', { className: 'upload-drop-icon' }, '📸'),
       h('div', { className: 'upload-drop-text' }, tr.upload.dropText),
@@ -1533,7 +1575,43 @@ function renderCaptureStep(tr) {
     ),
     previews,
     ocrBtn,
+    manualBtn,
     backToList,
+  ];
+}
+
+// Avvia una schedina vuota da compilare interamente a mano, senza foto né OCR: nessuna
+// immagine viene inviata a Google Vision in questo percorso.
+function startManualEntry() {
+  state.ocrFields = emptyGuestDraft();
+  state.ocrError = null;
+  state.ocrErrorDetail = '';
+  state.docPhase = 'review';
+  render();
+}
+
+// Apre la pagina informativa completa, ricordando da dove si è arrivati per il tasto "indietro".
+function openDisclaimer() {
+  state.disclaimerReturnPhase = state.docPhase;
+  state.docPhase = 'disclaimer';
+  render();
+}
+
+function renderDisclaimerStep(tr) {
+  const d = tr.upload.disclaimer;
+  return [
+    h('h2', { className: 'section-h2' }, d.title),
+    h('div', { className: 'disclaimer-body' },
+      ...d.paragraphs.map(p => h('p', {}, p)),
+    ),
+    h('button', {
+      className: 'btn-wa', style: 'border:none;cursor:pointer;width:100%;',
+      onClick: startManualEntry,
+    }, ms('edit_note'), ' ', tr.upload.manualEntryBtn),
+    h('button', {
+      className: 'btn-link',
+      onClick: () => { state.docPhase = state.disclaimerReturnPhase || 'capture'; render(); },
+    }, tr.upload.disclaimerBack),
   ];
 }
 
@@ -1743,6 +1821,7 @@ function renderUpload() {
   if (state.docPhase === 'processing') body = renderProcessingStep(tr);
   else if (state.docPhase === 'review') body = renderReviewStep(tr);
   else if (state.docPhase === 'list') body = renderGuestListStep(tr);
+  else if (state.docPhase === 'disclaimer') body = renderDisclaimerStep(tr);
   else body = renderCaptureStep(tr);
 
   return h('div', { className: 'page' },

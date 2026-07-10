@@ -243,6 +243,10 @@ a{color:var(--primary);text-decoration:none}
 .guest-row-btn{border:none;background:var(--overlay);border-radius:var(--r-sm);width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-2)}
 .guest-row-btn-danger{color:var(--danger)}
 .txt-preview{background:var(--text-1);color:#d1fadf;font-size:11px;line-height:1.5;padding:12px;border-radius:var(--r-sm);overflow-x:auto;white-space:pre;margin:10px 0 16px}
+.disclaimer-note{display:flex;align-items:center;flex-wrap:wrap;gap:6px;background:var(--overlay);border-radius:var(--r-sm);padding:10px 14px;font-size:12px;color:var(--text-2);margin-bottom:14px;line-height:1.5}
+.disclaimer-link{border:none;background:none;padding:0;font-size:12px;font-weight:700;color:var(--primary-dark);text-decoration:underline;cursor:pointer;font-family:inherit}
+.disclaimer-body{margin-bottom:20px}
+.disclaimer-body p{font-size:13px;line-height:1.6;color:var(--text-2);margin-bottom:14px}
 .guest-row-warning{color:var(--warning);font-size:11px;font-weight:700}
 .send-choice{display:flex;gap:8px;margin-bottom:8px}
 .send-choice .btn-wa,.send-choice .btn-primary{flex:1;width:auto}
