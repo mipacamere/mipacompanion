@@ -18,6 +18,8 @@ const state = {
   ocrError: null,
   ocrErrorDetail: '',  // dettaglio tecnico dell'ultimo errore Vision, per diagnosi
   showTxtPreview: false,
+  sendStatus: 'idle', // 'idle' | 'sending' | 'sent' | 'error'
+  sendErrorDetail: '',
   showPast: false,
   installPrompt: null,
   installDismissed: false,
@@ -44,9 +46,10 @@ const allT = {
       ocrConfidenceLabel:'OCR confidence',
       confirmAdd:'Add guest to the list', backToPhotos:'Back to photos', backToList:'Back to guest list',
       listTitle:'Guests in this booking', listEmpty:'No guests added yet.', addGuestBtn:'Add a guest',
-      sendWhatsAppBtn:'Send via WhatsApp', showPreview:'Preview JSON file', hidePreview:'Hide preview',
-      sendEmailBtn:'Send via email', txtDownloadedNoteWa:'The file has been downloaded: please attach it manually in the WhatsApp chat that just opened.',
-      txtDownloadedNoteEmail:'The file has been downloaded: please attach it manually in the email that just opened.',
+      sendWhatsAppBtn:'Send via WhatsApp (manual)', showPreview:'Preview JSON file', hidePreview:'Hide preview',
+      sendAutoBtn:'Send automatically (email)', sending:'Sending…', sentAutomatically:'Sent ✓',
+      sendErrorMsg:"Couldn't send automatically. Try WhatsApp or download the file below.", downloadBtn:'Download file',
+      txtDownloadedNoteWa:'The file has been downloaded: please attach it manually in the WhatsApp chat that just opened.',
       txtShareMsg:'Guest registration file (schedine alloggiati) attached.', txtDownloadedNote:'The file has been downloaded: please attach it manually on WhatsApp.',
       validationTitle:'Please complete these fields before continuing:', yesterday:'yesterday', today:'today', tomorrow:'tomorrow' },
     info: { general:'General Info', contacts:'Contacts', address:'Address', phone:'Phone', whatsapp:'Chat on WhatsApp', checkin:'3:00 PM – 10:00 PM', checkout:'By 10:30 AM', wifiConnect:'Connect to WiFi' },
@@ -96,9 +99,10 @@ const allT = {
       ocrConfidenceLabel:'Affidabilità OCR',
       confirmAdd:'Aggiungi ospite alla lista', backToPhotos:'Torna alle foto', backToList:'Torna alla lista ospiti',
       listTitle:'Ospiti di questa pratica', listEmpty:'Nessun ospite ancora aggiunto.', addGuestBtn:'Aggiungi un ospite',
-      sendWhatsAppBtn:'Invia su WhatsApp', showPreview:'Anteprima file JSON', hidePreview:'Nascondi anteprima',
-      sendEmailBtn:'Invia via email', txtDownloadedNoteWa:'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.',
-      txtDownloadedNoteEmail:'Il file è stato scaricato: allegalo manualmente nella email che si è aperta.',
+      sendWhatsAppBtn:'Invia su WhatsApp (manuale)', showPreview:'Anteprima file JSON', hidePreview:'Nascondi anteprima',
+      sendAutoBtn:'Invia automaticamente (email)', sending:'Invio in corso…', sentAutomatically:'Inviato ✓',
+      sendErrorMsg:'Non è stato possibile inviare automaticamente. Prova con WhatsApp o scarica il file qui sotto.', downloadBtn:'Scarica il file',
+      txtDownloadedNoteWa:'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.',
       txtShareMsg:'In allegato il file per la registrazione ospiti (schedine alloggiati).', txtDownloadedNote:'Il file è stato scaricato: allegalo manualmente su WhatsApp.',
       validationTitle:'Completa questi campi prima di continuare:', yesterday:'ieri', today:'oggi', tomorrow:'domani' },
     info: { general:'Informazioni Generali', contacts:'Contatti', address:'Indirizzo', phone:'Telefono', whatsapp:'Chatta su WhatsApp', checkin:'15:00 – 22:00', checkout:'Entro le 10:30', wifiConnect:'Connetti al WiFi' },
@@ -868,11 +872,20 @@ function emptyGuestDraft() {
 // senza alcuna conversione in codice. Solo i campi che l'OCR può davvero leggere vengono
 // precompilati; il resto (arrivo, partenza, luogo nascita se non riconosciuto, ecc.) resta
 // da compilare o verificare a mano.
+// Uniforma qualunque data letta dall'OCR al formato gg/mm/aaaa, indipendentemente dal
+// separatore stampato sul documento originale (i documenti italiani spesso usano i punti:
+// "31.12.2028" anziché "31/12/2028").
+function normalizeDateStr(s) {
+  if (!s) return '';
+  const m = s.trim().match(/^(\d{2})[.\-\/](\d{2})[.\-\/](\d{4})$/);
+  return m ? m[1] + '/' + m[2] + '/' + m[3] : s.trim();
+}
+
 function ocrResultToGuestDraft(ocrResult, confidence) {
   const draft = emptyGuestDraft();
   draft.personal.lastName = (ocrResult.surname || '').trim();
   draft.personal.firstName = (ocrResult.givenNames || '').trim();
-  draft.personal.birthDate = ocrResult.dob || '';
+  draft.personal.birthDate = normalizeDateStr(ocrResult.dob);
   draft.personal.gender = ocrResult.sex || '';
   // Cittadinanza/stato di nascita: l'OCR può leggere un codice MRZ a 3 lettere ("ITA")
   // o un nome per esteso — in entrambi i casi cerchiamo la voce più vicina nella tabella
@@ -890,8 +903,8 @@ function ocrResultToGuestDraft(ocrResult, confidence) {
 
   draft.document.type = matchDocumento(ocrResult.docType);
   draft.document.number = ocrResult.number || '';
-  draft.document.expiryDate = ocrResult.expiry || '';
-  draft.document.issueDate = ocrResult.issueDate || '';
+  draft.document.expiryDate = normalizeDateStr(ocrResult.expiry);
+  draft.document.issueDate = normalizeDateStr(ocrResult.issueDate);
   if (ocrResult.luogoRilascio) draft.document.issuePlace = ocrResult.luogoRilascio;
   if (typeof confidence === 'number') draft.document.ocrConfidence = Math.round(confidence * 100) / 100;
 
@@ -1200,8 +1213,8 @@ async function sendViaWhatsApp() {
   }
 
   // Fallback: scarica il file e apre WhatsApp Web/app con un messaggio pronto;
-  // l'allegato va aggiunto a mano (limite del browser, non aggirabile senza un backend
-  // con WhatsApp Business API — vedi la conversazione precedente per i dettagli).
+  // l'allegato va aggiunto a mano (limite del browser, non aggirabile senza WhatsApp
+  // Business API — vedi la conversazione per i dettagli).
   downloadExportFile(file, filename);
   window.open('https://wa.me/393339201524?text=' + encodeURIComponent(shareText), '_blank');
   alert(t().upload.txtDownloadedNoteWa || 'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.');
@@ -1210,20 +1223,42 @@ async function sendViaWhatsApp() {
   render();
 }
 
-// Invia il JSON via email: nessun mailto: può allegare file per limiti del browser, quindi
-// scarica il file e apre il client di posta con oggetto/corpo pronti; l'allegato va
-// aggiunto a mano (per un invio automatico servirebbe un backend dedicato).
-function sendViaEmail() {
+// Invio automatico via email: nessun download, nessun cambio app — il JSON viene inviato
+// da un backend (Netlify Function + Resend) direttamente alla casella email configurata.
+const SEND_PROXY_URL = '/api/send-guest-data';
+
+async function sendAutomatically() {
+  if (!state.schedine.length) return;
+  state.sendStatus = 'sending';
+  state.sendErrorDetail = '';
+  render();
+
+  try {
+    const res = await fetch(SEND_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-App-Token': OCR_APP_TOKEN },
+      body: JSON.stringify({ exportData: buildExportJson(), filename: exportFilename() }),
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => '');
+      throw new Error('HTTP ' + res.status + (detail ? ' — ' + detail.slice(0, 300) : ''));
+    }
+    state.sendStatus = 'sent';
+    state.docsSent = true;
+    localStorage.setItem('mipa_docssent', 'true');
+  } catch (err) {
+    console.warn('Invio automatico fallito:', err);
+    state.sendStatus = 'error';
+    state.sendErrorDetail = err.message || String(err);
+  }
+  render();
+}
+
+// Riserva manuale: scarica semplicemente il file, senza tentare alcun invio.
+function downloadOnly() {
   if (!state.schedine.length) return;
   const { file, filename } = buildExportFile();
   downloadExportFile(file, filename);
-  const subject = 'MiPA — Export ospiti ' + filename;
-  const body = (t().upload && t().upload.txtShareMsg) || 'Dati ospiti MiPA';
-  window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-  alert(t().upload.txtDownloadedNoteEmail || 'Il file è stato scaricato: allegalo manualmente nella email che si è aperta.');
-  state.docsSent = true;
-  localStorage.setItem('mipa_docssent', 'true');
-  render();
 }
 
 function menuItems() {
@@ -1660,18 +1695,39 @@ function renderGuestListStep(tr) {
 
   const preview = state.showTxtPreview ? h('pre', { className: 'txt-preview' }, JSON.stringify(buildExportJson(), null, 2)) : null;
 
+  let sendSection = null;
+  if (state.schedine.length) {
+    if (state.sendStatus === 'sending') {
+      sendSection = h('div', { className: 'ocr-processing', style: 'padding:24px 20px;' },
+        h('div', { className: 'ocr-spinner' }), h('div', {}, tr.upload.sending));
+    } else if (state.sendStatus === 'sent') {
+      sendSection = h('div', { className: 'sent-badge' }, ms('check_circle'), ' ', tr.upload.sentAutomatically);
+    } else {
+      sendSection = h('div', {},
+        state.sendStatus === 'error' ? h('div', { className: 'ocr-error-note' }, tr.upload.sendErrorMsg) : null,
+        state.sendErrorDetail ? h('details', { className: 'tech-detail' },
+          h('summary', {}, tr.upload.techDetailsToggle),
+          h('div', { className: 'tech-detail-body' }, state.sendErrorDetail),
+        ) : null,
+        h('button', { className: 'btn-wa', style: 'border:none;cursor:pointer;width:100%;', onClick: sendAutomatically },
+          ms('forward_to_inbox'), ' ', tr.upload.sendAutoBtn),
+        h('div', { className: 'send-choice' },
+          h('button', { className: 'btn-primary', style: 'background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-xs);', onClick: sendViaWhatsApp },
+            ms('chat'), ' ', tr.upload.sendWhatsAppBtn),
+          h('button', { className: 'btn-primary', style: 'background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-xs);', onClick: downloadOnly },
+            ms('download'), ' ', tr.upload.downloadBtn),
+        ),
+      );
+    }
+  }
+
   return [
     h('h2', { className: 'section-h2' }, tr.upload.listTitle),
     state.schedine.length ? h('div', { className: 'guest-list' }, ...rows)
       : h('div', { className: 'field-sub' }, tr.upload.listEmpty),
     h('button', { className: 'btn-primary', style: 'background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-xs);', onClick: () => { state.docPhase = 'capture'; render(); } },
       ms('add_a_photo'), ' ', tr.upload.addGuestBtn),
-    state.schedine.length ? h('div', { className: 'send-choice' },
-      h('button', { className: 'btn-wa', style: 'border:none;cursor:pointer;', onClick: sendViaWhatsApp },
-        ms('chat'), ' ', tr.upload.sendWhatsAppBtn),
-      h('button', { className: 'btn-primary', style: 'background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-xs);', onClick: sendViaEmail },
-        ms('mail'), ' ', tr.upload.sendEmailBtn),
-    ) : null,
+    sendSection,
     state.schedine.length ? h('button', { className: 'btn-link', onClick: () => { state.showTxtPreview = !state.showTxtPreview; render(); } },
       state.showTxtPreview ? tr.upload.hidePreview : tr.upload.showPreview) : null,
     preview,
