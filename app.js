@@ -43,13 +43,13 @@ const allT = {
       sectionStay:'Stay', sectionAnagrafica:'Personal data', sectionNascita:'Place of birth & citizenship', sectionDocumento:'Identity document',
       fDocType:'Document type', fSurname:'Surname', fGivenNames:'First name(s)', fNumber:'Document number', fDob:'Date of birth', fExpiry:'Expiry date',
       fSesso:'Sex', fTipoAlloggiato:'Guest type', fDataArrivo:'Arrival date', fDataPartenza:'Departure date', fDataRilascio:'Issue date',
-      fStatoNascita:'Birth country', fComuneNascita:'Place of birth', fCittadinanza:'Nationality', fLuogoRilascio:'Place document was issued',
+      fStatoNascita:'Birth country', fComuneNascita:'Place of birth', fProvinciaNascita:'Province of birth (2-letter code, Italy only)', fCittadinanza:'Nationality', fLuogoRilascio:'Place document was issued',
       ocrConfidenceLabel:'OCR confidence',
       confirmAdd:'Add guest to the list', backToPhotos:'Back to photos', backToList:'Back to guest list',
       listTitle:'Guests in this booking', listEmpty:'No guests added yet.', addGuestBtn:'Add a guest',
       sendWhatsAppBtn:'Send via WhatsApp (manual)', showPreview:'Preview JSON file', hidePreview:'Hide preview',
-      sendAutoBtn:'Send automatically (email)', sending:'Sending…', sentAutomatically:'Sent ✓',
-      sendErrorMsg:"Couldn't send automatically. Try WhatsApp or download the file below.", downloadBtn:'Download file',
+      sendAutoBtn:'Send automatically (Google Sheet)', sending:'Sending…', sentAutomatically:'Sent ✓',
+      sendErrorMsg:"Couldn't write to Google Sheet automatically. Try WhatsApp or download the file below.", downloadBtn:'Download file',
       txtDownloadedNoteWa:'The file has been downloaded: please attach it manually in the WhatsApp chat that just opened.',
       txtShareMsg:'Guest registration file (schedine alloggiati) attached.', txtDownloadedNote:'The file has been downloaded: please attach it manually on WhatsApp.',
       validationTitle:'Please complete these fields before continuing:', yesterday:'yesterday', today:'today', tomorrow:'tomorrow',
@@ -61,7 +61,7 @@ const allT = {
         title:'How your data is handled',
         paragraphs:[
           "When you use automatic data extraction (OCR), the photos you take are sent to Google Cloud Vision, a third-party service, to read the text on the document. Google processes them only to return the result and, per its stated policy, does not use them to train its models.",
-          "Once you confirm a guest and choose to send the data, the resulting file is transmitted to the property either by email (through the Resend service) or, if you choose that option, shared directly via WhatsApp from your device.",
+          "Once you confirm a guest and choose to send the data, it is transmitted to the property either automatically (written directly into a Google Sheet via the Google Sheets API) or, if you choose that option, shared directly via WhatsApp from your device, or downloaded as a file for you to send however you prefer.",
           "Automatic extraction is a convenience, not a guarantee: OCR results can contain errors, especially with damaged, glare-affected, or unusually formatted documents. Every field is always shown to you for review and must be checked and corrected before adding a guest — the app will not let you proceed if required fields are empty.",
           "By choosing to use automatic OCR extraction, you accept that the document photo will be processed by the third-party service described above, and that you are responsible for verifying the accuracy of every field before it is sent. If you would rather not use this feature, you can fill in all fields by hand instead — no photo is taken or sent anywhere in that case.",
           "Data entered in this app is kept only on your device (in the browser's local storage) until you choose to send it, and is cleared when you use the checkout function.",
@@ -111,13 +111,13 @@ const allT = {
       sectionStay:'Soggiorno', sectionAnagrafica:'Dati anagrafici', sectionNascita:'Nascita e cittadinanza', sectionDocumento:'Documento di riconoscimento',
       fDocType:'Tipo documento', fSurname:'Cognome', fGivenNames:'Nome/i', fNumber:'Numero documento', fDob:'Data di nascita', fExpiry:'Data di scadenza',
       fSesso:'Sesso', fTipoAlloggiato:'Tipo ospite', fDataArrivo:'Data di arrivo', fDataPartenza:'Data di partenza', fDataRilascio:'Data di rilascio',
-      fStatoNascita:'Stato di nascita', fComuneNascita:'Luogo di nascita', fCittadinanza:'Cittadinanza', fLuogoRilascio:'Luogo di rilascio del documento',
+      fStatoNascita:'Stato di nascita', fComuneNascita:'Luogo di nascita', fProvinciaNascita:'Provincia di nascita (sigla, solo se nato in Italia)', fCittadinanza:'Cittadinanza', fLuogoRilascio:'Luogo di rilascio del documento',
       ocrConfidenceLabel:'Affidabilità OCR',
       confirmAdd:'Aggiungi ospite alla lista', backToPhotos:'Torna alle foto', backToList:'Torna alla lista ospiti',
       listTitle:'Ospiti di questa pratica', listEmpty:'Nessun ospite ancora aggiunto.', addGuestBtn:'Aggiungi un ospite',
       sendWhatsAppBtn:'Invia su WhatsApp (manuale)', showPreview:'Anteprima file JSON', hidePreview:'Nascondi anteprima',
-      sendAutoBtn:'Invia automaticamente (email)', sending:'Invio in corso…', sentAutomatically:'Inviato ✓',
-      sendErrorMsg:'Non è stato possibile inviare automaticamente. Prova con WhatsApp o scarica il file qui sotto.', downloadBtn:'Scarica il file',
+      sendAutoBtn:'Invia automaticamente (Google Sheet)', sending:'Invio in corso…', sentAutomatically:'Inviato ✓',
+      sendErrorMsg:'Non è stato possibile scrivere automaticamente su Google Sheet. Prova con WhatsApp o scarica il file qui sotto.', downloadBtn:'Scarica il file',
       txtDownloadedNoteWa:'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.',
       txtShareMsg:'In allegato il file per la registrazione ospiti (schedine alloggiati).', txtDownloadedNote:'Il file è stato scaricato: allegalo manualmente su WhatsApp.',
       validationTitle:'Completa questi campi prima di continuare:', yesterday:'ieri', today:'oggi', tomorrow:'domani',
@@ -129,7 +129,7 @@ const allT = {
         title:'Come vengono trattati i tuoi dati',
         paragraphs:[
           "Quando usi l'estrazione automatica dei dati (OCR), le foto che scatti vengono inviate a Google Cloud Vision, un servizio di terze parti, per leggere il testo sul documento. Google le elabora solo per restituire il risultato e, secondo la sua policy dichiarata, non le usa per addestrare i propri modelli.",
-          "Una volta confermato un ospite e scelto di inviare i dati, il file risultante viene trasmesso alla struttura via email (tramite il servizio Resend) oppure, se scegli questa opzione, condiviso direttamente su WhatsApp dal tuo dispositivo.",
+          "Una volta confermato un ospite e scelto di inviare i dati, questi vengono trasmessi alla struttura in automatico (scritti direttamente in un Google Sheet tramite le API di Google Sheets) oppure, se scegli questa opzione, condivisi direttamente su WhatsApp dal tuo dispositivo, o scaricati come file da inviare come preferisci.",
           "L'estrazione automatica è una comodità, non una garanzia: i risultati dell'OCR possono contenere errori, specialmente con documenti danneggiati, con riflessi di luce o con formati insoliti. Ogni campo ti viene sempre mostrato per la revisione e va controllato e corretto prima di aggiungere un ospite — l'app non ti lascia proseguire se mancano campi obbligatori.",
           "Scegliendo di usare l'estrazione automatica OCR, accetti che la foto del documento venga elaborata dal servizio di terze parti sopra descritto, e sei responsabile della verifica dell'esattezza di ogni campo prima dell'invio. Se preferisci non usare questa funzione, puoi compilare tutti i campi a mano: in quel caso nessuna foto viene scattata né inviata da nessuna parte.",
           "I dati inseriti in questa app restano solo sul tuo dispositivo (nella memoria locale del browser) finché non scegli di inviarli, e vengono cancellati quando usi la funzione di checkout.",
@@ -581,6 +581,7 @@ function validateGuest(g) {
   // Nascita e cittadinanza
   if (!g.personal.birthPlace) errors.push('Comune/luogo di nascita mancante');
   if (!g.personal.birthCountry) errors.push('Stato di nascita mancante');
+  if (g.personal.birthCountry === 'ITALIA' && !g.personal.birthProvince) errors.push('Provincia di nascita mancante (obbligatoria se nato in Italia)');
   if (!g.personal.nationality) errors.push('Cittadinanza mancante');
 
   // Documento
@@ -893,7 +894,7 @@ function emptyGuestDraft() {
   return {
     id: 'guest-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     document: { type: '', number: '', issueDate: '', issuePlace: '', expiryDate: '', ocrConfidence: null },
-    personal: { lastName: '', firstName: '', gender: '', birthDate: '', birthPlace: '', birthCountry: '', nationality: '' },
+    personal: { lastName: '', firstName: '', gender: '', birthDate: '', birthPlace: '', birthProvince: '', birthCountry: '', nationality: '' },
     stay: { arrivalDate: todayFormatted(), departureDate: tomorrowFormatted(), guestType: 'OSPITE SINGOLO' },
   };
 }
@@ -924,7 +925,8 @@ function ocrResultToGuestDraft(ocrResult, confidence) {
   // se il risultato non è quello giusto.
   draft.personal.nationality = matchStato(ocrResult.nationality);
   if (ocrResult.comuneNascita) {
-    draft.personal.birthPlace = ocrResult.comuneNascita + (ocrResult.provinciaNascita ? ' (' + ocrResult.provinciaNascita + ')' : '');
+    draft.personal.birthPlace = ocrResult.comuneNascita;
+    draft.personal.birthProvince = ocrResult.provinciaNascita || '';
     draft.personal.birthCountry = 'ITALIA'; // il formato "Comune (PR)" compare solo su documenti italiani
   } else if (ocrResult.nationality) {
     // Nessun indizio di nascita in Italia: come suggerimento di partenza usiamo la stessa
@@ -1254,9 +1256,10 @@ async function sendViaWhatsApp() {
   render();
 }
 
-// Invio automatico via email: nessun download, nessun cambio app — il JSON viene inviato
-// da un backend (Netlify Function + Resend) direttamente alla casella email configurata.
-const SEND_PROXY_URL = '/api/send-guest-data';
+// Invio automatico via Google Sheets: nessun download, nessun cambio app — i dati vengono
+// scritti da un backend (Netlify Function + Google Sheets API) direttamente nel foglio
+// condiviso, riga per riga, pronti per essere letti dall'altra app.
+const SEND_PROXY_URL = '/api/append-guest-sheet';
 
 async function sendAutomatically() {
   if (!state.schedine.length) return;
@@ -1268,7 +1271,7 @@ async function sendAutomatically() {
     const res = await fetch(SEND_PROXY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-App-Token': OCR_APP_TOKEN },
-      body: JSON.stringify({ exportData: buildExportJson(), filename: exportFilename() }),
+      body: JSON.stringify({ exportData: buildExportJson() }),
     });
     if (!res.ok) {
       const detail = await res.text().catch(() => '');
@@ -1742,6 +1745,7 @@ function renderReviewStep(tr) {
 
     h('div', { className: 'field-section-title' }, tr.upload.sectionNascita),
     guestField(tr, 'personal.birthPlace', tr.upload.fComuneNascita),
+    guestField(tr, 'personal.birthProvince', tr.upload.fProvinciaNascita, { placeholder: 'es. ME' }),
     guestSelect(tr, 'personal.birthCountry', tr.upload.fStatoNascita, [{ value: '', label: '—' }, ...STATI_LIST.map(v => ({ value: v, label: v }))]),
     guestSelect(tr, 'personal.nationality', tr.upload.fCittadinanza, [{ value: '', label: '—' }, ...STATI_LIST.map(v => ({ value: v, label: v }))]),
 
