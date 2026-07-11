@@ -7,10 +7,10 @@
  *
  * Raggiungibile su: https://tuosito.netlify.app/api/append-guest-sheet
  *
- * Colonne attese nel foglio (in quest'ordine):
- * id_documento | struttura_id | cognome | nome | sesso | data_nascita | comune_nascita |
- * provincia_nascita | stato_nascita | cittadinanza | tipo_documento | numero_documento |
- * data_rilascio | luogo_rilascio | data_arrivo | data_partenza | tipo_alloggiato | data_scansione
+ * Colonne attese nel foglio (in quest'ordine, verificato contro il foglio reale in uso):
+ * struttura_id | tipo_alloggiato | data_arrivo | data_partenza | cognome | nome | sesso |
+ * data_nascita | luogo_nascita | cittadinanza | tipo_documento | numero_documento |
+ * luogo_rilascio | data_scansione
  */
 export default async (request) => {
   const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
@@ -50,10 +50,18 @@ export default async (request) => {
   const SPREADSHEET_ID = process.env.GOOGLE_SHEET_ID;
   const SHEET_NAME = process.env.GOOGLE_SHEET_NAME || 'Sheet1';
   const SA_EMAIL = process.env.GOOGLE_SA_EMAIL;
-  const SA_PRIVATE_KEY = (process.env.GOOGLE_SA_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+  const SA_PRIVATE_KEY = normalizePrivateKey(process.env.GOOGLE_SA_PRIVATE_KEY);
 
   if (!SPREADSHEET_ID || !SA_EMAIL || !SA_PRIVATE_KEY) {
     return new Response(JSON.stringify({ error: 'Google Sheets non configurato sul server (variabili mancanti)' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  if (!SA_PRIVATE_KEY.includes('BEGIN PRIVATE KEY')) {
+    return new Response(JSON.stringify({
+      error: 'GOOGLE_SA_PRIVATE_KEY non è in formato PEM valido',
+      detail: 'Manca l\'intestazione "-----BEGIN PRIVATE KEY-----": controlla di aver incollato il valore del campo private_key del file JSON per intero, comprese le righe BEGIN/END.',
+    }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
@@ -69,23 +77,19 @@ export default async (request) => {
 
   const scanTimestamp = formatTimestamp(new Date());
   const rows = exportData.guests.map(g => ([
-    g.id || '',
     (exportData.structure && exportData.structure.code) || '',
+    (g.stay && g.stay.guestType) || '',
+    (g.stay && g.stay.arrivalDate) || '',
+    (g.stay && g.stay.departureDate) || '',
     (g.personal && g.personal.lastName) || '',
     (g.personal && g.personal.firstName) || '',
     (g.personal && g.personal.gender) || '',
     (g.personal && g.personal.birthDate) || '',
-    (g.personal && g.personal.birthPlace) || '',
-    (g.personal && g.personal.birthProvince) || '',
-    (g.personal && g.personal.birthCountry) || '',
+    joinBirthPlace(g.personal),
     (g.personal && g.personal.nationality) || '',
     (g.document && g.document.type) || '',
     (g.document && g.document.number) || '',
-    (g.document && g.document.issueDate) || '',
     (g.document && g.document.issuePlace) || '',
-    (g.stay && g.stay.arrivalDate) || '',
-    (g.stay && g.stay.departureDate) || '',
-    (g.stay && g.stay.guestType) || '',
     scanTimestamp,
   ]));
 
@@ -118,6 +122,32 @@ export default async (request) => {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 };
+
+// Il foglio ha una sola colonna "luogo_nascita": uniamo comune, provincia (se presente)
+// e stato di nascita in un unico testo leggibile, es. "GELA (ME), ITALIA" oppure,
+// per un nato all'estero senza comune/provincia, semplicemente "FRANCIA".
+function joinBirthPlace(personal) {
+  if (!personal) return '';
+  const place = (personal.birthPlace || '').trim();
+  const province = (personal.birthProvince || '').trim();
+  const country = (personal.birthCountry || '').trim();
+  const placeWithProvince = province ? place + ' (' + province + ')' : place;
+  if (placeWithProvince && country) return placeWithProvince + ', ' + country;
+  return placeWithProvince || country || '';
+}
+
+// La chiave privata, incollata in una variabile d'ambiente, può arrivare in formati
+// leggermente diversi a seconda di come Netlify la conserva: a volte gli "a capo" restano
+// come testo letterale "\n" (o perfino "\\n" doppio), a volte il valore include virgolette
+// che lo avvolgono per intero. Qui normalizziamo tutti i casi noti prima di usarla.
+function normalizePrivateKey(raw) {
+  let key = (raw || '').trim();
+  if ((key.startsWith('"') && key.endsWith('"')) || (key.startsWith("'") && key.endsWith("'"))) {
+    key = key.slice(1, -1).trim();
+  }
+  key = key.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n');
+  return key.trim();
+}
 
 function formatTimestamp(d) {
   const pad = n => String(n).padStart(2, '0');

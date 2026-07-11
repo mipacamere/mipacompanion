@@ -36,38 +36,32 @@ successivo).
 
 ## Colonne scritte nel foglio
 
-Nell'ordine, per ogni ospite (aggiornato secondo il tracciato ufficiale Alloggiati Web,
-vedi manuale PDF del Servizio Alloggiati — sezione "File tracciato record"):
+Nell'ordine reale del tuo foglio, per ogni ospite:
 
 | Colonna | Origine dato |
 |---|---|
-| `id_documento` | identificativo interno generato dall'app per quell'ospite |
 | `struttura_id` | `ME006995` (fisso, configurato in `app.js`) |
+| `tipo_alloggiato` | dal soggiorno |
+| `data_arrivo` | dal soggiorno |
+| `data_partenza` | dal soggiorno |
 | `cognome` | dati anagrafici |
 | `nome` | dati anagrafici |
 | `sesso` | dati anagrafici |
 | `data_nascita` | dati anagrafici |
-| `comune_nascita` | comune di nascita (solo se nato in Italia) |
-| `provincia_nascita` | sigla provincia di nascita — targhe automobilistiche, Roma = RM (solo se nato in Italia) |
-| `stato_nascita` | stato di nascita (sempre valorizzato, anche per chi nasce in Italia) |
+| `luogo_nascita` | comune **+** provincia **+** stato di nascita uniti in un solo testo, es. `GELA (ME), ITALIA` |
 | `cittadinanza` | dalla tabella Stati |
 | `tipo_documento` | dalla tabella Documenti |
 | `numero_documento` | dal documento |
-| `data_rilascio` | dal documento |
 | `luogo_rilascio` | dal documento |
-| `data_arrivo` | dal soggiorno |
-| `data_partenza` | dal soggiorno |
-| `tipo_alloggiato` | dal soggiorno |
 | `data_scansione` | data e ora dell'invio (generata automaticamente al momento dell'invio) |
 
-**Importante**: rispetto alla versione precedente di questa guida, la colonna
-`luogo_nascita` (comune + stato uniti in un solo testo) è stata **sostituita da tre
-colonne separate**: `comune_nascita`, `provincia_nascita`, `stato_nascita` — esattamente
-come richiede il tracciato ufficiale, che li tratta come tre campi distinti (il comune
-e la provincia sono obbligatori solo se lo stato di nascita è l'Italia). Se il tuo foglio
-ha ancora la vecchia colonna unica `luogo_nascita`, va aggiornato aggiungendo le due
-colonne mancanti (`provincia_nascita` e `stato_nascita`) e rinominando `luogo_nascita`
-in `comune_nascita`, mantenendo questo esatto ordine.
+**Nota**: l'app raccoglie internamente comune, provincia e stato di nascita come tre dati
+distinti (per rispettare il tracciato ufficiale Alloggiati Web), ma per scriverli nel tuo
+foglio — che ha un'unica colonna `luogo_nascita` — vengono uniti in un solo testo. Anche
+`data_rilascio` (data di rilascio del documento) e `id_documento` non vengono scritti,
+perché il tuo foglio non ha queste colonne. Se in futuro vuoi recuperare questi dati
+separatamente, basta aggiungere le colonne corrispondenti e dirmelo: aggiorno la function
+di conseguenza.
 
 ## Verifica
 

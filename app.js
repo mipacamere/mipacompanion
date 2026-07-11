@@ -47,11 +47,10 @@ const allT = {
       ocrConfidenceLabel:'OCR confidence',
       confirmAdd:'Add guest to the list', backToPhotos:'Back to photos', backToList:'Back to guest list',
       listTitle:'Guests in this booking', listEmpty:'No guests added yet.', addGuestBtn:'Add a guest',
-      sendWhatsAppBtn:'Send via WhatsApp (manual)', showPreview:'Preview JSON file', hidePreview:'Hide preview',
+      showPreview:'Preview JSON file', hidePreview:'Hide preview',
       sendAutoBtn:'Send automatically (Google Sheet)', sending:'Sending…', sentAutomatically:'Sent ✓',
       sendErrorMsg:"Couldn't write to Google Sheet automatically. Try WhatsApp or download the file below.", downloadBtn:'Download file',
-      txtDownloadedNoteWa:'The file has been downloaded: please attach it manually in the WhatsApp chat that just opened.',
-      txtShareMsg:'Guest registration file (schedine alloggiati) attached.', txtDownloadedNote:'The file has been downloaded: please attach it manually on WhatsApp.',
+
       validationTitle:'Please complete these fields before continuing:', yesterday:'yesterday', today:'today', tomorrow:'tomorrow',
       disclaimerShort:'Photos are processed by a third-party OCR service, and results may contain errors.',
       disclaimerLinkText:'Read more', disclaimerBack:'Back to guest entry',
@@ -115,11 +114,10 @@ const allT = {
       ocrConfidenceLabel:'Affidabilità OCR',
       confirmAdd:'Aggiungi ospite alla lista', backToPhotos:'Torna alle foto', backToList:'Torna alla lista ospiti',
       listTitle:'Ospiti di questa pratica', listEmpty:'Nessun ospite ancora aggiunto.', addGuestBtn:'Aggiungi un ospite',
-      sendWhatsAppBtn:'Invia su WhatsApp (manuale)', showPreview:'Anteprima file JSON', hidePreview:'Nascondi anteprima',
+      showPreview:'Anteprima file JSON', hidePreview:'Nascondi anteprima',
       sendAutoBtn:'Invia automaticamente (Google Sheet)', sending:'Invio in corso…', sentAutomatically:'Inviato ✓',
       sendErrorMsg:'Non è stato possibile scrivere automaticamente su Google Sheet. Prova con WhatsApp o scarica il file qui sotto.', downloadBtn:'Scarica il file',
-      txtDownloadedNoteWa:'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.',
-      txtShareMsg:'In allegato il file per la registrazione ospiti (schedine alloggiati).', txtDownloadedNote:'Il file è stato scaricato: allegalo manualmente su WhatsApp.',
+
       validationTitle:'Completa questi campi prima di continuare:', yesterday:'ieri', today:'oggi', tomorrow:'domani',
       disclaimerShort:'Le foto vengono elaborate da un servizio OCR di terze parti, e il risultato può contenere errori.',
       disclaimerLinkText:'Scopri di più', disclaimerBack:'Torna all\'inserimento ospite',
@@ -1221,41 +1219,6 @@ function buildExportFile() {
   return { file: new File([content], filename, { type: 'application/json' }), filename };
 }
 
-// Invia il JSON su WhatsApp: prova prima la condivisione nativa (Web Share API, l'utente
-// sceglie WhatsApp e il file arriva come allegato); se il browser non la supporta
-// (tipicamente su desktop), scarica il file e apre wa.me perché l'operatore lo alleghi a mano.
-async function sendViaWhatsApp() {
-  if (!state.schedine.length) return;
-  const { file, filename } = buildExportFile();
-  const shareText = (t().upload && t().upload.txtShareMsg) || 'Dati ospiti MiPA';
-
-  if (navigator.share && navigator.canShare) {
-    try {
-      const shareData = { files: [file], text: shareText, title: filename };
-      if (navigator.canShare(shareData)) {
-        await navigator.share(shareData);
-        state.docsSent = true;
-        localStorage.setItem('mipa_docssent', 'true');
-        render();
-        return;
-      }
-    } catch (err) {
-      if (err.name === 'AbortError') return; // utente ha chiuso il dialog
-      console.warn('Share API error:', err.name, err.message);
-    }
-  }
-
-  // Fallback: scarica il file e apre WhatsApp Web/app con un messaggio pronto;
-  // l'allegato va aggiunto a mano (limite del browser, non aggirabile senza WhatsApp
-  // Business API — vedi la conversazione per i dettagli).
-  downloadExportFile(file, filename);
-  window.open('https://wa.me/393339201524?text=' + encodeURIComponent(shareText), '_blank');
-  alert(t().upload.txtDownloadedNoteWa || 'Il file è stato scaricato: allegalo manualmente nella chat WhatsApp che si è aperta.');
-  state.docsSent = true;
-  localStorage.setItem('mipa_docssent', 'true');
-  render();
-}
-
 // Invio automatico via Google Sheets: nessun download, nessun cambio app — i dati vengono
 // scritti da un backend (Netlify Function + Google Sheets API) direttamente nel foglio
 // condiviso, riga per riga, pronti per essere letti dall'altra app.
@@ -1793,12 +1756,8 @@ function renderGuestListStep(tr) {
         ) : null,
         h('button', { className: 'btn-wa', style: 'border:none;cursor:pointer;width:100%;', onClick: sendAutomatically },
           ms('forward_to_inbox'), ' ', tr.upload.sendAutoBtn),
-        h('div', { className: 'send-choice' },
-          h('button', { className: 'btn-primary', style: 'background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-xs);', onClick: sendViaWhatsApp },
-            ms('chat'), ' ', tr.upload.sendWhatsAppBtn),
-          h('button', { className: 'btn-primary', style: 'background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-xs);', onClick: downloadOnly },
-            ms('download'), ' ', tr.upload.downloadBtn),
-        ),
+        h('button', { className: 'btn-primary', style: 'background:var(--surface);color:var(--text-1);box-shadow:var(--shadow-xs);', onClick: downloadOnly },
+          ms('download'), ' ', tr.upload.downloadBtn),
       );
     }
   }
