@@ -36,32 +36,41 @@ successivo).
 
 ## Colonne scritte nel foglio
 
-Nell'ordine reale del tuo foglio, per ogni ospite:
+Il foglio deve avere queste 17 colonne, in quest'ordine esatto (A→Q). L'ordine centrale
+(dalla C alla P) segue **esattamente** il tracciato ufficiale Alloggiati Web, sezione 12
+del manuale — non è una scelta arbitraria, è l'ordine con cui la Polizia di Stato descrive
+i campi della schedina:
 
-| Colonna | Origine dato |
-|---|---|
-| `struttura_id` | `ME006995` (fisso, configurato in `app.js`) |
-| `tipo_alloggiato` | dal soggiorno |
-| `data_arrivo` | dal soggiorno |
-| `data_partenza` | dal soggiorno |
-| `cognome` | dati anagrafici |
-| `nome` | dati anagrafici |
-| `sesso` | dati anagrafici |
-| `data_nascita` | dati anagrafici |
-| `luogo_nascita` | comune **+** provincia **+** stato di nascita uniti in un solo testo, es. `GELA (ME), ITALIA` |
-| `cittadinanza` | dalla tabella Stati |
-| `tipo_documento` | dalla tabella Documenti |
-| `numero_documento` | dal documento |
-| `luogo_rilascio` | dal documento |
-| `data_scansione` | data e ora dell'invio (generata automaticamente al momento dell'invio) |
+| Col. | Nome colonna | Origine dato |
+|---|---|---|
+| A | `id` | numero progressivo, generato dalla function continuando dall'ultimo ID già presente nel foglio |
+| B | `struttura_id` | `ME006995` (fisso, configurato in `app.js`) |
+| C | `tipo_alloggiato` | dal soggiorno (es. "OSPITE SINGOLO") |
+| D | `data_arrivo` | dal soggiorno |
+| E | `permanenza` | **calcolata automaticamente** come differenza in notti tra arrivo e partenza (il tracciato vuole un numero di giorni, non una seconda data) |
+| F | `cognome` | dati anagrafici |
+| G | `nome` | dati anagrafici |
+| H | `sesso` | dati anagrafici |
+| I | `data_nascita` | dati anagrafici |
+| J | `comune_nascita` | solo se nato in Italia |
+| K | `provincia_nascita` | sigla, solo se nato in Italia |
+| L | `stato_nascita` | sempre valorizzato |
+| M | `cittadinanza` | dalla tabella Stati |
+| N | `tipo_documento` | dalla tabella Documenti |
+| O | `numero_documento` | dal documento |
+| P | `luogo_rilascio` | dal documento |
+| Q | `data_scansione` | data e ora dell'invio, generata automaticamente |
 
-**Nota**: l'app raccoglie internamente comune, provincia e stato di nascita come tre dati
-distinti (per rispettare il tracciato ufficiale Alloggiati Web), ma per scriverli nel tuo
-foglio — che ha un'unica colonna `luogo_nascita` — vengono uniti in un solo testo. Anche
-`data_rilascio` (data di rilascio del documento) e `id_documento` non vengono scritti,
-perché il tuo foglio non ha queste colonne. Se in futuro vuoi recuperare questi dati
-separatamente, basta aggiungere le colonne corrispondenti e dirmelo: aggiorno la function
-di conseguenza.
+**Sull'ID progressivo**: prima di scrivere, la function legge la colonna A per trovare il
+numero più alto già presente e continua da lì (es. se l'ultima riga ha `id=42`, il prossimo
+ospite inviato riceverà `43`, `44`, ecc. se sono più di uno nella stessa pratica). Se il
+foglio è vuoto, si parte da 1. Nota: se due invii avvenissero nello stesso istante esatto
+da due dispositivi diversi, in teoria potrebbero generarsi ID duplicati — scenario molto
+improbabile per un singolo B&B, ma segnalo la cosa per completezza.
+
+**Non viene scritta la `data_partenza`** come colonna a sé: il tracciato ufficiale non la
+prevede, vuole solo il numero di notti (colonna `permanenza`), quindi la calcoliamo noi
+dalle due date che l'operatore sceglie nell'app.
 
 ## Verifica
 

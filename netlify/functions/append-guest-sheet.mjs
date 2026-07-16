@@ -7,10 +7,12 @@
  *
  * Raggiungibile su: https://tuosito.netlify.app/api/append-guest-sheet
  *
- * Colonne attese nel foglio (in quest'ordine, verificato contro il foglio reale in uso):
- * struttura_id | tipo_alloggiato | data_arrivo | data_partenza | cognome | nome | sesso |
- * data_nascita | luogo_nascita | cittadinanza | tipo_documento | numero_documento |
- * luogo_rilascio | data_scansione
+ * Colonne scritte nel foglio (in quest'ordine, esattamente come il tracciato ufficiale
+ * Alloggiati Web, sezione 12 del manuale — con ID progressivo, struttura e data scansione
+ * aggiunti in testa/coda):
+ * id | struttura_id | tipo_alloggiato | data_arrivo | permanenza | cognome | nome | sesso |
+ * data_nascita | comune_nascita | provincia_nascita | stato_nascita | cittadinanza |
+ * tipo_documento | numero_documento | luogo_rilascio | data_scansione
  */
 export default async (request) => {
   const allowedOrigin = process.env.ALLOWED_ORIGIN || '*';
@@ -75,17 +77,42 @@ export default async (request) => {
     });
   }
 
+  // Legge la colonna A (ID) per continuare la numerazione progressiva da dove era arrivata,
+  // invece di generare ID casuali o che ripartono da zero ad ogni invio.
+  let lastId = 0;
+  try {
+    const readRange = encodeURIComponent(SHEET_NAME + '!A2:A');
+    const readRes = await fetch(
+      'https://sheets.googleapis.com/v4/spreadsheets/' + SPREADSHEET_ID + '/values/' + readRange,
+      { headers: { Authorization: 'Bearer ' + accessToken } }
+    );
+    if (readRes.ok) {
+      const readData = await readRes.json();
+      for (const row of (readData.values || [])) {
+        const n = parseInt(row[0], 10);
+        if (!isNaN(n) && n > lastId) lastId = n;
+      }
+    }
+  } catch (e) {
+    // Se la lettura fallisce non blocchiamo l'invio: si riparte da 1 (raro, solo se il
+    // foglio è irraggiungibile proprio in questo istante — la scrittura sotto comunque
+    // fallirebbe a sua volta in quel caso).
+  }
+
   const scanTimestamp = formatTimestamp(new Date());
-  const rows = exportData.guests.map(g => ([
+  const rows = exportData.guests.map((g, i) => ([
+    lastId + i + 1,
     (exportData.structure && exportData.structure.code) || '',
     (g.stay && g.stay.guestType) || '',
     (g.stay && g.stay.arrivalDate) || '',
-    (g.stay && g.stay.departureDate) || '',
+    nightsBetween(g.stay && g.stay.arrivalDate, g.stay && g.stay.departureDate),
     (g.personal && g.personal.lastName) || '',
     (g.personal && g.personal.firstName) || '',
     (g.personal && g.personal.gender) || '',
     (g.personal && g.personal.birthDate) || '',
-    joinBirthPlace(g.personal),
+    (g.personal && g.personal.birthPlace) || '',
+    (g.personal && g.personal.birthProvince) || '',
+    (g.personal && g.personal.birthCountry) || '',
     (g.personal && g.personal.nationality) || '',
     (g.document && g.document.type) || '',
     (g.document && g.document.number) || '',
@@ -123,17 +150,21 @@ export default async (request) => {
   });
 };
 
-// Il foglio ha una sola colonna "luogo_nascita": uniamo comune, provincia (se presente)
-// e stato di nascita in un unico testo leggibile, es. "GELA (ME), ITALIA" oppure,
-// per un nato all'estero senza comune/provincia, semplicemente "FRANCIA".
-function joinBirthPlace(personal) {
-  if (!personal) return '';
-  const place = (personal.birthPlace || '').trim();
-  const province = (personal.birthProvince || '').trim();
-  const country = (personal.birthCountry || '').trim();
-  const placeWithProvince = province ? place + ' (' + province + ')' : place;
-  if (placeWithProvince && country) return placeWithProvince + ', ' + country;
-  return placeWithProvince || country || '';
+// Il tracciato ufficiale vuole il "Numero Giorni di Permanenza" (un numero), non la data di
+// partenza: lo calcoliamo dalla differenza fra arrivo e partenza che l'operatore ha scelto
+// nell'app (entrambe nel formato gg/mm/aaaa).
+function parseItalianDate(s) {
+  const m = (s || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  return new Date(Date.UTC(parseInt(m[3], 10), parseInt(m[2], 10) - 1, parseInt(m[1], 10)));
+}
+
+function nightsBetween(arrivalStr, departureStr) {
+  const a = parseItalianDate(arrivalStr);
+  const d = parseItalianDate(departureStr);
+  if (!a || !d) return '';
+  const nights = Math.round((d - a) / (1000 * 60 * 60 * 24));
+  return nights > 0 ? nights : '';
 }
 
 // La chiave privata, incollata in una variabile d'ambiente, può arrivare in formati

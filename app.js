@@ -703,7 +703,7 @@ function tomorrowFormatted() {
   return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
 }
 
-const GUEST_TYPE_OPTIONS = ['OSPITE SINGOLO', 'CAPOFAMIGLIA', 'CAPOGRUPPO', 'FAMILIARE', 'MEMBRO GRUPPO'];
+const GUEST_TYPE_OPTIONS = ['OSPITE SINGOLO', 'CAPO FAMIGLIA', 'CAPO GRUPPO', 'FAMILIARE', 'MEMBRO GRUPPO'];
 
 // Elenco ufficiale degli stati (da stati.csv, 236 voci) e dei tipi documento (da
 // documenti.csv, 95 voci): sono le uniche opzioni selezionabili nei relativi menu a
