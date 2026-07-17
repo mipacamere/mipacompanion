@@ -41,8 +41,8 @@ const allT = {
       techDetailsToggle:'Technical details',
       reviewTitle:'Check the guest data', reviewSub:'Please verify and complete every field before adding this guest — data is captured exactly as it appears on the document.',
       sectionStay:'Stay', sectionAnagrafica:'Personal data', sectionNascita:'Place of birth & citizenship', sectionDocumento:'Identity document',
-      fDocType:'Document type', fSurname:'Surname', fGivenNames:'First name(s)', fNumber:'Document number', fDob:'Date of birth', fExpiry:'Expiry date',
-      fSesso:'Sex', fTipoAlloggiato:'Guest type', fDataArrivo:'Arrival date', fDataPartenza:'Departure date', fDataRilascio:'Issue date',
+      fDocType:'Document type', fSurname:'Surname', fGivenNames:'First name(s)', fNumber:'Document number', fDob:'Date of birth',
+      fSesso:'Sex', fTipoAlloggiato:'Guest type', fDataArrivo:'Arrival date', fDataPartenza:'Departure date',
       fStatoNascita:'Birth country', fComuneNascita:'Place of birth', fProvinciaNascita:'Province of birth (2-letter code, Italy only)', fCittadinanza:'Nationality', fLuogoRilascio:'Place document was issued',
       ocrConfidenceLabel:'OCR confidence',
       confirmAdd:'Add guest to the list', backToPhotos:'Back to photos', backToList:'Back to guest list',
@@ -108,8 +108,8 @@ const allT = {
       techDetailsToggle:'Dettagli tecnici',
       reviewTitle:'Controlla i dati dell\'ospite', reviewSub:'Verifica e completa ogni campo prima di aggiungere questo ospite: i dati vengono acquisiti così come compaiono sul documento.',
       sectionStay:'Soggiorno', sectionAnagrafica:'Dati anagrafici', sectionNascita:'Nascita e cittadinanza', sectionDocumento:'Documento di riconoscimento',
-      fDocType:'Tipo documento', fSurname:'Cognome', fGivenNames:'Nome/i', fNumber:'Numero documento', fDob:'Data di nascita', fExpiry:'Data di scadenza',
-      fSesso:'Sesso', fTipoAlloggiato:'Tipo ospite', fDataArrivo:'Data di arrivo', fDataPartenza:'Data di partenza', fDataRilascio:'Data di rilascio',
+      fDocType:'Tipo documento', fSurname:'Cognome', fGivenNames:'Nome/i', fNumber:'Numero documento', fDob:'Data di nascita',
+      fSesso:'Sesso', fTipoAlloggiato:'Tipo ospite', fDataArrivo:'Data di arrivo', fDataPartenza:'Data di partenza',
       fStatoNascita:'Stato di nascita', fComuneNascita:'Luogo di nascita', fProvinciaNascita:'Provincia di nascita (sigla, solo se nato in Italia)', fCittadinanza:'Cittadinanza', fLuogoRilascio:'Luogo di rilascio del documento',
       ocrConfidenceLabel:'Affidabilità OCR',
       confirmAdd:'Aggiungi ospite alla lista', backToPhotos:'Torna alle foto', backToList:'Torna alla lista ospiti',
@@ -585,9 +585,7 @@ function validateGuest(g) {
   // Documento
   if (!g.document.type) errors.push('Tipo documento mancante');
   if (!g.document.number) errors.push('Numero documento mancante');
-  if (!dateRe.test(g.document.issueDate || '')) errors.push('Data di rilascio del documento mancante o non valida');
   if (!g.document.issuePlace) errors.push('Luogo di rilascio del documento mancante');
-  if (!dateRe.test(g.document.expiryDate || '')) errors.push('Data di scadenza del documento mancante o non valida');
 
   return errors;
 }
@@ -891,7 +889,7 @@ function matchDocumento(text) {
 function emptyGuestDraft() {
   return {
     id: 'guest-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    document: { type: '', number: '', issueDate: '', issuePlace: '', expiryDate: '', ocrConfidence: null },
+    document: { type: '', number: '', issuePlace: '', ocrConfidence: null },
     personal: { lastName: '', firstName: '', gender: '', birthDate: '', birthPlace: '', birthProvince: '', birthCountry: '', nationality: '' },
     stay: { arrivalDate: todayFormatted(), departureDate: tomorrowFormatted(), guestType: 'OSPITE SINGOLO' },
   };
@@ -934,8 +932,6 @@ function ocrResultToGuestDraft(ocrResult, confidence) {
 
   draft.document.type = matchDocumento(ocrResult.docType);
   draft.document.number = ocrResult.number || '';
-  draft.document.expiryDate = normalizeDateStr(ocrResult.expiry);
-  draft.document.issueDate = normalizeDateStr(ocrResult.issueDate);
   if (ocrResult.luogoRilascio) draft.document.issuePlace = ocrResult.luogoRilascio;
   if (typeof confidence === 'number') draft.document.ocrConfidence = Math.round(confidence * 100) / 100;
 
@@ -1088,8 +1084,6 @@ function genericExtract(text) {
     number: find(['numero documento', 'n\\.?\\s*documento', 'document no', 'passport no', 'n°']),
     nationality: find(['nazionalit[aà]', 'nationality', 'nacionalidad', 'staatsangehörigkeit']),
     dob: find(['data di nascita', 'date of birth', 'geburtsdatum', 'fecha de nacimiento']),
-    expiry: find(['scadenza', 'date of expiry', 'expiry', 'fecha de caducidad']),
-    issueDate: find(['emissione', 'issuing', 'data di rilascio', 'date of issue']),
     // Sulla carta d'identità italiana "COMUNE DI / MUNICIPALITY" indica il comune che ha
     // rilasciato il documento — è il nome del luogo di rilascio (il codice numerico resta
     // comunque da inserire a mano, serve la tabella ufficiale).
@@ -1134,7 +1128,7 @@ function extractFieldsFromText(text) {
     }
   }
 
-  const emptyRaw = { docType: '', surname: '', givenNames: '', number: '', nationality: '', sex: '', dob: '', expiry: '', issueDate: '', comuneNascita: '', provinciaNascita: '', luogoRilascio: '' };
+  const emptyRaw = { docType: '', surname: '', givenNames: '', number: '', nationality: '', sex: '', dob: '', comuneNascita: '', provinciaNascita: '', luogoRilascio: '' };
   return { ...emptyRaw, ...genericExtract(text) };
 }
 
@@ -1715,9 +1709,7 @@ function renderReviewStep(tr) {
     h('div', { className: 'field-section-title' }, tr.upload.sectionDocumento),
     guestSelect(tr, 'document.type', tr.upload.fDocType, [{ value: '', label: '—' }, ...DOCUMENTI_LIST.map(v => ({ value: v, label: v }))]),
     guestField(tr, 'document.number', tr.upload.fNumber),
-    guestField(tr, 'document.issueDate', tr.upload.fDataRilascio, { placeholder: 'gg/mm/aaaa' }),
     guestField(tr, 'document.issuePlace', tr.upload.fLuogoRilascio),
-    guestField(tr, 'document.expiryDate', tr.upload.fExpiry, { placeholder: 'gg/mm/aaaa' }),
     confidenceNote,
 
     h('button', { className: 'btn-wa', style: 'border:none;cursor:pointer;width:100%;', onClick: addGuestToList },
