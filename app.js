@@ -52,7 +52,7 @@ const allT = {
       sendErrorMsg:"Couldn't write to Google Sheet automatically. Try WhatsApp or download the file below.", downloadBtn:'Download file',
 
       validationTitle:'Please complete these fields before continuing:', yesterday:'yesterday', today:'today', tomorrow:'tomorrow',
-      disclaimerShort:'Photos are processed by a third-party OCR service, and results may contain errors.',
+      disclaimerShort:'Photos are processed by a third-party OCR service: your data will be handled by that third party and results may contain errors. If you would rather avoid this, proceed with manual entry instead.',
       disclaimerLinkText:'Read more', disclaimerBack:'Back to guest entry',
       manualEntryBtn:'Fill in manually (no photos, no OCR)',
       downloadedManualMsg:'File downloaded. Send it with whichever tool you prefer: WhatsApp, Telegram, email, or another app.',
@@ -119,7 +119,7 @@ const allT = {
       sendErrorMsg:'Non è stato possibile scrivere automaticamente su Google Sheet. Prova con WhatsApp o scarica il file qui sotto.', downloadBtn:'Scarica il file',
 
       validationTitle:'Completa questi campi prima di continuare:', yesterday:'ieri', today:'oggi', tomorrow:'domani',
-      disclaimerShort:'Le foto vengono elaborate da un servizio OCR di terze parti, e il risultato può contenere errori.',
+      disclaimerShort:'Le foto vengono elaborate da un servizio OCR di terze parti: i tuoi dati saranno trattati da terzi e il risultato può contenere errori. Se preferisci evitarlo, procedi con l\'inserimento manuale.',
       disclaimerLinkText:'Scopri di più', disclaimerBack:'Torna all\'inserimento ospite',
       manualEntryBtn:'Compila manualmente (senza foto né OCR)',
       downloadedManualMsg:'File scaricato. Invialo con lo strumento che preferisci: WhatsApp, Telegram, email o un\'altra app.',
@@ -576,9 +576,11 @@ function validateGuest(g) {
   if (g.personal.gender !== 'M' && g.personal.gender !== 'F') errors.push('Sesso mancante');
   if (!dateRe.test(g.personal.birthDate || '')) errors.push('Data di nascita mancante o non valida');
 
-  // Nascita e cittadinanza
-  if (!g.personal.birthPlace) errors.push('Comune/luogo di nascita mancante');
+  // Nascita e cittadinanza — luogo e provincia di nascita si trovano solo sui documenti
+  // italiani (formato "Comune (PR)"): per i documenti esteri non è richiesto inserirli,
+  // quindi non bloccano l'avanzamento se lo Stato di nascita non è l'Italia.
   if (!g.personal.birthCountry) errors.push('Stato di nascita mancante');
+  if (g.personal.birthCountry === 'ITALIA' && !g.personal.birthPlace) errors.push('Comune di nascita mancante (obbligatorio se nato in Italia)');
   if (g.personal.birthCountry === 'ITALIA' && !g.personal.birthProvince) errors.push('Provincia di nascita mancante (obbligatoria se nato in Italia)');
   if (!g.personal.nationality) errors.push('Cittadinanza mancante');
 
@@ -817,7 +819,34 @@ const MRZ_ALPHA3_TO_STATO = {
   MEX: 'MESSICO', ARG: 'ARGENTINA', IND: 'INDIA', MAR: 'MAROCCO', TUN: 'TUNISIA',
   ALB: 'ALBANIA', HRV: 'CROAZIA', SRB: 'SERBIA', HUN: 'UNGHERIA', BGR: 'BULGARIA',
   TUR: 'TURCHIA', BLR: 'BIELORUSSIA',
+  // Restanti Stati membri UE/SEE (codici MRZ alpha-3 ICAO) — carte d'identità e
+  // passaporti UE usano tutti lo stesso standard MRZ, quindi bastano i codici corretti
+  // perché il resto del parsing (TD1/TD3) funzioni automaticamente per ogni paese.
+  CYP: 'CIPRO', CZE: 'REPUBBLICA CECA', EST: 'ESTONIA', LVA: 'LETTONIA',
+  LTU: 'LITUANIA', LUX: 'LUSSEMBURGO', MLT: 'MALTA', SVK: 'REPUBBLICA SLOVACCA',
+  SVN: 'SLOVENIA', ISL: 'ISLANDA', LIE: 'LIECHTENSTEIN',
 };
+
+// Titoli con cui le carte d'identità dei paesi UE si presentano (lingua nazionale),
+// usati per riconoscere il tipo di documento nel percorso generico senza MRZ leggibile.
+// Elenco paesi di riferimento: identity-cards.net.
+const EU_ID_CARD_TITLES = [
+  "carte d'identité", 'documento nacional de identidad',
+  'cartão de cidadão', 'personalausweis', 'identiteitskaart', 'dowód osobisty',
+  'személyazonosító igazolvány', 'občanský průkaz', 'občiansky preukaz',
+  'osebna izkaznica', 'asmens tapatybės kortelė', 'personas apliecība',
+  'isikutunnistus', 'karta tożsamości', 'identity card',
+];
+
+// Titoli con cui la patente di guida si presenta nelle varie lingue UE — tutte le patenti
+// UE seguono lo stesso modello (Direttiva 2006/126/CE), quindi il documento fisico è
+// sostanzialmente identico in tutta l'Unione: cambia solo la lingua dell'intestazione.
+const EU_DRIVING_LICENCE_TITLES = [
+  'permis de conduire', 'führerschein', 'rijbewijs', 'körkort', 'kørekort',
+  'ajokortti', 'carta de condução', 'permiso de conducción', 'prawo jazdy',
+  'vezetői engedély', 'řidičský průkaz', 'vodičský preukaz', 'vozniško dovoljenje',
+  'vairuotojo pažymėjimas', 'vadītāja apliecība', 'juhiluba',
+];
 
 
 // Confronto testuale approssimato: toglie accenti/punteggiatura e confronta in maiuscolo.
@@ -1002,6 +1031,21 @@ const GENERIC_LABEL_WORDS = [
   'documento', 'document', 'numero', 'number', 'scadenza', 'expiry', 'sesso', 'sex',
   'luogo', 'place', 'rilascio', 'issue', 'residenza', 'residence',
   'comune', 'municipality', 'emissione', 'issuing',
+  // Altre lingue UE (etichette che possono comparire sui documenti di altri Stati membri)
+  'achternaam', 'voornaam', 'geboorte', 'geboortedatum', 'nationaliteit',
+  'apelido', 'nascimento', 'nacionalidade', 'apellido', 'nacimiento', 'nacionalidad',
+  'nachname', 'vorname', 'geburtsdatum', 'staatsangehörigkeit', 'geburtsort',
+  'nazwisko', 'imię', 'urodzenia', 'obywatelstwo',
+  'efternamn', 'förnamn', 'födelsedatum', 'medborgarskap',
+  'efternavn', 'fornavn', 'fødselsdato', 'statsborgerskab',
+  'sukunimi', 'etunimi', 'syntymäaika', 'kansalaisuus',
+  'příjmení', 'jméno', 'narození', 'státní příslušnost',
+  'priezvisko', 'meno', 'narodenia', 'štátna príslušnosť',
+  'priimek', 'ime', 'rojstva', 'državljanstvo',
+  'pavardė', 'vardas', 'gimimo', 'pilietybė',
+  'uzvārds', 'vārds', 'dzimšanas', 'pilsonība',
+  'perekonnanimi', 'eesnimi', 'sünniaeg', 'kodakondsus',
+  'vezetéknév', 'keresztnév', 'születési', 'állampolgárság',
 ];
 
 function looksLikeAnotherLabel(str) {
@@ -1066,10 +1110,15 @@ function detectDocType(text) {
   const low = text.toLowerCase();
   if (low.includes('patente nautica')) return 'PATENTE NAUTICA';
   if (low.includes('patente') || low.includes('driving licence') || low.includes('driver')) return 'PATENTE DI GUIDA';
+  // Patente UE straniera: stesso modello della patente italiana (Direttiva 2006/126/CE),
+  // cambia solo la lingua dell'intestazione stampata sul documento.
+  if (EU_DRIVING_LICENCE_TITLES.some(title => low.includes(title))) return 'PATENTE DI GUIDA';
   if (low.includes('porto d\'armi') || low.includes('porto darmi')) return "PORTO D'ARMI GUARDIE GIUR";
-  if (low.includes('passaporto') || low.includes('passport')) return 'PASSAPORTO ORDINARIO';
+  if (low.includes('passaporto') || low.includes('passport') || low.includes('reisepass') || low.includes('passeport') || low.includes('pasaporte')) return 'PASSAPORTO ORDINARIO';
   if (low.includes('elettronica') && (low.includes('identit') || low.includes('identity'))) return "CARTA IDENTITA' ELETTRONICA";
   if (low.includes('identit') || low.includes('identity card')) return "CARTA DI IDENTITA'";
+  // Carta d'identità di un altro paese UE: riconosciuta dal titolo nella lingua nazionale.
+  if (EU_ID_CARD_TITLES.some(title => low.includes(title))) return "CARTA DI IDENTITA'";
   return '';
 }
 
@@ -1079,11 +1128,29 @@ function genericExtract(text) {
 
   const result = {
     docType: detectDocType(text),
-    surname: find(['cognome', 'surname', 'nom', 'apellido', 'nachname']),
-    givenNames: find(['nome', 'given name', 'prénom', 'first name', 'nombre', 'vorname']),
-    number: find(['numero documento', 'n\\.?\\s*documento', 'document no', 'passport no', 'n°']),
-    nationality: find(['nazionalit[aà]', 'nationality', 'nacionalidad', 'staatsangehörigkeit']),
-    dob: find(['data di nascita', 'date of birth', 'geburtsdatum', 'fecha de nacimiento']),
+    surname: find([
+      'cognome', 'surname', 'nom', 'apellido', 'nachname', 'achternaam', 'apelido',
+      'nazwisko', 'efternamn', 'efternavn', 'sukunimi', 'příjmení', 'priezvisko',
+      'priimek', 'pavardė', 'uzvārds', 'perekonnanimi', 'vezetéknév',
+    ]),
+    givenNames: find([
+      'nome', 'given name', 'prénom', 'first name', 'nombre', 'vorname', 'voornaam',
+      'nome próprio', 'imię', 'förnamn', 'fornavn', 'etunimi', 'jméno', 'meno',
+      'ime', 'vardas', 'vārds', 'eesnimi', 'keresztnév',
+    ]),
+    number: find(['numero documento', 'n\\.?\\s*documento', 'document no', 'passport no', 'n°', 'nr dokumentu', 'numer dokumentu']),
+    nationality: find([
+      'nazionalit[aà]', 'nationality', 'nacionalidad', 'staatsangehörigkeit', 'nationaliteit',
+      'nacionalidade', 'obywatelstwo', 'medborgarskap', 'statsborgerskab', 'kansalaisuus',
+      'státní příslušnost', 'štátna príslušnosť', 'državljanstvo', 'pilietybė',
+      'pilsonība', 'kodakondsus', 'állampolgárság',
+    ]),
+    dob: find([
+      'data di nascita', 'date of birth', 'geburtsdatum', 'fecha de nacimiento',
+      'geboortedatum', 'data de nascimento', 'data urodzenia', 'födelsedatum',
+      'fødselsdato', 'syntymäaika', 'datum narození', 'dátum narodenia',
+      'datum rojstva', 'gimimo data', 'dzimšanas dat', 'sünniaeg', 'születési idő',
+    ]),
     // Sulla carta d'identità italiana "COMUNE DI / MUNICIPALITY" indica il comune che ha
     // rilasciato il documento — è il nome del luogo di rilascio (il codice numerico resta
     // comunque da inserire a mano, serve la tabella ufficiale).
@@ -1518,8 +1585,8 @@ function renderCaptureStep(tr) {
   }, ms('document_scanner'), ' ', tr.upload.ocrButton) : null;
 
   const manualBtn = h('button', {
-    className: 'btn-link', onClick: startManualEntry,
-  }, tr.upload.manualEntryBtn);
+    className: 'btn-secondary', onClick: startManualEntry,
+  }, ms('edit_note'), ' ', tr.upload.manualEntryBtn);
 
   const backToList = state.schedine.length ? h('button', {
     className: 'btn-link', onClick: () => { state.docPhase = 'list'; render(); },
@@ -1737,10 +1804,12 @@ function renderGuestListStep(tr) {
     if (state.sendStatus === 'sending') {
       sendSection = h('div', { className: 'ocr-processing', style: 'padding:24px 20px;' },
         h('div', { className: 'ocr-spinner' }), h('div', {}, tr.upload.sending));
-    } else if (state.sendStatus === 'sent') {
-      sendSection = h('div', { className: 'sent-badge' }, ms('check_circle'), ' ', tr.upload.sentAutomatically);
     } else {
+      // Il pulsante di invio resta sempre disponibile, anche dopo un invio riuscito:
+      // l'ospite potrebbe dover mandare altri documenti nella stessa pratica, oppure
+      // essersi accorto di un errore nell'invio precedente e voler reinviare.
       sendSection = h('div', {},
+        state.sendStatus === 'sent' ? h('div', { className: 'sent-badge' }, ms('check_circle'), ' ', tr.upload.sentAutomatically) : null,
         state.sendStatus === 'error' ? h('div', { className: 'ocr-error-note' }, tr.upload.sendErrorMsg) : null,
         state.sendErrorDetail ? h('details', { className: 'tech-detail' },
           h('summary', {}, tr.upload.techDetailsToggle),

@@ -222,6 +222,8 @@ a{color:var(--primary);text-decoration:none}
 .btn-danger:active{transform:scale(.97)}
 .sent-badge{display:flex;align-items:center;gap:8px;background:#f0fdf4;border-radius:var(--r-sm);padding:12px 14px;font-size:13px;font-weight:600;color:#16a34a;margin-bottom:10px}
 .btn-link{display:block;width:100%;text-align:center;background:none;border:none;padding:10px;font-size:13px;font-weight:600;color:var(--text-3);cursor:pointer;font-family:inherit;text-decoration:underline;margin-bottom:8px}
+.btn-secondary{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;background:var(--surface);color:var(--text-1);border:1.5px solid var(--sep);border-radius:var(--r-md);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px;transition:transform var(--t);-webkit-tap-highlight-color:transparent}
+.btn-secondary:active{transform:scale(.97)}
 .field-sub{font-size:13px;color:var(--text-2);line-height:1.5;margin-bottom:16px}
 .field-group{margin-bottom:14px}
 .field-label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px}
