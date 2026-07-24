@@ -981,11 +981,14 @@ const MRZ_ALPHA3_TO_STATO = {
 // usati per riconoscere il tipo di documento nel percorso generico senza MRZ leggibile.
 // Elenco paesi di riferimento: identity-cards.net.
 const EU_ID_CARD_TITLES = [
-  "carte d'identité", 'documento nacional de identidad',
-  'cartão de cidadão', 'personalausweis', 'identiteitskaart', 'dowód osobisty',
+  "carte d'identité", 'documento nacional de identidad', 'documento de identidad',
+  'cartão de cidadão', 'bilhete de identidade', 'personalausweis', 'identiteitskaart', 'dowód osobisty',
   'személyazonosító igazolvány', 'občanský průkaz', 'občiansky preukaz',
   'osebna izkaznica', 'asmens tapatybės kortelė', 'personas apliecība',
   'isikutunnistus', 'karta tożsamości', 'identity card',
+  // Lingue mancanti nell'elenco originale — aggiunte per coprire tutti gli Stati UE/SEE.
+  'δελτίο ταυτότητας', 'лична карта', 'carte de identitate', 'lična karta',
+  'henkilökortti', 'identitetskort', 'skilríki', 'cartu tal-identità',
 ];
 
 // Titoli con cui la patente di guida si presenta nelle varie lingue UE — tutte le patenti
@@ -996,6 +999,10 @@ const EU_DRIVING_LICENCE_TITLES = [
   'ajokortti', 'carta de condução', 'permiso de conducción', 'prawo jazdy',
   'vezetői engedély', 'řidičský průkaz', 'vodičský preukaz', 'vozniško dovoljenje',
   'vairuotojo pažymėjimas', 'vadītāja apliecība', 'juhiluba',
+  // Lingue mancanti nell'elenco originale (testo esatto dell'intestazione armonizzata
+  // Allegato I Direttiva 2006/126/CE nelle rispettive lingue nazionali).
+  'свидетелство за управление на мпс', 'άδεια οδήγησης', 'vozačka dozvola',
+  'permis de conducere', 'liċenzja tas-sewqan',
 ];
 
 
@@ -1103,6 +1110,12 @@ function ocrResultToGuestDraft(ocrResult, confidence) {
     draft.personal.birthPlace = ocrResult.comuneNascita;
     draft.personal.birthProvince = ocrResult.provinciaNascita || '';
     draft.personal.birthCountry = 'ITALIA'; // il formato "Comune (PR)" compare solo su documenti italiani
+  } else if (ocrResult.birthPlaceGeneric) {
+    // Luogo di nascita letto in chiaro da un documento non italiano (patente UE o carta
+    // d'identità non elettronica): riportiamo il luogo, ma NON deduciamo il paese di nascita,
+    // perché non è garantito che coincida con la cittadinanza (es. nato all'estero) — resta
+    // da scegliere in revisione.
+    draft.personal.birthPlace = ocrResult.birthPlaceGeneric;
   } else if (ocrResult.nationality) {
     // Nessun indizio di nascita in Italia: come suggerimento di partenza usiamo la stessa
     // corrispondenza della cittadinanza (spesso coincidono, ma l'operatore verifica sempre).
@@ -1160,6 +1173,14 @@ function parseTD3(line1, line2) {
   return { docType: 'PASSAPORTO ORDINARIO', country, surname, givenNames, number, nationality, sex, dob, expiry };
 }
 
+// Etichetta ufficiale da usare per il tipo documento letto via MRZ: "elettronica" è la
+// dicitura della tabella Alloggiati Web riservata al modello italiano CIE; per le carte
+// d'identità di altri Stati UE, che seguono lo stesso standard MRZ ma non sono la CIE,
+// usiamo la voce generica "CARTA DI IDENTITA'".
+function mrzIdCardDocType(country) {
+  return country === 'ITA' ? "CARTA IDENTITA' ELETTRONICA" : "CARTA DI IDENTITA'";
+}
+
 // Carta d'identità elettronica (TD1): tre righe da 30 caratteri
 function parseTD1(line1, line2, line3) {
   const country = line1.substr(2, 3).replace(/</g, '');
@@ -1169,7 +1190,21 @@ function parseTD1(line1, line2, line3) {
   const expiry = formatMrzDate(line2.substr(8, 6));
   const nationality = line2.substr(15, 3).replace(/</g, '');
   const { surname, givenNames } = splitMrzNames(line3);
-  return { docType: "CARTA IDENTITA' ELETTRONICA", country, surname, givenNames, number, nationality, sex, dob, expiry };
+  return { docType: mrzIdCardDocType(country), country, surname, givenNames, number, nationality, sex, dob, expiry };
+}
+
+// Carta d'identità elettronica (TD2): due righe da 36 caratteri — formato usato da alcune
+// carte d'identità UE (ICAO 9303 parte 6) in alternativa al TD1 a tre righe. La struttura è
+// analoga al TD3 dei passaporti ma più corta: nomi in riga 1, dati anagrafici in riga 2.
+function parseTD2(line1, line2) {
+  const country = line1.substr(2, 3).replace(/</g, '');
+  const { surname, givenNames } = splitMrzNames(line1.substr(5));
+  const number = line2.substr(0, 9).replace(/</g, '').trim();
+  const nationality = line2.substr(10, 3).replace(/</g, '');
+  const dob = formatMrzDate(line2.substr(13, 6));
+  const sex = line2.substr(20, 1) === 'F' ? 'F' : (line2.substr(20, 1) === 'M' ? 'M' : '');
+  const expiry = formatMrzDate(line2.substr(21, 6));
+  return { docType: mrzIdCardDocType(country), country, surname, givenNames, number, nationality, sex, dob, expiry };
 }
 
 // Fallback generico: cerca etichette note (multi-lingua) riga per riga nel testo OCR grezzo.
@@ -1239,12 +1274,19 @@ function extractItalianBirthLine(lines) {
   return null;
 }
 
+// Etichette del sesso nelle lingue UE — l'originale riconosceva solo "sesso"/"sex", quindi
+// falliva su qualunque documento non italiano/inglese anche quando la MRZ non era leggibile.
+const SEX_LABELS = [
+  'sesso', 'sex', 'sexe', 'geschlecht', 'sexo', 'geslacht', 'płeć', 'kön', 'køn',
+  'sukupuoli', 'pohlaví', 'pohlavie', 'spol', 'lytis', 'dzimums', 'sugu', 'nem', 'φύλο', 'пол',
+];
+
 // Il sesso spesso condivide la riga/colonna con un'altra informazione (es. "SESSO STATURA"
 // seguito da "M 180" = sesso + altezza): cerchiamo un token isolato M/F entro poche righe
 // dopo l'etichetta, invece di fidarci ciecamente di quel che segue sulla stessa riga.
 function extractSesso(lines) {
   for (let i = 0; i < lines.length; i++) {
-    if (/\bsesso\b|\bsex\b/i.test(lines[i])) {
+    if (SEX_LABELS.some(w => new RegExp('\\b' + w + '\\b', 'i').test(lines[i]))) {
       for (let j = i; j < Math.min(i + 4, lines.length); j++) {
         const m = lines[j].match(/\b([MF])\b/);
         if (m) return m[1].toUpperCase();
@@ -1272,6 +1314,94 @@ function detectDocType(text) {
   return '';
 }
 
+// Etichette multilingua del campo combinato "data e luogo di nascita" — presente su TUTTE
+// le patenti UE (campo 3, Direttiva 2006/126/CE) e su molte carte d'identità non elettroniche
+// che non hanno l'MRZ. L'originale riconosceva solo il formato italiano via
+// extractItalianBirthLine (con sigla provincia tra parentesi); qui copriamo il caso generale.
+const BIRTH_PLACE_DATE_LABELS = [
+  'luogo e data di nascita', 'data e luogo di nascita',
+  'date and place of birth', 'place and date of birth',
+  'date et lieu de naissance', 'lieu et date de naissance',
+  'geburtsdatum und -ort', 'geburtsort und -datum', 'geburtsdatum/-ort',
+  'fecha y lugar de nacimiento', 'lugar y fecha de nacimiento',
+  'data e local de nascimento', 'local e data de nascimento',
+  'geboortedatum en -plaats', 'geboorteplaats en -datum',
+  'data i miejsce urodzenia',
+  'data și locul nașterii', 'locul și data nașterii',
+  'születési hely és idő', 'születési idő és hely',
+  'datum a místo narození', 'místo a datum narození',
+  'dátum a miesto narodenia', 'miesto a dátum narodenia',
+  'datum in kraj rojstva', 'kraj in datum rojstva',
+  'gimimo data ir vieta', 'gimimo vieta ir data',
+  'dzimšanas datums un vieta', 'dzimšanas vieta un datums',
+  'sünniaeg ja -koht', 'sünnikoht ja -aeg',
+  'syntymäaika ja -paikka', 'syntymäpaikka ja -aika',
+  'födelsedatum och födelseort', 'födelseort och födelsedatum',
+  'fødselsdato og -sted', 'fødselssted og -dato',
+  'ημερομηνία και τόπος γέννησης',
+  'дата и място на раждане',
+  'datum i mjesto rođenja',
+];
+
+// Cerca una di queste etichette, poi la data (gg.mm.aaaa o gg/mm/aaaa) sulla stessa riga
+// o su una delle due righe successive: il testo che resta sulla riga della data, ripulito
+// da virgole/trattini, è il luogo di nascita in chiaro. A differenza del formato italiano,
+// qui NON si assume alcuna sigla provincia: la maggior parte degli Stati UE non la usa.
+function extractGenericBirthDatePlace(lines) {
+  const dateRe = /(\d{2}[.\/]\d{2}[.\/]\d{4})/;
+  for (let i = 0; i < lines.length; i++) {
+    const low = lines[i].toLowerCase();
+    if (!BIRTH_PLACE_DATE_LABELS.some(l => low.includes(l))) continue;
+    for (let j = i; j < Math.min(i + 3, lines.length); j++) {
+      const m = lines[j].match(dateRe);
+      if (!m) continue;
+      const dateStr = m[1].replace(/\./g, '/');
+      let rest = (lines[j].slice(0, m.index) + ' ' + lines[j].slice(m.index + m[0].length)).trim();
+      rest = rest.replace(/^[,.\-–\s]+|[,.\-–\s]+$/g, '').trim();
+      const place = (rest && rest.length <= 40 && !looksLikeAnotherLabel(rest)) ? rest : '';
+      return { dob: dateStr, place };
+    }
+  }
+  return null;
+}
+
+// Le patenti UE seguono i campi numerati dell'Allegato I della Direttiva 2006/126/CE,
+// identici in tutti gli Stati membri (cambia solo la lingua delle etichette stampate):
+// 1 Cognome, 2 Nome, 3 Data e luogo di nascita, 4a Data di rilascio, 4b Data di scadenza,
+// 4c Autorità di rilascio, 5 Numero della patente. Usiamo questi codici numerici come rete
+// di sicurezza quando l'OCR legge il codice campo isolato su una riga (tipico dei layout a
+// tabella) e l'etichetta testuale, in una lingua non coperta sopra, non basta da sola.
+function extractDrivingLicenceFields(lines) {
+  const out = {};
+  const dateRe = /(\d{2}[.\/]\d{2}[.\/]\d{4})/;
+  for (let i = 0; i < lines.length; i++) {
+    // Il codice campo e il valore possono comparire sulla stessa riga ("1. MARTIN", tipico
+    // quando l'OCR legge l'intera riga della tabella) oppure su righe separate (codice da
+    // solo su una riga, valore su quella dopo): gestiamo entrambi i casi.
+    const m = lines[i].trim().match(/^(\d{1,2}[abc]?)[.)]?\s*(.*)$/i);
+    if (!m) continue;
+    const code = m[1].toLowerCase();
+    let value = m[2].trim();
+    if (!value) value = lines[i + 1] ? lines[i + 1].trim() : '';
+    if (!value || looksLikeAnotherLabel(value)) continue;
+
+    if (code === '5' && !out.number) out.number = value;
+    else if (code === '1' && !out.surname) out.surname = value;
+    else if (code === '2' && !out.givenNames) out.givenNames = value;
+    else if (code === '4c' && !out.issuingAuthority) out.issuingAuthority = value;
+    else if (code === '3' && !out.dob) {
+      const dm = value.match(dateRe);
+      if (dm) {
+        out.dob = dm[1].replace(/\./g, '/');
+        let rest = (value.slice(0, dm.index) + ' ' + value.slice(dm.index + dm[0].length)).trim();
+        rest = rest.replace(/^[,.\-–\s]+|[,.\-–\s]+$/g, '').trim();
+        if (rest && rest.length <= 40) out.place = rest;
+      }
+    }
+  }
+  return out;
+}
+
 function genericExtract(text) {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const find = (labels) => findLabelValue(lines, labels);
@@ -1288,7 +1418,14 @@ function genericExtract(text) {
       'nome próprio', 'imię', 'förnamn', 'fornavn', 'etunimi', 'jméno', 'meno',
       'ime', 'vardas', 'vārds', 'eesnimi', 'keresztnév',
     ]),
-    number: find(['numero documento', 'n\\.?\\s*documento', 'document no', 'passport no', 'n°', 'nr dokumentu', 'numer dokumentu']),
+    number: find([
+      'numero documento', 'n\\.?\\s*documento', 'document no', 'passport no', 'n°',
+      'nr dokumentu', 'numer dokumentu', 'documentnummer', 'ausweisnummer', 'dokumentennummer',
+      'número de documento', 'número do documento', 'dokumentnummer', 'asiakirjan numero',
+      'číslo dokladu', 'številka dokumenta', 'dokumento numeris', 'dokumenta numurs',
+      'dokumendi number', 'okmány száma', 'driving licence no', 'permis n', 'licence no',
+      "n\\.?\\s*patente", 'führerschein nr',
+    ]),
     nationality: find([
       'nazionalit[aà]', 'nationality', 'nacionalidad', 'staatsangehörigkeit', 'nationaliteit',
       'nacionalidade', 'obywatelstwo', 'medborgarskap', 'statsborgerskab', 'kansalaisuus',
@@ -1304,8 +1441,12 @@ function genericExtract(text) {
     // Sulla carta d'identità italiana "COMUNE DI / MUNICIPALITY" indica il comune che ha
     // rilasciato il documento — è il nome del luogo di rilascio (il codice numerico resta
     // comunque da inserire a mano, serve la tabella ufficiale).
-    luogoRilascio: find(['comune di', 'municipality']),
-    comuneNascita: '', provinciaNascita: '',
+    luogoRilascio: find([
+      'comune di', 'municipality', 'rilasciat[oa] da', 'issued by', 'délivré par',
+      'ausgestellt von', 'ausgestellt durch', 'expedido por', 'emitido por', 'wydany przez',
+      'vydal', 'vydala', 'izdao', 'väljastanud', 'izsniedza', 'išdavė', 'kiadta', 'izdal',
+    ]),
+    comuneNascita: '', provinciaNascita: '', birthPlaceGeneric: '',
   };
 
   result.sex = extractSesso(lines);
@@ -1318,6 +1459,28 @@ function genericExtract(text) {
     result.comuneNascita = birthLine.comune;
     result.provinciaNascita = birthLine.provincia;
     result.dob = birthLine.dob;
+  } else {
+    // Non è il formato italiano: proviamo il campo combinato multilingua (patenti UE e
+    // carte non elettroniche). Il luogo va in un campo separato (birthPlaceGeneric) perché,
+    // a differenza del "Comune" italiano, qui NON possiamo assumere che il paese di nascita
+    // sia l'Italia solo perché abbiamo trovato un luogo in chiaro.
+    const genericBirth = extractGenericBirthDatePlace(lines);
+    if (genericBirth) {
+      if (genericBirth.dob) result.dob = genericBirth.dob;
+      if (genericBirth.place) result.birthPlaceGeneric = genericBirth.place;
+    }
+  }
+
+  // Rete di sicurezza per le patenti UE: completa solo i campi che l'estrazione per
+  // etichetta non è riuscita a leggere, usando i codici numerici armonizzati (1, 2, 4c, 5).
+  if (result.docType === 'PATENTE DI GUIDA') {
+    const dl = extractDrivingLicenceFields(lines);
+    if (!result.surname && dl.surname) result.surname = dl.surname;
+    if (!result.givenNames && dl.givenNames) result.givenNames = dl.givenNames;
+    if (!result.number && dl.number) result.number = dl.number;
+    if (!result.luogoRilascio && dl.issuingAuthority) result.luogoRilascio = dl.issuingAuthority;
+    if (!result.dob && dl.dob) result.dob = dl.dob;
+    if (!result.birthPlaceGeneric && dl.place) result.birthPlaceGeneric = dl.place;
   }
 
   return result;
@@ -1345,7 +1508,19 @@ function extractFieldsFromText(text) {
     }
   }
 
-  const emptyRaw = { docType: '', surname: '', givenNames: '', number: '', nationality: '', sex: '', dob: '', comuneNascita: '', provinciaNascita: '', luogoRilascio: '' };
+  // Formato TD2 (2 righe da 36): usato da alcune carte d'identità elettroniche UE al posto
+  // del TD1 a tre righe. Va cercato dopo il TD1 per non confondere righe da ~30-31 caratteri
+  // con quelle da ~35-36.
+  for (let i = 0; i < candidateLines.length - 1; i++) {
+    const [a, b] = [candidateLines[i], candidateLines[i + 1]];
+    if (a.length >= 35 && a.length <= 37 && b.length >= 35 && b.length <= 37 && !a.startsWith('P<')) {
+      try {
+        return parseTD2(a.padEnd(36, '<'), b.padEnd(36, '<'));
+      } catch (e) { console.warn('Parsing TD2 fallito', e); }
+    }
+  }
+
+  const emptyRaw = { docType: '', surname: '', givenNames: '', number: '', nationality: '', sex: '', dob: '', comuneNascita: '', provinciaNascita: '', birthPlaceGeneric: '', luogoRilascio: '' };
   return { ...emptyRaw, ...genericExtract(text) };
 }
 
