@@ -1056,10 +1056,36 @@ function findBestMatch(text, list) {
 // Stato/nazionalità: prova prima la mappa MRZ (codici alpha-3 come "ITA", "FRA"...),
 // poi il confronto testuale generico (utile per il percorso senza MRZ, dove l'OCR legge
 // direttamente un nome per esteso).
+// Alcune carte d'identità UE riportano la nazionalità come aggettivo nella propria lingua
+// (es. "POLSKIE" sulla carta polacca, "MAGYAR" su quella ungherese) anziché come codice
+// alpha-3 o nome Stato in italiano: il fuzzy-match su STATI_LIST da solo non li riconosce
+// (sono parole troppo diverse dal nome italiano dello Stato), quindi serve un elenco
+// dedicato, sul modello di MRZ_ALPHA3_TO_STATO.
+const NATIONALITY_ALIAS_TO_STATO = {
+  POLSKIE: 'POLONIA', POLSKA: 'POLONIA',
+  MAGYAR: 'UNGHERIA',
+  DEUTSCH: 'GERMANIA', DEUTSCHE: 'GERMANIA',
+  FRANÇAISE: 'FRANCIA', FRANCAISE: 'FRANCIA',
+  ESPAÑOLA: 'SPAGNA', ESPANOLA: 'SPAGNA',
+  PORTUGUESA: 'PORTOGALLO',
+  NEDERLANDSE: 'PAESI BASSI',
+  ÖSTERREICHISCH: 'AUSTRIA', OSTERREICHISCH: 'AUSTRIA',
+  BELGE: 'BELGIO', BELGISCH: 'BELGIO',
+  ROMÂNĂ: 'ROMANIA', ROMANA: 'ROMANIA',
+  ΕΛΛΗΝΙΚΗ: 'GRECIA',
+  SVENSK: 'SVEZIA', SUOMI: 'FINLANDIA', SUOMEN: 'FINLANDIA',
+  DANSK: 'DANIMARCA',
+  ČESKÁ: 'REPUBBLICA CECA', CESKA: 'REPUBBLICA CECA',
+  SLOVENSKÁ: 'REPUBBLICA SLOVACCA', SLOVENSKA: 'REPUBBLICA SLOVACCA',
+  HRVATSKA: 'CROAZIA', HRVATSKO: 'CROAZIA',
+  BULGARSKO: 'BULGARIA',
+};
+
 function matchStato(text) {
   if (!text) return '';
   const code = text.trim().toUpperCase();
   if (MRZ_ALPHA3_TO_STATO[code]) return MRZ_ALPHA3_TO_STATO[code];
+  if (NATIONALITY_ALIAS_TO_STATO[code]) return NATIONALITY_ALIAS_TO_STATO[code];
   return findBestMatch(text, STATI_LIST);
 }
 
@@ -1091,8 +1117,21 @@ function emptyGuestDraft() {
 // "31.12.2028" anziché "31/12/2028").
 function normalizeDateStr(s) {
   if (!s) return '';
-  const m = s.trim().match(/^(\d{2})[.\-\/](\d{2})[.\-\/](\d{4})$/);
-  return m ? m[1] + '/' + m[2] + '/' + m[3] : s.trim();
+  // Alcuni Stati UE separano gg/mm/aaaa con spazi anziché punti o barre (es. le carte
+  // d'identità ungheresi: "31 12 1970"), e alcuni documenti italiani (patenti) usano
+  // l'anno a 2 cifre ("02/03/89"): gestiamo entrambi i casi.
+  const m = s.trim().match(/^(\d{2})[.\-\/\s](\d{2})[.\-\/\s](\d{2,4})$/);
+  if (!m) return s.trim();
+  return m[1] + '/' + m[2] + '/' + expandTwoDigitYear(m[3]);
+}
+
+// Espande un anno a 2 cifre in 4 cifre con la stessa euristica usata per la MRZ: se
+// maggiore di 30 si assume 19xx, altrimenti 20xx (nessun documento UE in circolazione oggi
+// può riportare una nascita dopo il 2030 o richiedere quell'ambiguità sul lato opposto).
+function expandTwoDigitYear(yearStr) {
+  if (yearStr.length === 4) return yearStr;
+  const yy = parseInt(yearStr, 10);
+  return String(yy > 30 ? 1900 + yy : 2000 + yy);
 }
 
 function ocrResultToGuestDraft(ocrResult, confidence) {
@@ -1242,13 +1281,23 @@ function looksLikeAnotherLabel(str) {
 // dentro "cognome") e restituisce il valore associato: prima prova sulla stessa riga,
 // altrimenti sulla riga successiva (utile quando etichetta e valore sono su righe diverse,
 // come "LUOGO E DATA DI NASCITA" seguito, sulla riga sotto, dal vero valore).
+// NB: usiamo confini "(?<!\p{L})...(?!\p{L})" invece di \b: in JavaScript \b considera
+// carattere di parola solo [A-Za-z0-9_], quindi con lettere accentate (é, á, ó, à, ł...)
+// molto comuni nelle etichette non italiane \b smette di funzionare — sia mancando
+// etichette che finiscono con una lettera accentata (es. "okmányazonosító" seguito da un
+// segno di punteggiatura), sia creando confini falsi dentro parole accentate (es. leggere
+// "F" come isolato dentro "FÉRFI" perché \b vede una falsa transizione prima della É).
 function findLabelValue(lines, labels) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     for (const label of labels) {
-      const hasLabel = new RegExp('\\b' + label + '\\b', 'i').test(line);
+      const hasLabel = new RegExp('(?<!\\p{L})' + label + '(?!\\p{L})', 'iu').test(line);
       if (!hasLabel) continue;
-      const sameLine = line.match(new RegExp('\\b' + label + '\\b\\s*[:\\-/]?\\s*(.{2,40})$', 'i'));
+      // Il valore catturato deve iniziare con lettera o cifra: altrimenti, quando dopo
+      // l'etichetta resta solo punteggiatura residua (es. "Doc. No.:" con il vero valore
+      // sulla riga sotto), il tentativo di soddisfare la lunghezza minima finirebbe per
+      // "inventare" un valore fatto di soli simboli come ".:".
+      const sameLine = line.match(new RegExp('(?<!\\p{L})' + label + '(?!\\p{L})[\\s:.\\-/]*([\\p{L}\\p{N}].{1,39})$', 'iu'));
       if (sameLine && sameLine[1] && !looksLikeAnotherLabel(sameLine[1])) {
         return sameLine[1].trim();
       }
@@ -1262,14 +1311,20 @@ function findLabelValue(lines, labels) {
   return '';
 }
 
-// Riconosce il formato tipico delle carte d'identità italiane:
-// "COMUNE (PR) gg.mm.aaaa" oppure "gg/mm/aaaa". Lavora riga per riga (non sull'intero
-// testo) per evitare che lo spazio bianco della regex "ingoi" righe precedenti non
-// correlate attraverso gli a-capo.
+// Riconosce il formato tipico dei documenti italiani con sigla provincia tra parentesi,
+// tratto univoco che non si trova sui documenti degli altri Stati UE. L'ordine cambia però
+// da documento a documento: le carte d'identità scrivono "COMUNE (PR) gg.mm.aaaa" mentre le
+// patenti scrivono "gg/mm/aa COMUNE (PR)" (spesso con l'anno a sole 2 cifre) — gestiamo
+// entrambi. Lavora riga per riga (non sull'intero testo) per evitare che lo spazio bianco
+// della regex "ingoi" righe precedenti non correlate attraverso gli a-capo.
 function extractItalianBirthLine(lines) {
+  const place = "([A-ZÀ-Ú][A-ZÀ-Ú'\\s]{1,30}?)\\s*\\(\\s*([A-Z]{2})\\s*\\)";
+  const date = '(\\d{2})[.\\/](\\d{2})[.\\/](\\d{2,4})';
   for (const line of lines) {
-    const m = line.match(/([A-ZÀ-Ú][A-ZÀ-Ú'\s]{1,30}?)\s*\(\s*([A-Z]{2})\s*\)\s*(\d{2})[.\/](\d{2})[.\/](\d{4})/i);
-    if (m) return { comune: m[1].trim(), provincia: m[2].toUpperCase(), dob: m[3] + '/' + m[4] + '/' + m[5] };
+    let m = line.match(new RegExp(place + '\\s*' + date, 'i'));
+    if (m) return { comune: m[1].trim(), provincia: m[2].toUpperCase(), dob: m[3] + '/' + m[4] + '/' + expandTwoDigitYear(m[5]) };
+    m = line.match(new RegExp(date + '\\s*' + place, 'i'));
+    if (m) return { comune: m[4].trim(), provincia: m[5].toUpperCase(), dob: m[1] + '/' + m[2] + '/' + expandTwoDigitYear(m[3]) };
   }
   return null;
 }
@@ -1282,14 +1337,18 @@ const SEX_LABELS = [
 ];
 
 // Il sesso spesso condivide la riga/colonna con un'altra informazione (es. "SESSO STATURA"
-// seguito da "M 180" = sesso + altezza): cerchiamo un token isolato M/F entro poche righe
-// dopo l'etichetta, invece di fidarci ciecamente di quel che segue sulla stessa riga.
+// seguito da "M 180" = sesso + altezza): cerchiamo un token isolato entro poche righe dopo
+// l'etichetta, invece di fidarci ciecamente di quel che segue sulla stessa riga. Includiamo
+// anche "K", usata dalle carte d'identità polacche per "kobieta" (donna) al posto di "F".
 function extractSesso(lines) {
   for (let i = 0; i < lines.length; i++) {
-    if (SEX_LABELS.some(w => new RegExp('\\b' + w + '\\b', 'i').test(lines[i]))) {
+    if (SEX_LABELS.some(w => new RegExp('(?<!\\p{L})' + w + '(?!\\p{L})', 'iu').test(lines[i]))) {
       for (let j = i; j < Math.min(i + 4, lines.length); j++) {
-        const m = lines[j].match(/\b([MF])\b/);
-        if (m) return m[1].toUpperCase();
+        const m = lines[j].match(/(?<!\p{L})([MFK])(?!\p{L})/u);
+        if (m) {
+          const letter = m[1].toUpperCase();
+          return letter === 'K' ? 'F' : letter;
+        }
       }
     }
   }
@@ -1348,14 +1407,16 @@ const BIRTH_PLACE_DATE_LABELS = [
 // da virgole/trattini, è il luogo di nascita in chiaro. A differenza del formato italiano,
 // qui NON si assume alcuna sigla provincia: la maggior parte degli Stati UE non la usa.
 function extractGenericBirthDatePlace(lines) {
-  const dateRe = /(\d{2}[.\/]\d{2}[.\/]\d{4})/;
+  // L'anno può essere a 2 o 4 cifre: molte patenti (comprese quelle italiane) usano il
+  // formato breve "gg/mm/aa".
+  const dateRe = /(\d{2}[.\/]\d{2}[.\/]\d{2,4})/;
   for (let i = 0; i < lines.length; i++) {
     const low = lines[i].toLowerCase();
     if (!BIRTH_PLACE_DATE_LABELS.some(l => low.includes(l))) continue;
     for (let j = i; j < Math.min(i + 3, lines.length); j++) {
       const m = lines[j].match(dateRe);
       if (!m) continue;
-      const dateStr = m[1].replace(/\./g, '/');
+      const dateStr = normalizeDateStr(m[1]);
       let rest = (lines[j].slice(0, m.index) + ' ' + lines[j].slice(m.index + m[0].length)).trim();
       rest = rest.replace(/^[,.\-–\s]+|[,.\-–\s]+$/g, '').trim();
       const place = (rest && rest.length <= 40 && !looksLikeAnotherLabel(rest)) ? rest : '';
@@ -1371,20 +1432,16 @@ function extractGenericBirthDatePlace(lines) {
 // 4c Autorità di rilascio, 5 Numero della patente. Usiamo questi codici numerici come rete
 // di sicurezza quando l'OCR legge il codice campo isolato su una riga (tipico dei layout a
 // tabella) e l'etichetta testuale, in una lingua non coperta sopra, non basta da sola.
+// Nota: sulle patenti italiane 4a e 4c compaiono spesso affiancati sulla STESSA riga
+// (es. "4a. 25/09/2021  4c. MIT-UCO"), quindi cerchiamo tutti i codici presenti in ogni
+// riga, non solo il primo.
 function extractDrivingLicenceFields(lines) {
   const out = {};
-  const dateRe = /(\d{2}[.\/]\d{2}[.\/]\d{4})/;
-  for (let i = 0; i < lines.length; i++) {
-    // Il codice campo e il valore possono comparire sulla stessa riga ("1. MARTIN", tipico
-    // quando l'OCR legge l'intera riga della tabella) oppure su righe separate (codice da
-    // solo su una riga, valore su quella dopo): gestiamo entrambi i casi.
-    const m = lines[i].trim().match(/^(\d{1,2}[abc]?)[.)]?\s*(.*)$/i);
-    if (!m) continue;
-    const code = m[1].toLowerCase();
-    let value = m[2].trim();
-    if (!value) value = lines[i + 1] ? lines[i + 1].trim() : '';
-    if (!value || looksLikeAnotherLabel(value)) continue;
+  const dateRe = /(\d{2}[.\/]\d{2}[.\/]\d{2,4})/;
+  const codeRe = /(?:^|\s)(\d{1,2}[abc]?)[.)]\s*/gi;
 
+  function assign(code, value) {
+    if (!value || looksLikeAnotherLabel(value)) return;
     if (code === '5' && !out.number) out.number = value;
     else if (code === '1' && !out.surname) out.surname = value;
     else if (code === '2' && !out.givenNames) out.givenNames = value;
@@ -1392,12 +1449,30 @@ function extractDrivingLicenceFields(lines) {
     else if (code === '3' && !out.dob) {
       const dm = value.match(dateRe);
       if (dm) {
-        out.dob = dm[1].replace(/\./g, '/');
+        out.dob = normalizeDateStr(dm[1]);
         let rest = (value.slice(0, dm.index) + ' ' + value.slice(dm.index + dm[0].length)).trim();
         rest = rest.replace(/^[,.\-–\s]+|[,.\-–\s]+$/g, '').trim();
         if (rest && rest.length <= 40) out.place = rest;
       }
     }
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    const matches = [...line.matchAll(codeRe)];
+    if (matches.length) {
+      for (let k = 0; k < matches.length; k++) {
+        const code = matches[k][1].toLowerCase();
+        const start = matches[k].index + matches[k][0].length;
+        const end = (k + 1 < matches.length) ? matches[k + 1].index : line.length;
+        assign(code, line.slice(start, end).trim());
+      }
+      continue;
+    }
+    // Riga che contiene solo il codice, senza punto/valore a seguire: il valore sarà sulla
+    // riga successiva (capita quando l'OCR legge il layout a tabella riga per riga).
+    const codeOnly = line.match(/^(\d{1,2}[abc]?)$/i);
+    if (codeOnly) assign(codeOnly[1].toLowerCase(), lines[i + 1] ? lines[i + 1].trim() : '');
   }
   return out;
 }
@@ -1406,24 +1481,48 @@ function genericExtract(text) {
   const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
   const find = (labels) => findLabelValue(lines, labels);
 
-  const result = {
-    docType: detectDocType(text),
-    surname: find([
+  // Alcuni Stati (es. Ungheria) non separano cognome e nome in due campi distinti, ma usano
+  // un'unica etichetta combinata ("Family name and Given name"/"Családi és utónév"). Va
+  // rilevata PRIMA della ricerca standard qui sotto: altrimenti l'etichetta "given name",
+  // contenuta nella frase combinata, verrebbe intercettata per sbaglio dalla ricerca normale
+  // del solo campo nome, lasciando il cognome vuoto e mettendo il nome completo in un unico
+  // campo. Quando troviamo il campo combinato, assumiamo che la prima parola sia il cognome
+  // e il resto il/i nome/i — euristica corretta nella stragrande maggioranza dei casi, e
+  // comunque sempre correggibile in revisione.
+  const combinedName = find([
+    'family name and given name', 'family name and given names',
+    'családi és utónev', 'családi és utónév',
+  ]);
+  let surname, givenNames;
+  if (combinedName) {
+    const parts = combinedName.trim().split(/\s+/);
+    surname = parts.shift() || '';
+    givenNames = parts.join(' ');
+  } else {
+    surname = find([
       'cognome', 'surname', 'nom', 'apellido', 'nachname', 'achternaam', 'apelido',
       'nazwisko', 'efternamn', 'efternavn', 'sukunimi', 'příjmení', 'priezvisko',
       'priimek', 'pavardė', 'uzvārds', 'perekonnanimi', 'vezetéknév',
-    ]),
-    givenNames: find([
-      'nome', 'given name', 'prénom', 'first name', 'nombre', 'vorname', 'voornaam',
-      'nome próprio', 'imię', 'förnamn', 'fornavn', 'etunimi', 'jméno', 'meno',
+    ]);
+    givenNames = find([
+      'nome', 'given name', 'given names', 'prénom', 'first name', 'nombre', 'vorname', 'voornaam',
+      'nome próprio', 'imię', 'imiona', 'förnamn', 'fornavn', 'etunimi', 'jméno', 'meno',
       'ime', 'vardas', 'vārds', 'eesnimi', 'keresztnév',
-    ]),
+    ]);
+  }
+
+  const result = {
+    docType: detectDocType(text),
+    surname,
+    givenNames,
     number: find([
-      'numero documento', 'n\\.?\\s*documento', 'document no', 'passport no', 'n°',
-      'nr dokumentu', 'numer dokumentu', 'documentnummer', 'ausweisnummer', 'dokumentennummer',
+      'numero documento', 'n\\.?\\s*documento', 'document no', 'document number',
+      'doc\\.?\\s*no', 'passport no', 'n°',
+      'nr dokumentu', 'numer dokumentu', 'seria i numer dokumentu', 'documentnummer',
+      'ausweisnummer', 'dokumentennummer',
       'número de documento', 'número do documento', 'dokumentnummer', 'asiakirjan numero',
       'číslo dokladu', 'številka dokumenta', 'dokumento numeris', 'dokumenta numurs',
-      'dokumendi number', 'okmány száma', 'driving licence no', 'permis n', 'licence no',
+      'dokumendi number', 'okmány száma', 'okmányazonosító', 'driving licence no', 'permis n', 'licence no',
       "n\\.?\\s*patente", 'führerschein nr',
     ]),
     nationality: find([
