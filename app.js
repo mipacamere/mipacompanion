@@ -1086,6 +1086,14 @@ function matchStato(text) {
   const code = text.trim().toUpperCase();
   if (MRZ_ALPHA3_TO_STATO[code]) return MRZ_ALPHA3_TO_STATO[code];
   if (NATIONALITY_ALIAS_TO_STATO[code]) return NATIONALITY_ALIAS_TO_STATO[code];
+  // A volte il valore catturato contiene rumore proveniente da un campo adiacente sulla
+  // stessa riga visiva (es. "M/M EST" quando sesso e nazionalità condividono la riga, tipico
+  // dei layout a due colonne): prima di rinunciare al match esatto, cerchiamo un token
+  // isolato di 3 lettere che corrisponda comunque a un codice alpha-3 noto.
+  const tokens = code.match(/(?<!\p{L})[A-Z]{3}(?!\p{L})/gu) || [];
+  for (const t of tokens) {
+    if (MRZ_ALPHA3_TO_STATO[t]) return MRZ_ALPHA3_TO_STATO[t];
+  }
   return findBestMatch(text, STATI_LIST);
 }
 
@@ -1281,6 +1289,12 @@ const GENERIC_LABEL_WORDS = [
   'фамилия', 'име', 'гражданство', 'дата', 'раждане', 'номер', 'документа', 'пол',
   // Croato/sloveno
   'prezime',
+  // Parole generiche 'carta/documento' in altre lingue che comparivano vicino al numero
+  // documento e, non essendo qui, venivano scambiate per il valore (es. lussemburghese
+  // "N° CARTE D'IDENTITÉ / IDENTITY CARD Nb" catturato per intero invece del vero numero
+  // sulla riga sotto).
+  'card', 'identity', 'carte', 'identité', 'kaart', 'karta', 'kortelė', 'korttinumero',
+  'serijska', 'serial', 'citizenship',
 ];
 
 function looksLikeAnotherLabel(str) {
@@ -1536,17 +1550,20 @@ function genericExtract(text) {
     givenNames,
     number: find([
       'numero documento', 'n\\.?\\s*documento', 'document no', 'document number',
-      'doc\\.?\\s*no', 'passport no', 'n°',
+      'doc\\.?\\s*no', 'passport no', 'n°', 'card no', 'identity card no', 'identity card number',
       'nr dokumentu', 'numer dokumentu', 'seria i numer dokumentu', 'documentnummer',
-      'ausweisnummer', 'ausweisnr', 'dokumentennummer', 'kaartnr', 'kaartnummer', 'card n',
-      'número de documento', 'número do documento', 'dokumentnummer', 'asiakirjan numero',
-      'číslo dokladu', 'številka dokumenta', 'dokumento numeris', 'dokumenta numurs',
+      'ausweisnummer', 'ausweisnr', 'dokumentennummer', 'dokumentnummer', 'kaartnr', 'kaartnummer', 'card n',
+      'número de documento', 'número do documento', 'document id no', 'n\\.?º\\s*documento',
+      'asiakirjan numero', 'korttinumero', 'kortnummer', 'kortnr',
+      'číslo dokladu', 'številka dokumenta', 'serijska številka', 'serial number',
+      'dokumento numeris', 'kortelės nr', 'dokumenta numurs',
       'dokumendi number', 'okmány száma', 'okmányazonosító', 'driving licence no', 'permis n', 'licence no',
-      "n\\.?\\s*patente", 'führerschein nr',
-      'seria si numărul', 'seria și numărul', 'αριθμός δελτίου ταυτότητας', 'номер на документа',
+      "n\\.?\\s*patente", 'führerschein nr', 'dni',
+      'seria si numărul', 'seria și numărul', 'αριθμός δελτίου ταυτότητας', 'id card number',
+      'номер на документа', 'broj osobne iskaznice',
     ]),
     nationality: find([
-      'nazionalit[aà]', 'nationality', 'nacionalidad', 'staatsangehörigkeit', 'nationaliteit',
+      'nazionalit[aà]', 'nationality', 'citizenship', 'nacionalidad', 'staatsangehörigkeit', 'nationaliteit',
       'nacionalidade', 'obywatelstwo', 'medborgarskap', 'statsborgerskab', 'kansalaisuus',
       'státní příslušnost', 'štátna príslušnosť', 'državljanstvo', 'pilietybė',
       'pilsonība', 'kodakondsus', 'állampolgárság',
