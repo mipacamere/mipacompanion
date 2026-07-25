@@ -1621,6 +1621,19 @@ function genericExtract(text) {
     if (!result.birthPlaceGeneric && dl.place) result.birthPlaceGeneric = dl.place;
   }
 
+  // Rete di sicurezza per la CIE (carta d'identità elettronica italiana): il numero
+  // documento (es. "CA00265DL") compare in alto a destra SENZA alcuna etichetta testuale
+  // adiacente, quindi la ricerca per etichetta non lo trova mai. Il formato è però
+  // distintivo e stabile (2 lettere + 5 cifre + 2 lettere, 9 caratteri) — lo cerchiamo come
+  // ultima risorsa solo sui documenti d'identità italiani, per non rischiare falsi positivi
+  // su documenti di altri Stati.
+  if (!result.number && (result.docType === "CARTA IDENTITA' ELETTRONICA" || result.docType === "CARTA DI IDENTITA'")) {
+    for (const line of lines) {
+      const m = line.match(/(?<!\p{L}|\d)[A-Z]{2}\d{5}[A-Z]{2}(?!\p{L}|\d)/u);
+      if (m) { result.number = m[0]; break; }
+    }
+  }
+
   return result;
 }
 
