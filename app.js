@@ -1269,7 +1269,18 @@ const GENERIC_LABEL_WORDS = [
   'pavardė', 'vardas', 'gimimo', 'pilietybė',
   'uzvārds', 'vārds', 'dzimšanas', 'pilsonība',
   'perekonnanimi', 'eesnimi', 'sünniaeg', 'kodakondsus',
-  'vezetéknév', 'keresztnév', 'születési', 'állampolgárság',
+  'vezetéknév', 'keresztnév', 'születési', 'állampolgárság', 'családi', 'utónev', 'utónév',
+  // Francese (per le etichette bilingui tipo "Cetățenie/Nationalité" o "Seria/Série et numéro"
+  // dove il francese non era in questo elenco e veniva scambiato per un valore vero)
+  'nationalité', 'numéro', 'série', 'délivré',
+  // Rumeno
+  'nume', 'prenume', 'cetățenie', 'cetatenie', 'nașterii', 'nasterii', 'seria', 'nașterea',
+  // Greco
+  'επώνυμο', 'όνομα', 'ιθαγένεια', 'υπηκοότητα', 'φύλο', 'ημερομηνία', 'γέννησης', 'αριθμός',
+  // Bulgaro (cirillico)
+  'фамилия', 'име', 'гражданство', 'дата', 'раждане', 'номер', 'документа', 'пол',
+  // Croato/sloveno
+  'prezime',
 ];
 
 function looksLikeAnotherLabel(str) {
@@ -1339,15 +1350,19 @@ const SEX_LABELS = [
 // Il sesso spesso condivide la riga/colonna con un'altra informazione (es. "SESSO STATURA"
 // seguito da "M 180" = sesso + altezza): cerchiamo un token isolato entro poche righe dopo
 // l'etichetta, invece di fidarci ciecamente di quel che segue sulla stessa riga. Includiamo
-// anche "K", usata dalle carte d'identità polacche per "kobieta" (donna) al posto di "F".
+// "K" (polacco, kobieta=donna), "Ž" (croato/sloveno, žensko/žena=donna) e la "Ж" cirillica
+// (bulgaro, dove il valore compare spesso come "Ж/F" ma per sicurezza lo intercettiamo anche
+// da solo) al posto di F. Molte carte UE mostrano comunque il valore come "lettera
+// nazionale/F" (es. olandese "V/F", tedesco/belga "W/F"): in quel caso la "F" internazionale
+// viene già trovata correttamente senza bisogno di mappare la lettera nazionale.
 function extractSesso(lines) {
   for (let i = 0; i < lines.length; i++) {
     if (SEX_LABELS.some(w => new RegExp('(?<!\\p{L})' + w + '(?!\\p{L})', 'iu').test(lines[i]))) {
       for (let j = i; j < Math.min(i + 4, lines.length); j++) {
-        const m = lines[j].match(/(?<!\p{L})([MFK])(?!\p{L})/u);
+        const m = lines[j].match(/(?<!\p{L})([MFKŽЖ])(?!\p{L})/iu);
         if (m) {
           const letter = m[1].toUpperCase();
-          return letter === 'K' ? 'F' : letter;
+          return (letter === 'K' || letter === 'Ž' || letter === 'Ж') ? 'F' : letter;
         }
       }
     }
@@ -1503,11 +1518,15 @@ function genericExtract(text) {
       'cognome', 'surname', 'nom', 'apellido', 'nachname', 'achternaam', 'apelido',
       'nazwisko', 'efternamn', 'efternavn', 'sukunimi', 'příjmení', 'priezvisko',
       'priimek', 'pavardė', 'uzvārds', 'perekonnanimi', 'vezetéknév',
+      // Rumeno, croato, greco, bulgaro: mancanti, trovati esaminando i campioni di
+      // carte d'identità UE (Romania, Croazia, Grecia, Cipro, Bulgaria).
+      'nume', 'prezime', 'επώνυμο', 'фамилия',
     ]);
     givenNames = find([
       'nome', 'given name', 'given names', 'prénom', 'first name', 'nombre', 'vorname', 'voornaam',
       'nome próprio', 'imię', 'imiona', 'förnamn', 'fornavn', 'etunimi', 'jméno', 'meno',
       'ime', 'vardas', 'vārds', 'eesnimi', 'keresztnév',
+      'prenume', 'όνομα', 'име',
     ]);
   }
 
@@ -1519,23 +1538,26 @@ function genericExtract(text) {
       'numero documento', 'n\\.?\\s*documento', 'document no', 'document number',
       'doc\\.?\\s*no', 'passport no', 'n°',
       'nr dokumentu', 'numer dokumentu', 'seria i numer dokumentu', 'documentnummer',
-      'ausweisnummer', 'dokumentennummer',
+      'ausweisnummer', 'ausweisnr', 'dokumentennummer', 'kaartnr', 'kaartnummer', 'card n',
       'número de documento', 'número do documento', 'dokumentnummer', 'asiakirjan numero',
       'číslo dokladu', 'številka dokumenta', 'dokumento numeris', 'dokumenta numurs',
       'dokumendi number', 'okmány száma', 'okmányazonosító', 'driving licence no', 'permis n', 'licence no',
       "n\\.?\\s*patente", 'führerschein nr',
+      'seria si numărul', 'seria și numărul', 'αριθμός δελτίου ταυτότητας', 'номер на документа',
     ]),
     nationality: find([
       'nazionalit[aà]', 'nationality', 'nacionalidad', 'staatsangehörigkeit', 'nationaliteit',
       'nacionalidade', 'obywatelstwo', 'medborgarskap', 'statsborgerskab', 'kansalaisuus',
       'státní příslušnost', 'štátna príslušnosť', 'državljanstvo', 'pilietybė',
       'pilsonība', 'kodakondsus', 'állampolgárság',
+      'cetățenie', 'cetatenie', 'ιθαγένεια', 'υπηκοότητα', 'гражданство',
     ]),
     dob: find([
       'data di nascita', 'date of birth', 'geburtsdatum', 'fecha de nacimiento',
       'geboortedatum', 'data de nascimento', 'data urodzenia', 'födelsedatum',
       'fødselsdato', 'syntymäaika', 'datum narození', 'dátum narodenia',
       'datum rojstva', 'gimimo data', 'dzimšanas dat', 'sünniaeg', 'születési idő',
+      'data nașterii', 'data nasterii', 'ημερομηνία γέννησης', 'дата на раждане',
     ]),
     // Sulla carta d'identità italiana "COMUNE DI / MUNICIPALITY" indica il comune che ha
     // rilasciato il documento — è il nome del luogo di rilascio (il codice numerico resta
