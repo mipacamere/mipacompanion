@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 [Nome Titolare / Ragione Sociale]. Tutti i diritti riservati.
+ * Codice sorgente proprietario — vedi il file LICENSE nella root del progetto.
+ */
+
 /**
  * MiPA Guest Data → Google Sheets — Netlify Function
  * ----------------------------------------------------

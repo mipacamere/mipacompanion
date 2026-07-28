@@ -1,0 +1,86 @@
+MiPA GUEST COMPANION — LICENZA D'USO PROPRIETARIA
+Copyright (c) 2026 [Nome Titolare / Ragione Sociale]. Tutti i diritti riservati.
+
+Questo NON è software open source. Il presente file, insieme a tutti gli altri
+file del repository/progetto "MiPA Guest Companion" (codice sorgente, markup,
+fogli di stile, funzioni serverless, asset grafici, testi, struttura e logica
+applicativa), è opera dell'ingegno originale tutelata dalla Legge 22 aprile
+1941, n. 633 (Legge sul diritto d'autore, "L.d.A.") e dalle convenzioni
+internazionali in materia di proprietà intellettuale (Convenzione di Berna,
+TRIPS), oltre che, per quanto applicabile, dagli artt. 2575 e ss. del Codice
+Civile.
+
+1. TITOLARITÀ
+   Tutti i diritti di proprietà intellettuale sul codice sorgente, sulla sua
+   struttura, organizzazione e sul risultato compilato/eseguibile
+   dell'applicazione appartengono in via esclusiva a [Nome Titolare /
+   Ragione Sociale] ("il Titolare").
+
+2. DIRITTI CONCESSI
+   Salvo diverso accordo scritto con il Titolare, non viene concessa alcuna
+   licenza d'uso, riproduzione, distribuzione o modifica a terzi. La
+   presenza del codice in un repository, anche se tecnicamente accessibile
+   (es. per hosting, review o collaborazione con fornitori tecnici
+   incaricati), non costituisce concessione di licenza né liberatoria
+   d'uso implicita.
+
+3. USI VIETATI
+   È espressamente vietato, salvo previo consenso scritto del Titolare:
+   a) copiare, riprodurre o duplicare, in tutto o in parte, il codice
+      sorgente o la sua struttura, anche a fini di realizzazione di
+      un'applicazione con funzionalità analoghe o sostitutive;
+   b) distribuire, sublicenziare, vendere, noleggiare o mettere altrimenti
+      a disposizione di terzi il codice o l'applicazione;
+   c) modificare, decompilare, decodificare o creare opere derivate;
+   d) rimuovere o alterare note di copyright, marchi o indicazioni di
+      titolarità presenti nel codice o nell'interfaccia dell'app;
+   e) utilizzare il codice, in tutto o in parte, come base per progetti
+      di terzi, anche gratuiti o non commerciali.
+
+4. COLLABORATORI E FORNITORI TERZI
+   L'accesso al codice concesso a sviluppatori, fornitori di hosting
+   (es. Netlify) o altri collaboratori tecnici avviene esclusivamente
+   nell'ambito dell'incarico ricevuto ed è soggetto a obbligo di
+   riservatezza. Tale accesso non trasferisce alcun diritto di proprietà
+   intellettuale, né autorizza usi diversi da quelli strettamente
+   necessari all'incarico.
+
+5. COMPONENTI DI TERZE PARTI
+   L'applicazione richiama servizi e librerie di terze parti (a titolo
+   esemplificativo: Google Fonts/Material Symbols, Google Cloud Vision,
+   Google Sheets API, Resend, Netlify Functions). Tali componenti restano
+   soggetti alle rispettive licenze e termini di servizio, che non sono
+   in alcun modo modificati dalla presente licenza.
+
+6. MARCHIO E NOME
+   Il nome "MiPA" e ogni segno distintivo, logo o denominazione commerciale
+   ad esso associato non sono ceduti né licenziati con il presente
+   documento e restano di titolarità del Titolare (o del soggetto
+   eventualmente titolare del marchio registrato, se diverso).
+
+7. ASSENZA DI GARANZIA
+   Il software è fornito "così com'è", senza alcuna garanzia di
+   funzionamento, idoneità a uno scopo specifico o assenza di errori,
+   salvo quanto diversamente pattuito per iscritto tra le parti.
+
+8. VIOLAZIONI
+   Ogni utilizzo non autorizzato del codice sorgente costituisce
+   violazione dei diritti d'autore del Titolare e potrà essere perseguito
+   nelle sedi civili e penali competenti, ai sensi degli artt. 156 e ss.
+   e 171 e ss. L.d.A., oltre che tramite le procedure di segnalazione per
+   violazione del diritto d'autore previste dalle piattaforme di hosting
+   del codice (es. procedura DMCA su GitHub, se applicabile).
+
+9. CONTATTI
+   Per richieste di licenza, collaborazione o segnalazione di usi non
+   autorizzati: [inserire indirizzo email/contatto del Titolare]
+
+---
+NOTA: questo è un modello (template) di licenza proprietaria "tutti i diritti
+riservati", pensato per un'app gestita privatamente e non distribuita come
+prodotto commerciale a terzi. Non sostituisce una consulenza legale. Se in
+futuro l'app verrà data in licenza ad altre strutture ricettive, venduta come
+prodotto SaaS o coinvolgerà più soci/investitori, è consigliabile far
+rivedere e integrare questo testo da un legale (es. clausole su
+sub-licenza, durata, foro competente, limitazione di responsabilità
+contrattuale).

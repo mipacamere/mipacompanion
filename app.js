@@ -3,6 +3,23 @@
    No external dependencies
 ═══════════════════════════════════════════ */
 
+/*
+ * Copyright (c) 2026 [Nome Titolare / Ragione Sociale]. Tutti i diritti riservati.
+ * All rights reserved.
+ *
+ * Il presente codice sorgente è opera protetta ai sensi della Legge 22 aprile 1941,
+ * n. 633 (Legge sul diritto d'autore) e successive modifiche. È vietata la
+ * riproduzione, copia, distribuzione, pubblicazione, modifica, decompilazione o
+ * creazione di opere derivate, in tutto o in parte, senza previa autorizzazione
+ * scritta del titolare dei diritti.
+ *
+ * This source code is proprietary and confidential. Unauthorized copying,
+ * distribution, modification, or use of this file, via any medium, is strictly
+ * prohibited without prior written permission from the copyright holder.
+ *
+ * Vedi il file LICENSE nella root del progetto per i termini completi.
+ */
+
 // ── State ──────────────────────────────────
 const state = {
   page: 'home',
