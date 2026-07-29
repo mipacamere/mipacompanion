@@ -2510,41 +2510,6 @@ function openSchedineFlow() {
   navigate('upload');
 }
 
-function renderDashboard() {
-  const tr = t();
-  const items = menuItems();
-  return h('div', { className: 'page' },
-    h('div', { className: 'toolbar toolbar-home', style: 'padding:50px 18px 22px' },
-      h('div', { className: 'toolbar-row' },
-        h('div', {},
-          h('div', { className: 'toolbar-title' }, tr.dash.welcome),
-          h('div', { className: 'toolbar-subtitle' }, tr.dash.sub),
-        ),
-        langSelect(),
-      )
-    ),
-    h('div', { className: 'dashboard' },
-      h('div', { className: 'menu' },
-        ...items.map((item, i) =>
-          h('button', {
-            className: 'card',
-            style: { '--i': i },
-            onClick: () => item.external ? openSchedineFlow() : navigate('section', item.id),
-          },
-            h('div', { className: 'card-icon', style: { background: item.color } }, ms(item.icon)),
-            h('div', { className: 'card-text' },
-              h('div', { className: 'card-title' }, item.label),
-              h('div', { className: 'card-sub' }, item.sub),
-            ),
-            h('div', { className: 'card-arrow' }, ms('chevron_right', true)),
-          )
-        )
-      )
-    ),
-  );
-}
-
-
 // ── Event group helper ───────────────────────
 function renderEventGroup(g, dimmed) {
   var cards = g.events.map(function(e) {
@@ -2933,31 +2898,6 @@ function renderSection() {
     ),
     renderSectionContent(),
   );
-}
-
-// ── Main render ──────────────────────────────
-function render() {
-  const app = document.getElementById('app');
-  app.innerHTML = '';
-
-  const offlineBar = renderOfflineBar();
-  if (offlineBar) app.appendChild(offlineBar);
-
-  const sidebar = renderSidebar();
-  if (sidebar) app.appendChild(sidebar);
-
-  const mainWrapper = (state.page === 'dashboard' || state.page === 'section')
-    ? h('div', { className: 'main-content' })
-    : h('div', {});
-
-  let pageContent;
-  if (state.page === 'home') pageContent = renderHome();
-  else if (state.page === 'upload') pageContent = renderUpload();
-  else if (state.page === 'dashboard') pageContent = renderDashboard();
-  else if (state.page === 'section') pageContent = renderSection();
-
-  if (pageContent) mainWrapper.appendChild(pageContent);
-  app.appendChild(mainWrapper);
 }
 
 // ── Bootstrap ────────────────────────────────
