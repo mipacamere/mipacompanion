@@ -21,6 +21,156 @@
  */
 
 // ── State ──────────────────────────────────
+
+// ═══════════════════════════════════════════
+// WEATHER API INTEGRATION (Milazzo)
+// ═══════════════════════════════════════════
+
+// Ottieni la tua API key gratuita da https://openweathermap.org/api
+const WEATHER_API_KEY = 'YOUR_API_KEY_HERE'; // Sostituisci con la tua key
+const WEATHER_CITY = 'Milazzo';
+const WEATHER_COUNTRY = 'IT';
+
+async function fetchWeather() {
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${WEATHER_CITY},${WEATHER_COUNTRY}&appid=${WEATHER_API_KEY}&units=metric&lang=it`
+    );
+    const data = await response.json();
+    
+    return {
+      temp: Math.round(data.main.temp),
+      description: data.weather[0].description,
+      icon: getWeatherIcon(data.weather[0].main),
+      humidity: data.main.humidity,
+      wind: data.wind.speed,
+      location: data.name
+    };
+  } catch (error) {
+    console.error('Weather fetch error:', error);
+    return null;
+  }
+}
+
+function getWeatherIcon(weatherMain) {
+  const icons = {
+    'Clear': 'wb_sunny',
+    'Clouds': 'cloud',
+    'Rain': 'umbrella',
+    'Drizzle': 'water_drop',
+    'Thunderstorm': 'thunderstorm',
+    'Snow': 'ac_unit',
+    'Mist': 'foggy'
+  };
+  return icons[weatherMain] || 'wb_sunny';
+}
+
+function renderWeatherWidget(weather) {
+  if (!weather) return null;
+  
+  return h('div', { className: 'weather-widget' },
+    h('div', { className: 'weather-icon' },
+      h('span', { className: 'ms' }, weather.icon)
+    ),
+    h('div', { className: 'weather-info' },
+      h('div', { className: 'weather-location' }, weather.location),
+      h('div', { className: 'weather-temp' }, weather.temp + '°C'),
+      h('div', { className: 'weather-desc' }, weather.description),
+      h('div', { className: 'weather-details' },
+        h('div', { className: 'weather-detail' },
+          h('span', { className: 'ms', style: 'font-size:16px' }, 'water_drop'),
+          weather.humidity + '%'
+        ),
+        h('div', { className: 'weather-detail' },
+          h('span', { className: 'ms', style: 'font-size:16px' }, 'air'),
+          weather.wind + ' m/s'
+        )
+      )
+    )
+  );
+}
+
+// ═══════════════════════════════════════════
+// MODIFICA renderDashboard() per includere meteo
+// ═══════════════════════════════════════════
+
+function renderDashboard() {
+  const tr = t();
+  const items = menuItems();
+  
+  return h('div', { className: 'page' },
+    h('div', { className: 'toolbar toolbar-home', style: 'padding:50px 18px 22px' },
+      h('div', { className: 'toolbar-row' },
+        h('div', {},
+          h('div', { className: 'toolbar-title' }, tr.dash.welcome),
+          h('div', { className: 'toolbar-subtitle' }, tr.dash.sub),
+        ),
+        langSelect(),
+      )
+    ),
+    h('div', { className: 'dashboard' },
+      // Widget Meteo aggiunto qui
+      h('div', { id: 'weather-container' }),
+      h('div', { className: 'menu' },
+        ...items.map((item, i) =>
+          h('button', {
+            className: 'card',
+            style: { '--i': i },
+            onClick: () => item.external ? openSchedineFlow() : navigate('section', item.id),
+          },
+            h('div', { className: 'card-icon', style: { background: item.color } }, ms(item.icon)),
+            h('div', { className: 'card-text' },
+              h('div', { className: 'card-title' }, item.label),
+              h('div', { className: 'card-sub' }, item.sub),
+            ),
+            h('div', { className: 'card-arrow' }, ms('chevron_right', true)),
+          )
+        )
+      )
+    )
+  );
+}
+
+// ═══════════════════════════════════════════
+// MODIFICA render() per caricare il meteo
+// ═══════════════════════════════════════════
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  
+  const offlineBar = renderOfflineBar();
+  if (offlineBar) app.appendChild(offlineBar);
+  
+  const sidebar = renderSidebar();
+  if (sidebar) app.appendChild(sidebar);
+  
+  const mainWrapper = (state.page === 'dashboard' || state.page === 'section')
+    ? h('div', { className: 'main-content' })
+    : h('div', {});
+  
+  let pageContent;
+  if (state.page === 'home') pageContent = renderHome();
+  else if (state.page === 'upload') pageContent = renderUpload();
+  else if (state.page === 'dashboard') pageContent = renderDashboard();
+  else if (state.page === 'section') pageContent = renderSection();
+  
+  if (pageContent) mainWrapper.appendChild(pageContent);
+  app.appendChild(mainWrapper);
+  
+  // Carica meteo dopo il render della dashboard
+  if (state.page === 'dashboard') {
+    setTimeout(() => {
+      fetchWeather().then(weather => {
+        const container = document.getElementById('weather-container');
+        if (container && weather) {
+          container.innerHTML = '';
+          container.appendChild(renderWeatherWidget(weather));
+        }
+      });
+    }, 100);
+  }
+}
 const state = {
   page: 'home',
   section: 'info',
