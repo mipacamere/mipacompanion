@@ -65,28 +65,18 @@ function getWeatherIcon(weatherMain) {
   return icons[weatherMain] || 'wb_sunny';
 }
 
-function renderWeatherWidget(weather) {
+function renderWeatherChip(weather) {
   if (!weather) return null;
-  
-  return h('div', { className: 'weather-widget' },
-    h('div', { className: 'weather-icon' },
-      h('span', { className: 'ms' }, weather.icon)
+  return h('div', { className: 'weather-chip' },
+    h('span', { className: 'ms weather-chip-icon' }, weather.icon),
+    h('div', {},
+      h('div', { className: 'weather-chip-temp' }, weather.temp + '°C · ' + weather.description),
+      h('div', { className: 'weather-chip-loc' }, weather.location),
     ),
-    h('div', { className: 'weather-info' },
-      h('div', { className: 'weather-location' }, weather.location),
-      h('div', { className: 'weather-temp' }, weather.temp + '°C'),
-      h('div', { className: 'weather-desc' }, weather.description),
-      h('div', { className: 'weather-details' },
-        h('div', { className: 'weather-detail' },
-          h('span', { className: 'ms', style: 'font-size:16px' }, 'water_drop'),
-          weather.humidity + '%'
-        ),
-        h('div', { className: 'weather-detail' },
-          h('span', { className: 'ms', style: 'font-size:16px' }, 'air'),
-          weather.wind + ' m/s'
-        )
-      )
-    )
+    h('div', { className: 'weather-chip-meta' },
+      h('div', {}, ms('water_drop'), ' ', weather.humidity + '%'),
+      h('div', {}, ms('air'), ' ', weather.wind + ' m/s'),
+    ),
   );
 }
 
@@ -94,41 +84,163 @@ function renderWeatherWidget(weather) {
 // MODIFICA renderDashboard() per includere meteo
 // ═══════════════════════════════════════════
 
-function renderDashboard() {
+// Item ids shown in the Home quick-access grid, in display order.
+const QUICK_ACCESS_IDS = ['schedine', 'entryInstructions', 'philosophy', 'map', 'breakfast', 'directions'];
+// Item ids shown in the Esplora tab (masonry grid).
+const ESPLORA_IDS = ['map', 'breakfast', 'bookServices', 'events', 'museums', 'beach', 'recipes'];
+// Item ids shown in the Info tab (masonry grid, same style as Esplora).
+const INFO_IDS = ['info', 'roomGuide', 'pharmacies', 'philosophy'];
+// Cycling accent shades for tiles/cards (sage palette — no per-item rainbow colors).
+const SAGE_SHADES = ['var(--primary)', 'var(--primary-dark)', '#96a88c'];
+
+function findMenuItem(items, id) { return items.find(it => it.id === id); }
+
+function renderHeader() {
   const tr = t();
-  const items = menuItems();
-  
-  return h('div', { className: 'page' },
-    h('div', { className: 'toolbar toolbar-home', style: 'padding:50px 18px 22px' },
-      h('div', { className: 'toolbar-row' },
-        h('div', {},
-          h('div', { className: 'toolbar-title' }, tr.dash.welcome),
-          h('div', { className: 'toolbar-subtitle' }, tr.dash.sub),
-        ),
-        langSelect(),
-      )
-    ),
-    h('div', { className: 'dashboard' },
-      // Widget Meteo aggiunto qui
-      h('div', { id: 'weather-container' }),
-      h('div', { className: 'menu' },
-        ...items.map((item, i) =>
-          h('button', {
-            className: 'card',
-            style: { '--i': i },
-            onClick: () => item.external ? openSchedineFlow() : navigate('section', item.id),
-          },
-            h('div', { className: 'card-icon', style: { background: item.color } }, ms(item.icon)),
-            h('div', { className: 'card-text' },
-              h('div', { className: 'card-title' }, item.label),
-              h('div', { className: 'card-sub' }, item.sub),
-            ),
-            h('div', { className: 'card-arrow' }, ms('chevron_right', true)),
-          )
+  const guestName = getGuestName();
+  const LANGS = [
+    { code: 'it', flag: '🇮🇹', label: 'Italiano' }, { code: 'en', flag: '🇬🇧', label: 'English' },
+    { code: 'fr', flag: '🇫🇷', label: 'Français' }, { code: 'es', flag: '🇪🇸', label: 'Español' },
+    { code: 'de', flag: '🇩🇪', label: 'Deutsch' }, { code: 'zh', flag: '🇨🇳', label: '中文' },
+    { code: 'ru', flag: '🇷🇺', label: 'Русский' },
+  ];
+  const current = LANGS.find(l => l.code === state.lang) || LANGS[1];
+
+  const langWrap = h('div', { style: 'position:relative' },
+    h('button', {
+      className: 'lang-flag-btn',
+      onClick: (e) => { e.stopPropagation(); state.langMenuOpen = !state.langMenuOpen; render(); },
+    }, current.flag, ms('expand_more')),
+  );
+  if (state.langMenuOpen) {
+    langWrap.appendChild(
+      h('div', { className: 'lang-menu' },
+        ...LANGS.map(l =>
+          h('div', {
+            className: 'lang-menu-item' + (l.code === state.lang ? ' active' : ''),
+            onClick: () => { state.lang = l.code; state.langMenuOpen = false; localStorage.setItem('mipa_lang', l.code); render(); },
+          }, h('span', {}, l.flag), ' ', l.label, l.code === state.lang ? ms('check') : null)
         )
       )
-    )
+    );
+  }
+
+  return h('div', { className: 'home-header' },
+    h('div', {},
+      h('div', { className: 'home-greeting' }, (tr.dash.hello || 'Hello') + ', ' + (guestName || tr.guestFallback || 'Guest')),
+      h('div', { className: 'home-greeting-sub' }, tr.dash.sub),
+    ),
+    langWrap,
   );
+}
+
+function renderQuickAccessGrid() {
+  const tr = t();
+  const items = menuItems();
+  return h('div', {},
+    h('div', { className: 'section-label' }, tr.dash.quickAccess || 'Quick access'),
+    h('div', { className: 'quick-grid' },
+      ...QUICK_ACCESS_IDS.map((id, i) => {
+        const item = findMenuItem(items, id);
+        if (!item) return null;
+        const label = id === 'schedine' ? (tr.tabs.checkinShort || item.label) : item.label;
+        return h('button', {
+          className: 'quick-tile',
+          style: { background: SAGE_SHADES[i % SAGE_SHADES.length] },
+          onClick: () => item.external ? openSchedineFlow() : navigate('section', item.id),
+        },
+          ms(item.icon),
+          h('span', { className: 'quick-tile-label' }, label),
+        );
+      })
+    ),
+  );
+}
+
+function renderMasonryGrid(ids) {
+  const items = menuItems();
+  return h('div', { className: 'explore-grid' },
+    ...ids.map((id, i) => {
+      const item = findMenuItem(items, id);
+      if (!item) return null;
+      const tall = i % 3 === 0;
+      return h('button', {
+        className: 'explore-card' + (tall ? ' explore-card-tall' : ''),
+        style: { background: 'color-mix(in srgb, ' + SAGE_SHADES[i % SAGE_SHADES.length] + ' 16%, var(--surface))' },
+        onClick: () => item.external ? openSchedineFlow() : navigate('section', item.id),
+      },
+        ms(item.icon),
+        h('span', { className: 'explore-card-title' }, item.label),
+      );
+    })
+  );
+}
+
+function renderUpcomingEvents() {
+  const tr = t();
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const upcoming = EVENTS
+    .filter(e => new Date(e.year, e.month - 1, e.day) >= today)
+    .sort((a, b) => new Date(a.year, a.month - 1, a.day) - new Date(b.year, b.month - 1, b.day))
+    .slice(0, 5)
+    .map(mapEvent);
+  if (upcoming.length === 0) return null;
+  return h('div', {},
+    h('div', { className: 'section-label' }, tr.tabs.events),
+    h('div', { className: 'upcoming-scroll' },
+      ...upcoming.map(e =>
+        h('button', { className: 'upcoming-card', onClick: () => navigate('section', 'events') },
+          h('div', { className: 'upcoming-card-date' }, e.day + ' ' + e.monShort),
+          h('div', { className: 'upcoming-card-title' }, e.title),
+          h('div', { className: 'upcoming-card-desc' }, e.desc),
+        )
+      )
+    ),
+  );
+}
+
+function renderBottomTabBar() {
+  const tr = t();
+  return h('nav', { className: 'bottom-tabbar' },
+    h('button', {
+      className: 'bottom-tab' + (state.dashTab === 'home' ? ' active' : ''),
+      onClick: () => { state.dashTab = 'home'; render(); },
+    }, ms('home'), h('span', {}, 'Home')),
+    h('button', {
+      className: 'bottom-tab' + (state.dashTab === 'esplora' ? ' active' : ''),
+      onClick: () => { state.dashTab = 'esplora'; render(); },
+    }, ms('explore'), h('span', {}, tr.tabs.exploreTab || 'Esplora')),
+    h('button', {
+      className: 'bottom-tab' + (state.dashTab === 'info' ? ' active' : ''),
+      onClick: () => { state.dashTab = 'info'; render(); },
+    }, ms('info'), h('span', {}, tr.tabs.info ? tr.tabs.info.split(' ')[0] : 'Info')),
+    h('button', {
+      className: 'bottom-tab bottom-tab-checkout',
+      onClick: () => navigate('section', 'checkout'),
+    }, ms('logout'), h('span', {}, tr.tabs.checkout || 'Check-out')),
+  );
+}
+
+function renderDashboard() {
+  const page = h('div', { className: 'page dashboard-page' },
+    renderHeader(),
+  );
+
+  if (state.dashTab === 'esplora') {
+    page.appendChild(h('div', { className: 'dashboard-content' }, renderMasonryGrid(ESPLORA_IDS)));
+  } else if (state.dashTab === 'info') {
+    page.appendChild(h('div', { className: 'dashboard-content' }, renderMasonryGrid(INFO_IDS)));
+  } else {
+    const homeContent = h('div', { className: 'dashboard-content' },
+      h('div', { id: 'weather-container' }),
+      renderQuickAccessGrid(),
+    );
+    const events = renderUpcomingEvents();
+    if (events) homeContent.appendChild(events);
+    page.appendChild(homeContent);
+  }
+
+  return page;
 }
 
 // ═══════════════════════════════════════════
@@ -138,42 +250,60 @@ function renderDashboard() {
 function render() {
   const app = document.getElementById('app');
   app.innerHTML = '';
-  
+
   const offlineBar = renderOfflineBar();
   if (offlineBar) app.appendChild(offlineBar);
-  
+
   const sidebar = renderSidebar();
   if (sidebar) app.appendChild(sidebar);
-  
+
   const mainWrapper = (state.page === 'dashboard' || state.page === 'section')
     ? h('div', { className: 'main-content' })
     : h('div', {});
-  
+
   let pageContent;
   if (state.page === 'home') pageContent = renderHome();
   else if (state.page === 'upload') pageContent = renderUpload();
   else if (state.page === 'dashboard') pageContent = renderDashboard();
   else if (state.page === 'section') pageContent = renderSection();
-  
+
   if (pageContent) mainWrapper.appendChild(pageContent);
   app.appendChild(mainWrapper);
-  
-  // Carica meteo dopo il render della dashboard
+
+  // Bottom tab bar (Home / Esplora / Info / Check-out) — solo nella dashboard mobile
   if (state.page === 'dashboard') {
+    app.appendChild(renderBottomTabBar());
+  }
+
+  // Carica meteo dopo il render, solo quando il tab Home è attivo
+  if (state.page === 'dashboard' && state.dashTab === 'home') {
     setTimeout(() => {
       fetchWeather().then(weather => {
         const container = document.getElementById('weather-container');
         if (container && weather) {
           container.innerHTML = '';
-          container.appendChild(renderWeatherWidget(weather));
+          const chip = renderWeatherChip(weather);
+          if (chip) container.appendChild(chip);
         }
       });
     }, 100);
+  }
+
+  // Chiude il menu lingua se si clicca fuori dall'header
+  if (state.langMenuOpen) {
+    setTimeout(() => {
+      document.addEventListener('click', function closeLangMenu() {
+        if (state.langMenuOpen) { state.langMenuOpen = false; render(); }
+        document.removeEventListener('click', closeLangMenu);
+      }, { once: true });
+    }, 0);
   }
 }
 const state = {
   page: 'home',
   section: 'info',
+  dashTab: 'home',        // 'home' | 'esplora' | 'info' — bottom tab bar on the dashboard
+  langMenuOpen: false,    // header language dropdown
   lang: localStorage.getItem('mipa_lang') || 'en',
   isOnline: navigator.onLine,
   images: JSON.parse(localStorage.getItem('mipa_images') || '[]'),
@@ -199,10 +329,11 @@ const allT = {
   en: {
     back: 'Back', openMaps: 'Open in Maps', bookWa: 'Book via WhatsApp',
     offline: 'You are offline — some content may not load.',
+    guestFallback: 'Guest',
     install: { title: 'Install MiPA App', sub: 'Add to your home screen for quick access', btn: 'Install', dismiss: 'Dismiss', iosStep1: '1. Tap the Share button in Safari (□↑)', iosStep2: '2. Scroll down and tap "Add to Home Screen"' },
-    tabs: { info:'Structure Info', philosophy:'Our Philosophy', contacts:'Contacts', directions:'Getting Around', map:'Interactive Map', breakfast:'Daily Itinerary', bookServices:'Book Services', events:'City Events', museums:'Museums & Monuments', beach:'Take Me to the Beach', roomGuide:'Back to My Room', checkout:'Check Out', recipes:'No-Cook Recipes', schedine:'Guest documents / Alloggiati Web' },
+    tabs: { info:'Structure Info', philosophy:'Our Philosophy', contacts:'Contacts', directions:'Getting Around', map:'Interactive Map', breakfast:'Daily Itinerary', bookServices:'Book Services', events:'City Events', museums:'Museums & Monuments', beach:'Take Me to the Beach', roomGuide:'Back to My Room', checkout:'Check Out', recipes:'No-Cook Recipes', schedine:'Guest documents / Alloggiati Web', entryInstructions:'How to Get In', pharmacies:'On-Duty Pharmacies', checkinShort:'Check-in', exploreTab:'Explore' },
     home: { greeting:'Welcome to MiPA 🌿', sub:'Your digital concierge in Milazzo', checkinNew:'Guest documents / Alloggiati Web', checkinNewDesc:'Add guests and send the registration file', checkinDone:'I already checked in', checkinDoneDesc:'Go directly to the app' },
-    dash: { welcome:'MiPA Companion', sub:'What can we help you with?' },
+    dash: { welcome:'MiPA Companion', sub:'What can we help you with?', hello:'Hello' , quickAccess:'Quick access' },
     upload: { title:'Guest documents / Alloggiati Web', dropText:'Tap to add photos', dropSub:'Passport, ID card or driving licence', remove:'Remove', attachNote:'Please attach the photos manually', sendWa:'Send via WhatsApp', waMsg:'Hello! Please find attached the guest registration file (schedine alloggiati). Thank you!', continue:'Continue to property info', sent:'Documents sent ✓',
       ocrButton:'Extract data (OCR)', ocrProcessing:'Reading your documents…', ocrErrorMsg:"Couldn't reach the online OCR service. Please fill in all fields manually.",
       techDetailsToggle:'Technical details',
@@ -236,6 +367,8 @@ const allT = {
     },
     info: { general:'General Info', contacts:'Contacts', address:'Address', phone:'Phone', whatsapp:'Chat on WhatsApp', checkin:'3:00 PM – 10:00 PM', checkout:'By 10:30 AM', wifiConnect:'Connect to WiFi' },
     itinerary: { desc:'Discover the best of the city with this carefully planned itinerary. Explore must-see attractions and enjoy local experiences.', btn:'Explore Milazzo' },
+    entryInstructions: { steps: ["The main door opens with the code from your confirmation message.","The key box is right beside the entrance, on the right.","Go up to the first floor: the apartment is the door at the end of the hallway.","Need help? Message us on WhatsApp — we're always reachable."] },
+    pharmacies: { desc: 'Check the up-to-date list of on-duty pharmacies in Milazzo, open today or tonight.', btn: 'See on-duty pharmacies' },
     map: { title:'Milazzo Interactive Map', desc:'Highlights, landmarks and hidden gems.', openMaps:'Open in Google Maps' },
     beach: { desc:'Navigate directly to the nearest beach — crystal-clear Tyrrhenian waters await.', btnTitle:'Take me to the beach', btnSub:'Opens Google Maps · Navigation' },
     room: { desc:'Let us guide you back to MiPA.', btnTitle:'Navigate to MiPA', btnSub:'Opens Google Maps · Turn-by-turn' },
@@ -266,10 +399,11 @@ const allT = {
   it: {
     back: 'Indietro', openMaps: 'Apri in Maps', bookWa: 'Prenota via WhatsApp',
     offline: 'Sei offline — alcuni contenuti potrebbero non caricarsi.',
+    guestFallback: 'Ospite',
     install: { title: 'Installa app MiPA', sub: 'Aggiungila alla schermata home', btn: 'Installa', dismiss: 'Ignora', iosStep1: '1. Tocca il pulsante Condividi in Safari (□↑)', iosStep2: '2. Scorri e tocca "Aggiungi alla schermata Home"' },
-    tabs: { info:'Info Struttura', philosophy:'La Nostra Filosofia', contacts:'Contatti', directions:'Raggiungere/Lasciare Milazzo', map:'Mappa Interattiva', breakfast:'Itinerario Giornaliero', bookServices:'Prenota Servizi', events:'Eventi in Città', museums:'Musei e Monumenti', beach:'Portami alla Spiaggia', roomGuide:'Riportami alla Camera', checkout:'Check-Out', recipes:'Ricette No-Cook', schedine:'Documenti ospiti / Schedine Alloggiati' },
+    tabs: { info:'Info Struttura', philosophy:'La Nostra Filosofia', contacts:'Contatti', directions:'Raggiungere/Lasciare Milazzo', map:'Mappa Interattiva', breakfast:'Itinerario Giornaliero', bookServices:'Prenota Servizi', events:'Eventi in Città', museums:'Musei e Monumenti', beach:'Portami alla Spiaggia', roomGuide:'Riportami alla Camera', checkout:'Check-Out', recipes:'Ricette No-Cook', schedine:'Documenti ospiti / Schedine Alloggiati', entryInstructions:'Istruzioni per Entrare', pharmacies:'Farmacie di Turno', checkinShort:'Check-in', exploreTab:'Esplora' },
     home: { greeting:'Benvenuto a MiPA 🌿', sub:'Il tuo concierge digitale a Milazzo', checkinNew:'Documenti ospiti / Schedine Alloggiati', checkinNewDesc:"Aggiungi gli ospiti e invia il file di registrazione", checkinDone:'Ho già fatto il check-in', checkinDoneDesc:"Vai direttamente all'app" },
-    dash: { welcome:'MiPA Companion', sub:'Come possiamo aiutarti?' },
+    dash: { welcome:'MiPA Companion', sub:'Come possiamo aiutarti?', hello:'Ciao' , quickAccess:'Accesso rapido' },
     upload: { title:"Documenti ospiti / Alloggiati Web", dropText:'Tocca per aggiungere foto', dropSub:"Passaporto, carta d'identità o patente", remove:'Rimuovi', attachNote:"Si prega di allegare le foto manualmente", sendWa:"Invia tramite WhatsApp", waMsg:"Buongiorno! In allegato il file per la registrazione ospiti (schedine alloggiati). Grazie!", continue:'Continua alle info sulla struttura', sent:'Documenti inviati ✓',
       ocrButton:'Estrai dati (OCR)', ocrProcessing:'Lettura dei documenti in corso…', ocrErrorMsg:"Non è stato possibile raggiungere il servizio OCR online. Compila tutti i campi manualmente.",
       techDetailsToggle:'Dettagli tecnici',
@@ -303,6 +437,8 @@ const allT = {
     },
     info: { general:'Informazioni Generali', contacts:'Contatti', address:'Indirizzo', phone:'Telefono', whatsapp:'Chatta su WhatsApp', checkin:'15:00 – 22:00', checkout:'Entro le 10:30', wifiConnect:'Connetti al WiFi' },
     itinerary: { desc:'Scopri il meglio della città con questo itinerario giornaliero ben pianificato.', btn:'Esplora Milazzo' },
+    entryInstructions: { steps: ["Il portone si apre con il codice che trovi nel messaggio di conferma.","La cassetta con le chiavi si trova subito a destra dell'ingresso.","Sali al primo piano: l'appartamento è la porta in fondo al corridoio.","Se hai bisogno, scrivici su WhatsApp: siamo sempre raggiungibili."] },
+    pharmacies: { desc: "Consulta l'elenco aggiornato delle farmacie di turno a Milazzo, aperte oggi o stanotte.", btn: 'Vedi farmacie di turno' },
     map: { title:'Mappa Interattiva di Milazzo', desc:'Attrazioni, monumenti e gemme nascoste.', openMaps:'Apri in Google Maps' },
     beach: { desc:'Naviga direttamente alla spiaggia più vicina — acque cristalline del Tirreno ti aspettano.', btnTitle:'Portami alla spiaggia', btnSub:'Apre Google Maps · Navigazione' },
     room: { desc:'Lasciati guidare verso MiPA.', btnTitle:'Naviga verso MiPA', btnSub:'Apre Google Maps · Indicazioni' },
@@ -333,10 +469,11 @@ const allT = {
   fr: {
     back:'Retour', openMaps:'Ouvrir dans Maps', bookWa:'Réserver via WhatsApp',
     offline:"Vous êtes hors ligne — certains contenus peuvent ne pas se charger.",
+    guestFallback:'Client',
     install:{ title:"Installer l'app MiPA", sub:"Ajoutez-la à votre écran d'accueil", btn:'Installer', dismiss:'Ignorer', iosStep1:"1. Appuyez sur le bouton Partager dans Safari (□↑)", iosStep2:"2. Faites défiler et appuyez sur \"Sur l'écran d'accueil\"" },
-    tabs:{ info:'Infos Structure', philosophy:'Notre Philosophie', contacts:'Contacts', directions:'Arriver/Quitter Milazzo', map:'Carte Interactive', breakfast:'Itinéraire du Jour', bookServices:'Réserver Services', events:'Événements en Ville', museums:'Musées et Monuments', beach:'Emmène-moi à la Plage', roomGuide:'Retour à ma Chambre', checkout:'Check-Out', recipes:'Recettes Sans Cuisson', schedine:'Documents des clients / Alloggiati Web' },
+    tabs:{ info:'Infos Structure', philosophy:'Notre Philosophie', contacts:'Contacts', directions:'Arriver/Quitter Milazzo', map:'Carte Interactive', breakfast:'Itinéraire du Jour', bookServices:'Réserver Services', events:'Événements en Ville', museums:'Musées et Monuments', beach:'Emmène-moi à la Plage', roomGuide:'Retour à ma Chambre', checkout:'Check-Out', recipes:'Recettes Sans Cuisson', schedine:'Documents des clients / Alloggiati Web', entryInstructions:'Comment Entrer', pharmacies:'Pharmacies de Garde', checkinShort:'Check-in', exploreTab:'Explorer' },
     home:{ greeting:'Bienvenue à MiPA 🌿', sub:'Votre concierge digital à Milazzo', checkinNew:'Documents des clients / Alloggiati Web', checkinNewDesc:'Ajoutez vos clients et envoyez le fichier d\'enregistrement', checkinDone:'Je suis déjà enregistré', checkinDoneDesc:"Accéder directement à l'app" },
-    dash:{ welcome:'MiPA Companion', sub:'Comment pouvons-nous vous aider ?' },
+    dash:{ welcome:'MiPA Companion', sub:'Comment pouvons-nous vous aider ?', hello:'Bonjour' , quickAccess:'Accès rapide' },
     upload:{ title:"Documents des clients / Alloggiati Web", dropText:'Appuyez pour ajouter des photos', dropSub:"Passeport, carte d'identité ou permis de conduire", remove:'Supprimer', attachNote:"Veuillez joindre les photos manuellement", sendWa:"Envoyer via WhatsApp", waMsg:"Bonjour ! Voici en pièce jointe le fichier d'enregistrement des clients (schedine alloggiati). Merci !", continue:"Continuer vers les infos de l'hébergement", sent:'Documents envoyés ✓',
       ocrButton:'Extraire les données (OCR)', ocrProcessing:'Lecture de vos documents…', ocrErrorMsg:"Impossible de joindre le service OCR en ligne. Veuillez remplir tous les champs manuellement.",
       techDetailsToggle:'Détails techniques',
@@ -370,6 +507,8 @@ const allT = {
     },
     info:{ general:'Informations Générales', contacts:'Contacts', address:'Adresse', phone:'Téléphone', whatsapp:'Chat sur WhatsApp', checkin:'15h00 – 22h00', checkout:'Avant 10h30', wifiConnect:'Se connecter au WiFi' },
     itinerary:{ desc:'Découvrez le meilleur de la ville grâce à cet itinéraire soigneusement planifié.', btn:'Explorer Milazzo' },
+    entryInstructions:{ steps: ["La porte principale s'ouvre avec le code de votre message de confirmation.","La boîte à clés se trouve juste à droite de l'entrée.","Montez au premier étage : l'appartement est la porte au fond du couloir.","Besoin d'aide ? Écrivez-nous sur WhatsApp, nous sommes toujours disponibles."] },
+    pharmacies:{ desc: 'Consultez la liste à jour des pharmacies de garde à Milazzo, ouvertes aujourd\'hui ou cette nuit.', btn: 'Voir les pharmacies de garde' },
     map:{ title:'Carte Interactive de Milazzo', desc:'Attractions, monuments et joyaux cachés.', openMaps:'Ouvrir dans Google Maps' },
     beach:{ desc:'Naviguez directement vers la plage la plus proche — des eaux cristallines vous attendent.', btnTitle:'Emmène-moi à la plage', btnSub:'Ouvre Google Maps · Navigation' },
     room:{ desc:"Laissez-nous vous guider jusqu'à MiPA.", btnTitle:'Naviguer vers MiPA', btnSub:'Ouvre Google Maps · Itinéraire' },
@@ -382,10 +521,11 @@ const allT = {
   es: {
     back:'Volver', openMaps:'Abrir en Maps', bookWa:'Reservar por WhatsApp',
     offline:'Estás sin conexión — algunos contenidos pueden no cargarse.',
+    guestFallback:'Huésped',
     install:{ title:'Instalar app MiPA', sub:'Añadir a tu pantalla de inicio', btn:'Instalar', dismiss:'Ignorar', iosStep1:'1. Toca el botón Compartir en Safari (□↑)', iosStep2:'2. Desplázate y toca "Añadir a la pantalla de inicio"' },
-    tabs:{ info:'Info del Alojamiento', philosophy:'Nuestra Filosofía', contacts:'Contactos', directions:'Llegar/Salir de Milazzo', map:'Mapa Interactivo', breakfast:'Itinerario Diario', bookServices:'Reservar Servicios', events:'Eventos en la Ciudad', museums:'Museos y Monumentos', beach:'Llévame a la Playa', roomGuide:'Volver a Mi Habitación', checkout:'Check-Out', recipes:'Recetas Sin Cocinar', schedine:'Documentos de huéspedes / Alloggiati Web' },
+    tabs:{ info:'Info del Alojamiento', philosophy:'Nuestra Filosofía', contacts:'Contactos', directions:'Llegar/Salir de Milazzo', map:'Mapa Interactivo', breakfast:'Itinerario Diario', bookServices:'Reservar Servicios', events:'Eventos en la Ciudad', museums:'Museos y Monumentos', beach:'Llévame a la Playa', roomGuide:'Volver a Mi Habitación', checkout:'Check-Out', recipes:'Recetas Sin Cocinar', schedine:'Documentos de huéspedes / Alloggiati Web', entryInstructions:'Cómo Entrar', pharmacies:'Farmacias de Guardia', checkinShort:'Check-in', exploreTab:'Explorar' },
     home:{ greeting:'Bienvenido a MiPA 🌿', sub:'Tu conserje digital en Milazzo', checkinNew:'Documentos de huéspedes / Alloggiati Web', checkinNewDesc:'Añade huéspedes y envía el archivo de registro', checkinDone:'Ya hice el check-in', checkinDoneDesc:'Ir directamente a la app' },
-    dash:{ welcome:'MiPA Companion', sub:'¿En qué podemos ayudarte?' },
+    dash:{ welcome:'MiPA Companion', sub:'¿En qué podemos ayudarte?', hello:'Hola' , quickAccess:'Acceso rápido' },
     upload:{ title:'Documentos de huéspedes / Alloggiati Web', dropText:'Toca para añadir fotos', dropSub:'Pasaporte, DNI o carnet de conducir', remove:'Eliminar', attachNote:"Por favor adjunte las fotos manualmente", sendWa:"Enviar por WhatsApp", waMsg:"¡Hola! Adjunto el archivo de registro de huéspedes (schedine alloggiati). ¡Gracias!", continue:'Continuar a info del alojamiento', sent:'Documentos enviados ✓',
       ocrButton:'Extraer datos (OCR)', ocrProcessing:'Leyendo tus documentos…', ocrErrorMsg:"No se pudo contactar con el servicio OCR en línea. Completa todos los campos manualmente.",
       techDetailsToggle:'Detalles técnicos',
@@ -419,6 +559,8 @@ const allT = {
     },
     info:{ general:'Información General', contacts:'Contactos', address:'Dirección', phone:'Teléfono', whatsapp:'Chat en WhatsApp', checkin:'15:00 – 22:00', checkout:'Antes de las 10:30', wifiConnect:'Conectar al WiFi' },
     itinerary:{ desc:'Descubre lo mejor de la ciudad con este itinerario cuidadosamente planificado.', btn:'Explorar Milazzo' },
+    entryInstructions:{ steps: ['La puerta principal se abre con el código de tu mensaje de confirmación.','La caja de llaves está justo a la derecha de la entrada.','Sube al primer piso: el apartamento es la puerta al final del pasillo.','¿Necesitas ayuda? Escríbenos por WhatsApp, siempre estamos disponibles.'] },
+    pharmacies:{ desc: 'Consulta la lista actualizada de farmacias de guardia en Milazzo, abiertas hoy o esta noche.', btn: 'Ver farmacias de guardia' },
     map:{ title:'Mapa Interactivo de Milazzo', desc:'Atracciones, monumentos y joyas ocultas.', openMaps:'Abrir en Google Maps' },
     beach:{ desc:'Navega directamente a la playa más cercana — aguas cristalinas del Tirreno te esperan.', btnTitle:'Llévame a la playa', btnSub:'Abre Google Maps · Navegación' },
     room:{ desc:'Déjanos guiarte de vuelta a MiPA.', btnTitle:'Navegar a MiPA', btnSub:'Abre Google Maps · Ruta' },
@@ -431,10 +573,11 @@ const allT = {
   de: {
     back:'Zurück', openMaps:'In Maps öffnen', bookWa:'Per WhatsApp buchen',
     offline:'Sie sind offline — einige Inhalte werden möglicherweise nicht geladen.',
+    guestFallback:'Gast',
     install:{ title:'MiPA App installieren', sub:'Zum Home-Bildschirm hinzufügen', btn:'Installieren', dismiss:'Schließen', iosStep1:'1. Tippen Sie auf die Teilen-Schaltfläche in Safari (□↑)', iosStep2:'2. Scrollen Sie und tippen Sie auf "Zum Home-Bildschirm"' },
-    tabs:{ info:'Unterkunftsinfos', philosophy:'Unsere Philosophie', contacts:'Kontakte', directions:'An- und Abreise', map:'Interaktive Karte', breakfast:'Tagesausflug', bookServices:'Services buchen', events:'Stadtveranstaltungen', museums:'Museen & Denkmäler', beach:'Bring mich zum Strand', roomGuide:'Zurück zu meinem Zimmer', checkout:'Check-Out', recipes:'Rezepte Ohne Kochen', schedine:'Gästedokumente / Alloggiati Web' },
+    tabs:{ info:'Unterkunftsinfos', philosophy:'Unsere Philosophie', contacts:'Kontakte', directions:'An- und Abreise', map:'Interaktive Karte', breakfast:'Tagesausflug', bookServices:'Services buchen', events:'Stadtveranstaltungen', museums:'Museen & Denkmäler', beach:'Bring mich zum Strand', roomGuide:'Zurück zu meinem Zimmer', checkout:'Check-Out', recipes:'Rezepte Ohne Kochen', schedine:'Gästedokumente / Alloggiati Web', entryInstructions:'So Kommen Sie Rein', pharmacies:'Notdienst-Apotheken', checkinShort:'Check-in', exploreTab:'Erkunden' },
     home:{ greeting:'Willkommen bei MiPA 🌿', sub:'Ihr digitaler Concierge in Milazzo', checkinNew:'Gästedokumente / Alloggiati Web', checkinNewDesc:'Gäste hinzufügen und die Registrierungsdatei senden', checkinDone:'Ich habe bereits eingecheckt', checkinDoneDesc:'Direkt zur App' },
-    dash:{ welcome:'MiPA Companion', sub:'Wie können wir Ihnen helfen?' },
+    dash:{ welcome:'MiPA Companion', sub:'Wie können wir Ihnen helfen?', hello:'Hallo' , quickAccess:'Schnellzugriff' },
     upload:{ title:'Gästedokumente / Alloggiati Web', dropText:'Tippen, um Fotos hinzuzufügen', dropSub:'Reisepass, Personalausweis oder Führerschein', remove:'Entfernen', attachNote:'Bitte fügen Sie die Fotos manuell bei', sendWa:'Über WhatsApp senden', waMsg:'Guten Tag! Anbei die Registrierungsdatei der Gäste (schedine alloggiati). Danke!', continue:'Weiter zu den Unterkunftsinfos', sent:'Dokumente gesendet ✓',
       ocrButton:'Daten extrahieren (OCR)', ocrProcessing:'Ihre Dokumente werden gelesen…', ocrErrorMsg:'Der Online-OCR-Dienst konnte nicht erreicht werden. Bitte füllen Sie alle Felder manuell aus.',
       techDetailsToggle:'Technische Details',
@@ -468,6 +611,8 @@ const allT = {
     },
     info:{ general:'Allgemeine Informationen', contacts:'Kontakte', address:'Adresse', phone:'Telefon', whatsapp:'WhatsApp Chat', checkin:'15:00 – 22:00 Uhr', checkout:'Bis 10:30 Uhr', wifiConnect:'Mit WLAN verbinden' },
     itinerary:{ desc:'Entdecken Sie das Beste der Stadt mit diesem sorgfältig geplanten Reiseverlauf.', btn:'Milazzo erkunden' },
+    entryInstructions:{ steps: ['Die Haustür öffnet sich mit dem Code aus Ihrer Bestätigungsnachricht.','Die Schlüsselbox befindet sich direkt rechts vom Eingang.','Gehen Sie in den ersten Stock: Die Wohnung ist die Tür am Ende des Flurs.','Brauchen Sie Hilfe? Schreiben Sie uns auf WhatsApp — wir sind immer erreichbar.'] },
+    pharmacies:{ desc: 'Sehen Sie die aktuelle Liste der Notdienst-Apotheken in Milazzo, heute oder heute Nacht geöffnet.', btn: 'Notdienst-Apotheken ansehen' },
     map:{ title:'Interaktive Karte von Milazzo', desc:'Sehenswürdigkeiten, Wahrzeichen und versteckte Schätze.', openMaps:'In Google Maps öffnen' },
     beach:{ desc:'Navigieren Sie direkt zum nächsten Strand — kristallklares Tyrrhenisches Meer wartet.', btnTitle:'Bring mich zum Strand', btnSub:'Öffnet Google Maps · Navigation' },
     room:{ desc:'Lassen Sie uns Sie zurück zu MiPA führen.', btnTitle:'Zu MiPA navigieren', btnSub:'Öffnet Google Maps · Wegbeschreibung' },
@@ -480,10 +625,11 @@ const allT = {
   zh: {
     back:'返回', openMaps:'在地图中打开', bookWa:'通过WhatsApp预订',
     offline:'您处于离线状态 — 部分内容可能无法加载。',
+    guestFallback:'宾客',
     install:{ title:'安装MiPA应用', sub:'添加到主屏幕以便快速访问', btn:'安装', dismiss:'忽略', iosStep1:'1. 在Safari中点击分享按钮 (□↑)', iosStep2:'2. 滚动并点击"添加到主屏幕"' },
-    tabs:{ info:'结构信息', philosophy:'我们的理念', contacts:'联系方式', directions:'到达/离开米拉佐', map:'互动地图', breakfast:'每日行程', bookServices:'预订服务', events:'城市活动', museums:'博物馆与古迹', beach:'带我去海滩', roomGuide:'回到我的房间', checkout:'退房', recipes:'免煮食谱', schedine:'客人证件 / Alloggiati Web' },
+    tabs:{ info:'结构信息', philosophy:'我们的理念', contacts:'联系方式', directions:'到达/离开米拉佐', map:'互动地图', breakfast:'每日行程', bookServices:'预订服务', events:'城市活动', museums:'博物馆与古迹', beach:'带我去海滩', roomGuide:'回到我的房间', checkout:'退房', recipes:'免煮食谱', schedine:'客人证件 / Alloggiati Web', entryInstructions:'入住指南', pharmacies:'值班药房', checkinShort:'Check-in', exploreTab:'探索' },
     home:{ greeting:'欢迎来到MiPA 🌿', sub:'您在米拉佐的数字礼宾', checkinNew:'客人证件 / Alloggiati Web', checkinNewDesc:'添加客人信息并发送登记文件', checkinDone:'我已经办理了入住', checkinDoneDesc:'直接进入应用' },
-    dash:{ welcome:'MiPA Companion', sub:'我们能为您做什么？' },
+    dash:{ welcome:'MiPA Companion', sub:'我们能为您做什么？', hello:'你好' , quickAccess:'快速访问' },
     upload:{ title:'客人证件 / Alloggiati Web', dropText:'点击添加照片', dropSub:'护照、身份证或驾照', remove:'删除', attachNote:'请手动附上照片', sendWa:'通过WhatsApp发送', waMsg:'您好！附件为客人登记文件（schedine alloggiati）。谢谢！', continue:'继续查看住宿信息', sent:'文件已发送 ✓',
       ocrButton:'提取数据（OCR）', ocrProcessing:'正在读取您的证件…', ocrErrorMsg:'无法连接在线OCR服务，请手动填写所有字段。',
       techDetailsToggle:'技术细节',
@@ -517,6 +663,8 @@ const allT = {
     },
     info:{ general:'一般信息', contacts:'联系方式', address:'地址', phone:'电话', whatsapp:'WhatsApp聊天', checkin:'下午3:00 – 晚上10:00', checkout:'上午10:30前', wifiConnect:'连接WiFi' },
     itinerary:{ desc:'通过这个精心规划的行程，发现城市的最佳景点。', btn:'探索米拉佐' },
+    entryInstructions:{ steps: ['大门使用确认信息中的密码开启。','钥匙盒就在入口右侧。','上到一楼（意大利楼层计法）：公寓是走廊尽头的门。','需要帮助？请通过WhatsApp联系我们，我们随时在线。'] },
+    pharmacies:{ desc: '查看米拉佐今天或今晚营业的值班药房最新列表。', btn: '查看值班药房' },
     map:{ title:'米拉佐互动地图', desc:'景点、地标和隐藏宝藏。', openMaps:'在谷歌地图中打开' },
     beach:{ desc:'直接导航到最近的海滩 — 清澈的第勒尼安海水等待着您。', btnTitle:'带我去海滩', btnSub:'打开谷歌地图 · 导航' },
     room:{ desc:'让我们引导您回到MiPA。', btnTitle:'导航到MiPA', btnSub:'打开谷歌地图 · 路线' },
@@ -529,10 +677,11 @@ const allT = {
   ru: {
     back:'Назад', openMaps:'Открыть в Maps', bookWa:'Забронировать через WhatsApp',
     offline:'Вы не в сети — некоторые материалы могут не загрузиться.',
+    guestFallback:'Гость',
     install:{ title:'Установить приложение MiPA', sub:'Добавьте на главный экран', btn:'Установить', dismiss:'Закрыть', iosStep1:'1. Нажмите кнопку «Поделиться» в Safari (□↑)', iosStep2:'2. Прокрутите вниз и нажмите «На экран "Домой"»' },
-    tabs:{ info:'Информация об объекте', philosophy:'Наша Философия', contacts:'Контакты', directions:'Приехать/Уехать из Милаццо', map:'Интерактивная карта', breakfast:'Дневной маршрут', bookServices:'Забронировать услуги', events:'Городские мероприятия', museums:'Музеи и памятники', beach:'Отвези меня на пляж', roomGuide:'Обратно в мой номер', checkout:'Выезд', recipes:'Рецепты Без Готовки', schedine:'Документы гостей / Alloggiati Web' },
+    tabs:{ info:'Информация об объекте', philosophy:'Наша Философия', contacts:'Контакты', directions:'Приехать/Уехать из Милаццо', map:'Интерактивная карта', breakfast:'Дневной маршрут', bookServices:'Забронировать услуги', events:'Городские мероприятия', museums:'Музеи и памятники', beach:'Отвези меня на пляж', roomGuide:'Обратно в мой номер', checkout:'Выезд', recipes:'Рецепты Без Готовки', schedine:'Документы гостей / Alloggiati Web', entryInstructions:'Как Войти', pharmacies:'Дежурные Аптеки', checkinShort:'Check-in', exploreTab:'Исследовать' },
     home:{ greeting:'Добро пожаловать в MiPA 🌿', sub:'Ваш цифровой консьерж в Милаццо', checkinNew:'Документы гостей / Alloggiati Web', checkinNewDesc:'Добавьте гостей и отправьте файл регистрации', checkinDone:'Я уже зарегистрирован', checkinDoneDesc:'Перейти прямо в приложение' },
-    dash:{ welcome:'MiPA Companion', sub:'Чем мы можем вам помочь?' },
+    dash:{ welcome:'MiPA Companion', sub:'Чем мы можем вам помочь?', hello:'Привет' , quickAccess:'Быстрый доступ' },
     upload:{ title:'Документы гостей / Alloggiati Web', dropText:'Нажмите, чтобы добавить фото', dropSub:'Паспорт, удостоверение личности или водительские права', remove:'Удалить', attachNote:'Пожалуйста, прикрепите фотографии вручную', sendWa:'Отправить через WhatsApp', waMsg:'Добрый день! Во вложении файл регистрации гостей (schedine alloggiati). Спасибо!', continue:'Перейти к информации о размещении', sent:'Документы отправлены ✓',
       ocrButton:'Извлечь данные (OCR)', ocrProcessing:'Идёт распознавание документов…', ocrErrorMsg:'Не удалось подключиться к онлайн-сервису OCR. Заполните все поля вручную.',
       techDetailsToggle:'Технические детали',
@@ -566,6 +715,8 @@ const allT = {
     },
     info:{ general:'Общая информация', contacts:'Контакты', address:'Адрес', phone:'Телефон', whatsapp:'Чат в WhatsApp', checkin:'15:00 – 22:00', checkout:'До 10:30', wifiConnect:'Подключиться к WiFi' },
     itinerary:{ desc:'Откройте для себя лучшее в городе с этим тщательно спланированным маршрутом.', btn:'Исследовать Милаццо' },
+    entryInstructions:{ steps: ['Входная дверь открывается кодом из вашего сообщения с подтверждением.','Коробка с ключами находится справа от входа.','Поднимитесь на второй этаж: квартира — дверь в конце коридора.','Нужна помощь? Напишите нам в WhatsApp — мы всегда на связи.'] },
+    pharmacies:{ desc: 'Посмотрите актуальный список дежурных аптек в Милаццо, открытых сегодня или сегодня ночью.', btn: 'Показать дежурные аптеки' },
     map:{ title:'Интерактивная карта Милаццо', desc:'Достопримечательности, памятники и скрытые жемчужины.', openMaps:'Открыть в Google Maps' },
     beach:{ desc:'Навигация прямо до ближайшего пляжа — кристально чистые воды Тирренского моря ждут вас.', btnTitle:'Отвези меня на пляж', btnSub:'Открывает Google Maps · Навигация' },
     room:{ desc:'Позвольте нам проводить вас обратно в MiPA.', btnTitle:'Навигация к MiPA', btnSub:'Открывает Google Maps · Маршрут' },
@@ -1979,7 +2130,19 @@ function menuItems() {
     { id:'recipes',      icon:'restaurant_menu', color:'#c2410c', label:tabs.recipes,     sub:'10 no-cook recipes' },
     { id:'roomGuide',    icon:'king_bed',     color:'#9333ea', label:tabs.roomGuide,   sub:'Navigate back to MiPA' },
     { id:'checkout',     icon:'logout',       color:'#dc2626', label:tabs.checkout,    sub:'Instructions for departure' },
+    { id:'entryInstructions', icon:'door_open',    color:'#5c8a6e', label:tabs.entryInstructions, sub:'How to get into the property' },
+    { id:'pharmacies',       icon:'local_pharmacy', color:'#c0432f', label:tabs.pharmacies,        sub:'Open today or tonight' },
   ];
+}
+
+// ── Guest name (for the dynamic header greeting) ──
+// Reads the first guest added in the current check-in (schedine) practice.
+// Falls back to a generic "Guest" label until at least one document has been added.
+function getGuestName() {
+  const g = state.schedine && state.schedine[0];
+  const raw = g && g.personal && (g.personal.firstName || g.personal.lastName);
+  if (!raw) return null;
+  return raw.trim().split(/\s+/)[0];
 }
 
 function mapEvent(e) {
@@ -2660,6 +2823,30 @@ function renderSectionContent() {
       h('p', { style: 'font-size:14px;color:var(--text-3);margin-bottom:20px;line-height:1.6' }, tr.itinerary.desc),
       h('a', { className: 'itinerary-cta', href: 'https://esploramilazzo.netlify.app/', target: '_blank' },
         ms('explore'), ' ', tr.itinerary.btn,
+      ),
+    );
+  }
+
+  if (s === 'entryInstructions') {
+    return h('div', { className: 'section-body' },
+      h('h2', { className: 'section-h2' }, tr.tabs.entryInstructions),
+      h('div', { className: 'checkout-steps' },
+        ...tr.entryInstructions.steps.map((step, i) =>
+          h('div', { className: 'checkout-step' },
+            h('div', { className: 'step-num' }, String(i + 1)),
+            h('div', { className: 'step-text' }, step),
+          )
+        ),
+      ),
+    );
+  }
+
+  if (s === 'pharmacies') {
+    return h('div', { className: 'section-body' },
+      h('h2', { className: 'section-h2' }, tr.tabs.pharmacies),
+      h('p', { style: 'font-size:14px;color:var(--text-3);margin-bottom:20px;line-height:1.6' }, tr.pharmacies.desc),
+      h('a', { className: 'itinerary-cta', href: 'https://www.farmaciediturno.org/comune.asp?cod=83049', target: '_blank' },
+        ms('local_pharmacy'), ' ', tr.pharmacies.btn,
       ),
     );
   }
