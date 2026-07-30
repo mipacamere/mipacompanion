@@ -65,6 +65,68 @@ function getWeatherIcon(weatherMain) {
   return icons[weatherMain] || 'wb_sunny';
 }
 
+// ═══════════════════════════════════════════
+// PHARMACY API INTEGRATION (Farmacie di turno — Milazzo)
+// ═══════════════════════════════════════════
+// Passa dalla Netlify Function netlify/functions/pharmacy-proxy.mjs, che tiene
+// la API key di api.farmaciediturno.org lato server. Vedi PHARMACY_API_SETUP.md
+// per come richiedere la key e configurarla su Netlify.
+const PHARMACY_PROXY_URL = '/api/pharmacy-proxy';
+
+async function fetchPharmacies() {
+  try {
+    const res = await fetch(PHARMACY_PROXY_URL, {
+      headers: { 'X-App-Token': OCR_APP_TOKEN },
+    });
+    if (!res.ok) return { error: true, status: res.status };
+    const data = await res.json();
+    if (data.error) return { error: true, message: data.error };
+    return data;
+  } catch (e) {
+    console.error('Pharmacy fetch error:', e);
+    return { error: true };
+  }
+}
+
+function renderPharmacyWidget(data) {
+  const tr = t();
+  if (!data || data.error) {
+    return h('div', { className: 'pharmacy-empty' },
+      ms('error_outline'),
+      h('div', {}, tr.pharmacies.fetchError || "Impossibile caricare l'elenco in questo momento."),
+    );
+  }
+  if (!data.pharmacies || data.pharmacies.length === 0) {
+    return h('div', { className: 'pharmacy-empty' },
+      ms('info'),
+      h('div', {}, tr.pharmacies.none || 'Nessun dato disponibile al momento.'),
+    );
+  }
+  const updated = data.updatedAt ? new Date(data.updatedAt) : null;
+  const wrap = h('div', {},
+    h('div', { className: 'pharmacy-list' },
+      ...data.pharmacies.map(p =>
+        h('div', { className: 'pharmacy-card' },
+          h('div', { className: 'pharmacy-card-top' },
+            h('div', { className: 'pharmacy-card-name' }, p.name),
+            h('span', { className: 'pharmacy-status pharmacy-status-' + (/apert/i.test(p.status) ? 'open' : 'turno') },
+              /apert/i.test(p.status) ? (tr.pharmacies.open || 'Aperta') : (tr.pharmacies.onDuty || 'Di turno')
+            ),
+          ),
+          p.address ? h('div', { className: 'pharmacy-card-row' }, ms('location_on'), ' ', p.address) : null,
+          p.hours ? h('div', { className: 'pharmacy-card-row' }, ms('schedule'), ' ', p.hours) : null,
+          p.phone ? h('a', { className: 'pharmacy-card-row pharmacy-card-phone', href: 'tel:' + p.phone }, ms('call'), ' ', p.phone) : null,
+        )
+      )
+    ),
+    updated ? h('div', { className: 'pharmacy-updated' },
+      (tr.pharmacies.updated || 'Aggiornato alle') + ' ' + updated.toLocaleTimeString(state.lang, { hour: '2-digit', minute: '2-digit' })
+    ) : null,
+    h('div', { className: 'pharmacy-disclaimer' }, data.disclaimer || ''),
+  );
+  return wrap;
+}
+
 function renderWeatherChip(weather) {
   if (!weather) return null;
   return h('div', { className: 'weather-chip' },
@@ -91,7 +153,7 @@ const ESPLORA_IDS = ['map', 'breakfast', 'bookServices', 'events', 'museums', 'b
 // Item ids shown in the Info tab (masonry grid, same style as Esplora).
 const INFO_IDS = ['info', 'roomGuide', 'pharmacies', 'philosophy'];
 // Cycling accent shades for tiles/cards (sage palette — no per-item rainbow colors).
-const SAGE_SHADES = ['var(--primary)', 'var(--primary-dark)', '#96a88c'];
+const ACCENT_SHADES = ['var(--primary)', 'var(--clay)', 'var(--azure)'];
 
 function findMenuItem(items, id) { return items.find(it => it.id === id); }
 
@@ -130,12 +192,14 @@ function renderHeader() {
   const tr = t();
   const guestName = getGuestName();
 
-  return h('div', { className: 'home-header' },
-    h('div', {},
-      h('div', { className: 'home-greeting' }, (tr.dash.hello || 'Hello') + ', ' + (guestName || tr.guestFallback || 'Guest')),
-      h('div', { className: 'home-greeting-sub' }, tr.dash.sub),
+  return h('div', {},
+    h('div', { className: 'home-topbar' }, renderLangMenu()),
+    h('div', { className: 'greeting-card' },
+      h('div', { className: 'greeting-card-inner' },
+        h('div', { className: 'home-greeting' }, (tr.dash.hello || 'Hello') + ', ' + (guestName || tr.guestFallback || 'Guest')),
+        h('div', { className: 'home-greeting-sub' }, tr.dash.sub),
+      ),
     ),
-    renderLangMenu(),
   );
 }
 
@@ -151,7 +215,7 @@ function renderQuickAccessGrid() {
         const label = id === 'schedine' ? (tr.tabs.checkinShort || item.label) : item.label;
         return h('button', {
           className: 'quick-tile',
-          style: { background: SAGE_SHADES[i % SAGE_SHADES.length] },
+          style: { background: ACCENT_SHADES[i % ACCENT_SHADES.length] },
           onClick: () => item.external ? openSchedineFlow() : navigate('section', item.id),
         },
           ms(item.icon),
@@ -171,7 +235,7 @@ function renderMasonryGrid(ids) {
       const tall = i % 3 === 0;
       return h('button', {
         className: 'explore-card' + (tall ? ' explore-card-tall' : ''),
-        style: { background: 'color-mix(in srgb, ' + SAGE_SHADES[i % SAGE_SHADES.length] + ' 16%, var(--surface))' },
+        style: { background: 'color-mix(in srgb, ' + ACCENT_SHADES[i % ACCENT_SHADES.length] + ' 16%, var(--surface))' },
         onClick: () => item.external ? openSchedineFlow() : navigate('section', item.id),
       },
         ms(item.icon),
@@ -316,6 +380,20 @@ function render() {
     }, 100);
   }
 
+  // Carica le farmacie di turno ogni volta che si apre la sezione (dati sempre freschi,
+  // non salvati in cache: se l'ospite riapre la pagina dopo un'ora vede lo stato aggiornato).
+  if (state.page === 'section' && state.section === 'pharmacies') {
+    setTimeout(() => {
+      fetchPharmacies().then(data => {
+        const container = document.getElementById('pharmacy-widget-container');
+        if (container) {
+          container.innerHTML = '';
+          container.appendChild(renderPharmacyWidget(data));
+        }
+      });
+    }, 100);
+  }
+
   // Chiude il menu lingua se si clicca fuori dall'header
   if (state.langMenuOpen) {
     setTimeout(() => {
@@ -395,7 +473,7 @@ const allT = {
     info: { general:'General Info', contacts:'Contacts', address:'Address', phone:'Phone', whatsapp:'Chat on WhatsApp', checkin:'3:00 PM – 10:00 PM', checkout:'By 10:30 AM', wifiConnect:'Connect to WiFi' },
     itinerary: { desc:'Discover the best of the city with this carefully planned itinerary. Explore must-see attractions and enjoy local experiences.', btn:'Explore Milazzo' },
     entryInstructions: { steps: ["The main door opens with the code from your confirmation message.","The key box is right beside the entrance, on the right.","Go up to the first floor: the apartment is the door at the end of the hallway.","Need help? Message us on WhatsApp — we're always reachable."] },
-    pharmacies: { desc: 'Check the up-to-date list of on-duty pharmacies in Milazzo, open today or tonight.', btn: 'See on-duty pharmacies' },
+    pharmacies: { desc: 'Check the up-to-date list of on-duty pharmacies in Milazzo, open today or tonight.', btn: 'See on-duty pharmacies' , loading:'Loading…', fetchError:"Could not load the list right now.", none:'No data available right now.', open:'Open', onDuty:'On duty', updated:'Updated at' },
     map: { title:'Milazzo Interactive Map', desc:'Highlights, landmarks and hidden gems.', openMaps:'Open in Google Maps' },
     beach: { desc:'Navigate directly to the nearest beach — crystal-clear Tyrrhenian waters await.', btnTitle:'Take me to the beach', btnSub:'Opens Google Maps · Navigation' },
     room: { desc:'Let us guide you back to MiPA.', btnTitle:'Navigate to MiPA', btnSub:'Opens Google Maps · Turn-by-turn' },
@@ -465,7 +543,7 @@ const allT = {
     info: { general:'Informazioni Generali', contacts:'Contatti', address:'Indirizzo', phone:'Telefono', whatsapp:'Chatta su WhatsApp', checkin:'15:00 – 22:00', checkout:'Entro le 10:30', wifiConnect:'Connetti al WiFi' },
     itinerary: { desc:'Scopri il meglio della città con questo itinerario giornaliero ben pianificato.', btn:'Esplora Milazzo' },
     entryInstructions: { steps: ["Il portone si apre con il codice che trovi nel messaggio di conferma.","La cassetta con le chiavi si trova subito a destra dell'ingresso.","Sali al primo piano: l'appartamento è la porta in fondo al corridoio.","Se hai bisogno, scrivici su WhatsApp: siamo sempre raggiungibili."] },
-    pharmacies: { desc: "Consulta l'elenco aggiornato delle farmacie di turno a Milazzo, aperte oggi o stanotte.", btn: 'Vedi farmacie di turno' },
+    pharmacies: { desc: "Consulta l'elenco aggiornato delle farmacie di turno a Milazzo, aperte oggi o stanotte.", btn: 'Vedi farmacie di turno' , loading:'Caricamento…', fetchError:"Impossibile caricare l'elenco in questo momento.", none:'Nessun dato disponibile al momento.', open:'Aperta', onDuty:'Di turno', updated:'Aggiornato alle' },
     map: { title:'Mappa Interattiva di Milazzo', desc:'Attrazioni, monumenti e gemme nascoste.', openMaps:'Apri in Google Maps' },
     beach: { desc:'Naviga direttamente alla spiaggia più vicina — acque cristalline del Tirreno ti aspettano.', btnTitle:'Portami alla spiaggia', btnSub:'Apre Google Maps · Navigazione' },
     room: { desc:'Lasciati guidare verso MiPA.', btnTitle:'Naviga verso MiPA', btnSub:'Apre Google Maps · Indicazioni' },
@@ -535,7 +613,7 @@ const allT = {
     info:{ general:'Informations Générales', contacts:'Contacts', address:'Adresse', phone:'Téléphone', whatsapp:'Chat sur WhatsApp', checkin:'15h00 – 22h00', checkout:'Avant 10h30', wifiConnect:'Se connecter au WiFi' },
     itinerary:{ desc:'Découvrez le meilleur de la ville grâce à cet itinéraire soigneusement planifié.', btn:'Explorer Milazzo' },
     entryInstructions:{ steps: ["La porte principale s'ouvre avec le code de votre message de confirmation.","La boîte à clés se trouve juste à droite de l'entrée.","Montez au premier étage : l'appartement est la porte au fond du couloir.","Besoin d'aide ? Écrivez-nous sur WhatsApp, nous sommes toujours disponibles."] },
-    pharmacies:{ desc: 'Consultez la liste à jour des pharmacies de garde à Milazzo, ouvertes aujourd\'hui ou cette nuit.', btn: 'Voir les pharmacies de garde' },
+    pharmacies:{ desc: 'Consultez la liste à jour des pharmacies de garde à Milazzo, ouvertes aujourd\'hui ou cette nuit.', btn: 'Voir les pharmacies de garde' , loading:'Chargement…', fetchError:'Impossible de charger la liste pour le moment.', none:'Aucune donnée disponible pour le moment.', open:'Ouverte', onDuty:'De garde', updated:'Mis à jour à' },
     map:{ title:'Carte Interactive de Milazzo', desc:'Attractions, monuments et joyaux cachés.', openMaps:'Ouvrir dans Google Maps' },
     beach:{ desc:'Naviguez directement vers la plage la plus proche — des eaux cristallines vous attendent.', btnTitle:'Emmène-moi à la plage', btnSub:'Ouvre Google Maps · Navigation' },
     room:{ desc:"Laissez-nous vous guider jusqu'à MiPA.", btnTitle:'Naviguer vers MiPA', btnSub:'Ouvre Google Maps · Itinéraire' },
@@ -587,7 +665,7 @@ const allT = {
     info:{ general:'Información General', contacts:'Contactos', address:'Dirección', phone:'Teléfono', whatsapp:'Chat en WhatsApp', checkin:'15:00 – 22:00', checkout:'Antes de las 10:30', wifiConnect:'Conectar al WiFi' },
     itinerary:{ desc:'Descubre lo mejor de la ciudad con este itinerario cuidadosamente planificado.', btn:'Explorar Milazzo' },
     entryInstructions:{ steps: ['La puerta principal se abre con el código de tu mensaje de confirmación.','La caja de llaves está justo a la derecha de la entrada.','Sube al primer piso: el apartamento es la puerta al final del pasillo.','¿Necesitas ayuda? Escríbenos por WhatsApp, siempre estamos disponibles.'] },
-    pharmacies:{ desc: 'Consulta la lista actualizada de farmacias de guardia en Milazzo, abiertas hoy o esta noche.', btn: 'Ver farmacias de guardia' },
+    pharmacies:{ desc: 'Consulta la lista actualizada de farmacias de guardia en Milazzo, abiertas hoy o esta noche.', btn: 'Ver farmacias de guardia' , loading:'Cargando…', fetchError:'No se pudo cargar la lista en este momento.', none:'No hay datos disponibles en este momento.', open:'Abierta', onDuty:'De guardia', updated:'Actualizado a las' },
     map:{ title:'Mapa Interactivo de Milazzo', desc:'Atracciones, monumentos y joyas ocultas.', openMaps:'Abrir en Google Maps' },
     beach:{ desc:'Navega directamente a la playa más cercana — aguas cristalinas del Tirreno te esperan.', btnTitle:'Llévame a la playa', btnSub:'Abre Google Maps · Navegación' },
     room:{ desc:'Déjanos guiarte de vuelta a MiPA.', btnTitle:'Navegar a MiPA', btnSub:'Abre Google Maps · Ruta' },
@@ -639,7 +717,7 @@ const allT = {
     info:{ general:'Allgemeine Informationen', contacts:'Kontakte', address:'Adresse', phone:'Telefon', whatsapp:'WhatsApp Chat', checkin:'15:00 – 22:00 Uhr', checkout:'Bis 10:30 Uhr', wifiConnect:'Mit WLAN verbinden' },
     itinerary:{ desc:'Entdecken Sie das Beste der Stadt mit diesem sorgfältig geplanten Reiseverlauf.', btn:'Milazzo erkunden' },
     entryInstructions:{ steps: ['Die Haustür öffnet sich mit dem Code aus Ihrer Bestätigungsnachricht.','Die Schlüsselbox befindet sich direkt rechts vom Eingang.','Gehen Sie in den ersten Stock: Die Wohnung ist die Tür am Ende des Flurs.','Brauchen Sie Hilfe? Schreiben Sie uns auf WhatsApp — wir sind immer erreichbar.'] },
-    pharmacies:{ desc: 'Sehen Sie die aktuelle Liste der Notdienst-Apotheken in Milazzo, heute oder heute Nacht geöffnet.', btn: 'Notdienst-Apotheken ansehen' },
+    pharmacies:{ desc: 'Sehen Sie die aktuelle Liste der Notdienst-Apotheken in Milazzo, heute oder heute Nacht geöffnet.', btn: 'Notdienst-Apotheken ansehen' , loading:'Wird geladen…', fetchError:'Die Liste konnte gerade nicht geladen werden.', none:'Derzeit keine Daten verfügbar.', open:'Geöffnet', onDuty:'Notdienst', updated:'Aktualisiert um' },
     map:{ title:'Interaktive Karte von Milazzo', desc:'Sehenswürdigkeiten, Wahrzeichen und versteckte Schätze.', openMaps:'In Google Maps öffnen' },
     beach:{ desc:'Navigieren Sie direkt zum nächsten Strand — kristallklares Tyrrhenisches Meer wartet.', btnTitle:'Bring mich zum Strand', btnSub:'Öffnet Google Maps · Navigation' },
     room:{ desc:'Lassen Sie uns Sie zurück zu MiPA führen.', btnTitle:'Zu MiPA navigieren', btnSub:'Öffnet Google Maps · Wegbeschreibung' },
@@ -691,7 +769,7 @@ const allT = {
     info:{ general:'一般信息', contacts:'联系方式', address:'地址', phone:'电话', whatsapp:'WhatsApp聊天', checkin:'下午3:00 – 晚上10:00', checkout:'上午10:30前', wifiConnect:'连接WiFi' },
     itinerary:{ desc:'通过这个精心规划的行程，发现城市的最佳景点。', btn:'探索米拉佐' },
     entryInstructions:{ steps: ['大门使用确认信息中的密码开启。','钥匙盒就在入口右侧。','上到一楼（意大利楼层计法）：公寓是走廊尽头的门。','需要帮助？请通过WhatsApp联系我们，我们随时在线。'] },
-    pharmacies:{ desc: '查看米拉佐今天或今晚营业的值班药房最新列表。', btn: '查看值班药房' },
+    pharmacies:{ desc: '查看米拉佐今天或今晚营业的值班药房最新列表。', btn: '查看值班药房' , loading:'加载中…', fetchError:'暂时无法加载列表。', none:'暂无数据。', open:'营业中', onDuty:'值班', updated:'更新于' },
     map:{ title:'米拉佐互动地图', desc:'景点、地标和隐藏宝藏。', openMaps:'在谷歌地图中打开' },
     beach:{ desc:'直接导航到最近的海滩 — 清澈的第勒尼安海水等待着您。', btnTitle:'带我去海滩', btnSub:'打开谷歌地图 · 导航' },
     room:{ desc:'让我们引导您回到MiPA。', btnTitle:'导航到MiPA', btnSub:'打开谷歌地图 · 路线' },
@@ -743,7 +821,7 @@ const allT = {
     info:{ general:'Общая информация', contacts:'Контакты', address:'Адрес', phone:'Телефон', whatsapp:'Чат в WhatsApp', checkin:'15:00 – 22:00', checkout:'До 10:30', wifiConnect:'Подключиться к WiFi' },
     itinerary:{ desc:'Откройте для себя лучшее в городе с этим тщательно спланированным маршрутом.', btn:'Исследовать Милаццо' },
     entryInstructions:{ steps: ['Входная дверь открывается кодом из вашего сообщения с подтверждением.','Коробка с ключами находится справа от входа.','Поднимитесь на второй этаж: квартира — дверь в конце коридора.','Нужна помощь? Напишите нам в WhatsApp — мы всегда на связи.'] },
-    pharmacies:{ desc: 'Посмотрите актуальный список дежурных аптек в Милаццо, открытых сегодня или сегодня ночью.', btn: 'Показать дежурные аптеки' },
+    pharmacies:{ desc: 'Посмотрите актуальный список дежурных аптек в Милаццо, открытых сегодня или сегодня ночью.', btn: 'Показать дежурные аптеки' , loading:'Загрузка…', fetchError:'Не удалось загрузить список сейчас.', none:'Данные сейчас недоступны.', open:'Открыта', onDuty:'Дежурная', updated:'Обновлено в' },
     map:{ title:'Интерактивная карта Милаццо', desc:'Достопримечательности, памятники и скрытые жемчужины.', openMaps:'Открыть в Google Maps' },
     beach:{ desc:'Навигация прямо до ближайшего пляжа — кристально чистые воды Тирренского моря ждут вас.', btnTitle:'Отвези меня на пляж', btnSub:'Открывает Google Maps · Навигация' },
     room:{ desc:'Позвольте нам проводить вас обратно в MiPA.', btnTitle:'Навигация к MiPA', btnSub:'Открывает Google Maps · Маршрут' },
@@ -2871,9 +2949,12 @@ function renderSectionContent() {
   if (s === 'pharmacies') {
     return h('div', { className: 'section-body' },
       h('h2', { className: 'section-h2' }, tr.tabs.pharmacies),
-      h('p', { style: 'font-size:14px;color:var(--text-3);margin-bottom:20px;line-height:1.6' }, tr.pharmacies.desc),
-      h('a', { className: 'itinerary-cta', href: 'https://www.farmaciediturno.org/comune.asp?cod=83049', target: '_blank' },
-        ms('local_pharmacy'), ' ', tr.pharmacies.btn,
+      h('p', { style: 'font-size:14px;color:var(--text-3);margin-bottom:16px;line-height:1.6' }, tr.pharmacies.desc),
+      h('div', { id: 'pharmacy-widget-container' },
+        h('div', { className: 'pharmacy-loading' }, ms('progress_activity'), ' ', tr.pharmacies.loading || 'Caricamento...'),
+      ),
+      h('a', { className: 'itinerary-cta itinerary-cta-outline', href: 'https://www.farmaciediturno.org/comune.asp?cod=83049', target: '_blank' },
+        ms('open_in_new'), ' ', tr.pharmacies.btn,
       ),
     );
   }

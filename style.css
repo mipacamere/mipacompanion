@@ -3,6 +3,9 @@
   --primary-dark: #3d6451;
   --primary-deeper: #2e4d3d;
   --toolbar: linear-gradient(160deg,#354f41 0%,#4a7460 55%,#5e8e74 100%);
+  --gold: #c9a15a;
+  --clay: #c0704a;
+  --azure: #4d7fa3;
   --bg: #f2f2f7;
   --surface: #ffffff;
   --overlay: rgba(0,0,0,.04);
@@ -17,6 +20,31 @@
   --shadow-xs: 0 1px 3px rgba(0,0,0,.06),0 0 0 .5px rgba(0,0,0,.04);
   --shadow-sm: 0 2px 8px rgba(0,0,0,.08),0 0 0 .5px rgba(0,0,0,.04);
   --t: .15s cubic-bezier(.25,.46,.45,.94);
+}
+/* Dark mode: segue automaticamente le preferenze del telefono dell'ospite,
+   nessun interruttore manuale — se il sistema è in dark, MiPA lo è di conseguenza. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #6fa688;
+    --primary-dark: #8fc0a4;
+    --primary-deeper: #5c8e73;
+    --toolbar: linear-gradient(160deg,#0e1310 0%,#1c2820 55%,#2a3a2f 100%);
+    --gold: #d9b876;
+    --clay: #d38a68;
+    --azure: #7cabd0;
+    --bg: #141d18;
+    --surface: #1c2820;
+    --overlay: rgba(255,255,255,.06);
+    --danger: #ef5350;
+    --warning: #f0a742;
+    --text-1: #f2f0e8;
+    --text-2: rgba(242,240,232,.82);
+    --text-3: rgba(242,240,232,.52);
+    --text-4: rgba(242,240,232,.28);
+    --sep: rgba(242,240,232,.12);
+    --shadow-xs: 0 1px 3px rgba(0,0,0,.35),0 0 0 .5px rgba(255,255,255,.04);
+    --shadow-sm: 0 4px 14px rgba(0,0,0,.45),0 0 0 .5px rgba(255,255,255,.04);
+  }
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%; overflow-x:hidden}
@@ -93,7 +121,8 @@ a{color:var(--primary);text-decoration:none}
   .toolbar-home{padding:36px 32px 28px}
   .section-topbar{padding:28px 32px 16px;position:sticky;top:0;background:var(--bg)}
   .toolbar-title{font-size:32px}
-  .home-header{ padding:32px 32px 8px }
+  .home-topbar{ padding:32px 32px 0 }
+  .greeting-card{ margin:14px 32px 20px; max-width:928px }
   .dashboard-content{ padding:8px 32px 48px; max-width:960px }
   .desktop-pills{
     display:flex; gap:8px; padding:0 32px 18px; max-width:960px;
@@ -313,6 +342,25 @@ a{color:var(--primary);text-decoration:none}
 /* Itinerary CTA */
 .itinerary-cta{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;padding:16px;background:var(--toolbar);color:#fff;border-radius:var(--r-md);text-decoration:none;font-size:16px;font-weight:700;box-shadow:var(--shadow-sm);transition:transform var(--t);-webkit-tap-highlight-color:transparent;border:none;cursor:pointer;font-family:inherit}
 .itinerary-cta:active{transform:scale(.97)}
+.itinerary-cta-outline{background:var(--surface);color:var(--primary-dark);border:1px solid var(--sep);box-shadow:var(--shadow-xs);font-size:14px;padding:13px}
+
+/* Widget farmacie di turno — dati live da api.farmaciediturno.org */
+.pharmacy-loading{display:flex;align-items:center;gap:8px;color:var(--text-3);font-size:13.5px;padding:16px 0}
+.pharmacy-loading .ms{animation:pharmSpin 1s linear infinite}
+@keyframes pharmSpin{to{transform:rotate(360deg)}}
+.pharmacy-empty{display:flex;align-items:center;gap:8px;color:var(--text-3);font-size:13.5px;padding:14px 15px;background:var(--surface);border-radius:var(--r-md);box-shadow:var(--shadow-xs);margin-bottom:14px}
+.pharmacy-list{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.pharmacy-card{background:var(--surface);border-radius:var(--r-md);padding:14px 15px;box-shadow:var(--shadow-xs)}
+.pharmacy-card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.pharmacy-card-name{font-size:14.5px;font-weight:700;color:var(--text-1)}
+.pharmacy-status{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:3px 9px;border-radius:999px;flex-shrink:0}
+.pharmacy-status-open{background:rgba(79,125,101,.14);color:var(--primary-dark)}
+.pharmacy-status-turno{background:rgba(192,112,74,.14);color:#a8532f}
+.pharmacy-card-row{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-2);margin-top:4px}
+.pharmacy-card-row .ms{font-size:15px;color:var(--text-3)}
+.pharmacy-card-phone{color:var(--primary-dark);text-decoration:none;font-weight:600}
+.pharmacy-updated{font-size:11px;color:var(--text-3);text-align:center;margin-bottom:6px}
+.pharmacy-disclaimer{font-size:10.5px;color:var(--text-3);line-height:1.5;margin-bottom:16px;opacity:.8}
 
 /* Service booking cards */
 .service-card{background:var(--surface);border-radius:var(--r-md);padding:15px;margin-bottom:10px;box-shadow:var(--shadow-xs)}
@@ -433,11 +481,23 @@ a{color:var(--primary);text-decoration:none}
 .back-btn-flat .ms{ font-size:19px; color:var(--primary) }
 .back-btn-flat:active{ opacity:.7 }
 
-/* Header */
-.home-header{
-  display:flex; align-items:flex-start; justify-content:space-between;
-  padding:50px 16px 18px;
+/* Header: riga superiore solo per il pulsante lingua */
+.home-topbar{ display:flex; justify-content:flex-end; padding:26px 16px 0; position:relative }
+
+/* Card di saluto, incorniciata da un sottile bordo a righe (verde/terracotta/azzurro) —
+   richiamo alle maioliche mediterranee, senza blocchi di colore pieno. */
+.greeting-card{
+  position:relative; margin:14px 16px 20px; padding:18px 20px;
+  background:var(--surface); border-radius:var(--r-lg); box-shadow:var(--shadow-sm);
+  overflow:hidden;
 }
+.greeting-card::before{
+  content:''; position:absolute; inset:0; border-radius:var(--r-lg); padding:3px;
+  background:repeating-linear-gradient(90deg, var(--primary) 0 8px, var(--clay) 8px 16px, var(--azure) 16px 24px);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; opacity:.5;
+}
+.greeting-card-inner{ position:relative; z-index:1 }
 .home-greeting{ font-size:22px; font-weight:800; color:var(--text-1); letter-spacing:-.3px }
 .home-greeting-sub{ font-size:13px; color:var(--text-3); margin-top:3px }
 
@@ -478,11 +538,15 @@ a{color:var(--primary);text-decoration:none}
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;
   padding:6px; font-family:inherit; -webkit-tap-highlight-color:transparent;
   transition:transform var(--t); box-shadow:0 3px 10px rgba(0,0,0,.08);
-  min-width:0; width:100%;
+  min-width:0; width:100%; position:relative; overflow:hidden;
+}
+.quick-tile::before{
+  content:''; position:absolute; bottom:-11px; left:-11px; width:34px; height:34px;
+  border-radius:50%; border:2px solid rgba(255,255,255,.3); pointer-events:none;
 }
 .quick-tile:active{ transform:scale(.96) }
-.quick-tile .ms{ font-size:23px }
-.quick-tile-label{ font-size:11px; font-weight:600; line-height:1.2; text-align:center; overflow-wrap:break-word; word-break:break-word; hyphens:auto; max-width:100% }
+.quick-tile .ms{ font-size:23px; position:relative; z-index:1 }
+.quick-tile-label{ font-size:11px; font-weight:600; line-height:1.2; text-align:center; overflow-wrap:break-word; word-break:break-word; hyphens:auto; max-width:100%; position:relative; z-index:1 }
 
 /* Esplora / Info — masonry grid (stesso stile per entrambe le sezioni) */
 .explore-grid{ column-count:2; column-gap:10px; margin-bottom:8px }
@@ -491,6 +555,7 @@ a{color:var(--primary);text-decoration:none}
   padding:16px 14px; height:120px; display:flex; flex-direction:column; justify-content:flex-end;
   gap:22px; cursor:pointer; font-family:inherit; color:var(--primary-deeper);
   -webkit-tap-highlight-color:transparent; transition:transform var(--t);
+  border-top:3px solid rgba(0,0,0,.08);
 }
 .explore-card:active{ transform:scale(.97) }
 .explore-card .ms{ font-size:26px }
@@ -503,6 +568,7 @@ a{color:var(--primary);text-decoration:none}
 .upcoming-card{
   flex:0 0 156px; text-align:left; background:var(--surface); border:none; border-radius:14px;
   padding:12px 13px; box-shadow:var(--shadow-xs); cursor:pointer; font-family:inherit;
+  border-top:3px solid var(--gold);
 }
 .upcoming-card-date{ font-size:11px; font-weight:700; color:var(--primary); margin-bottom:5px }
 .upcoming-card-title{ font-size:13px; font-weight:600; color:var(--text-1); line-height:1.3; margin-bottom:3px }
@@ -533,4 +599,13 @@ a{color:var(--primary);text-decoration:none}
   .dashboard-page{ padding-bottom:0 }
   .quick-grid{ grid-template-columns:repeat(6,minmax(0,1fr)) }
   .explore-grid{ column-count:3 }
+}
+
+/* Dark mode — rifinitura dei badge/notice con sfondo pastello chiaro,
+   pensati per il light mode: qui li scuriamo per restare leggibili e coerenti. */
+@media (prefers-color-scheme: dark) {
+  .preview-remove{ background:rgba(239,83,80,.16) }
+  .sent-badge{ background:rgba(111,166,136,.16); color:#8fc0a4 }
+  .ocr-error-note{ background:rgba(240,167,66,.14) }
+  .txt-preview{ color:#a8d9bc }
 }
