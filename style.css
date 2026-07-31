@@ -466,7 +466,7 @@ a{color:var(--primary);text-decoration:none}
 ═══════════════════════════════════════════ */
 
 .dashboard-page{ padding-bottom:104px } /* spazio per la bottom tab bar fissa */
-.dashboard-content{ padding:0 16px 24px }
+.dashboard-content{ padding:0 16px 24px; max-width:100%; box-sizing:border-box }
 .dashboard-content .section-body{ padding:0; background:none; min-height:0 }
 
 /* Section / upload header — stesso linguaggio visivo della Home (piatto, chiaro) */
@@ -565,12 +565,13 @@ a{color:var(--primary);text-decoration:none}
 .home-layout{
   display:grid;
   grid-template-areas:"weather" "quick" "events";
-  grid-template-columns:1fr;
+  grid-template-columns:minmax(0,1fr);
   gap:0;
+  min-width:0;
 }
-.home-slot-weather{ grid-area:weather }
-.home-slot-quick{ grid-area:quick }
-.home-slot-events{ grid-area:events }
+.home-slot-weather{ grid-area:weather; min-width:0 }
+.home-slot-quick{ grid-area:quick; min-width:0 }
+.home-slot-events{ grid-area:events; min-width:0 }
 
 /* Desktop: widget meteo ed eventi affiancati invece che impilati */
 @media(min-width:768px){
@@ -599,8 +600,8 @@ a{color:var(--primary);text-decoration:none}
   border-radius:50%; border:2px solid rgba(255,255,255,.3); pointer-events:none;
 }
 .quick-tile:active{ transform:scale(.96) }
-.quick-tile .ms{ font-size:23px; position:relative; z-index:1 }
-.quick-tile-label{ font-size:11px; font-weight:600; line-height:1.2; text-align:center; overflow-wrap:break-word; word-break:break-word; hyphens:auto; max-width:100%; position:relative; z-index:1 }
+.quick-tile .ms{ font-size:23px; position:relative; z-index:1; min-width:0; flex-shrink:0 }
+.quick-tile-label{ font-size:11px; font-weight:600; line-height:1.2; text-align:center; overflow-wrap:break-word; word-break:break-word; hyphens:auto; max-width:100%; min-width:0; position:relative; z-index:1 }
 
 /* Esplora / Info — masonry grid (stesso stile per entrambe le sezioni) */
 .explore-grid{ column-count:2; column-gap:10px; margin-bottom:8px }
