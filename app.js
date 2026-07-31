@@ -31,6 +31,7 @@
 
 const MILAZZO_LAT = 38.2333;
 const MILAZZO_LON = 15.2400;
+const ROOM_OPTIONS = ['MiPA-1', 'MiPA-2', 'MiPA-3', 'MiPA-4'];
 
 // Mappa i WMO weather code (usati da Open-Meteo) su una condizione sintetica.
 function weatherCondition(code) {
@@ -379,16 +380,16 @@ function renderDashboard() {
     page.appendChild(h('div', { className: 'dashboard-content' }, renderSectionContent()));
   } else {
     const events = renderUpcomingEvents();
-    const topGrid = h('div', { className: 'home-top-grid' },
-      h('div', { id: 'weather-container' },
-        h('div', { className: 'pharmacy-loading' }, ms('progress_activity'), ' ', (t().pharmacies && t().pharmacies.loading) || '...'),
+    const homeLayout = h('div', { className: 'home-layout' },
+      h('div', { className: 'home-slot-weather' },
+        h('div', { id: 'weather-container' },
+          h('div', { className: 'pharmacy-loading' }, ms('progress_activity'), ' ', (t().pharmacies && t().pharmacies.loading) || '...'),
+        ),
       ),
-      events,
+      h('div', { className: 'home-slot-quick' }, renderQuickAccessGrid()),
+      h('div', { className: 'home-slot-events' }, events),
     );
-    const homeContent = h('div', { className: 'dashboard-content' },
-      topGrid,
-      renderQuickAccessGrid(),
-    );
+    const homeContent = h('div', { className: 'dashboard-content' }, homeLayout);
     page.appendChild(homeContent);
   }
 
@@ -538,7 +539,7 @@ const allT = {
     map: { title:'Milazzo Interactive Map', desc:'Highlights, landmarks and hidden gems.', openMaps:'Open in Google Maps' },
     beach: { desc:'Navigate directly to the nearest beach — crystal-clear Tyrrhenian waters await.', btnTitle:'Take me to the beach', btnSub:'Opens Google Maps · Navigation' },
     room: { desc:'Let us guide you back to MiPA.', btnTitle:'Navigate to MiPA', btnSub:'Opens Google Maps · Turn-by-turn' },
-    co: { desc1:'Thank you for staying with us! Before you leave, please:', steps:['Leave all keys inside the room.','Gather all personal belongings, including chargers and electronics.','Check the room for any items left behind.','Settle any outstanding payments including the city tax.'], note:'If you forget anything, we offer a mail-back service (charges apply).', desc2:'Once ready, tap the button below to notify us. Thank you!', btn:'Complete Check-Out' },
+    co: { desc1:'Thank you for staying with us! Before you leave, please:', steps:['Leave all keys inside the room.','Gather all personal belongings, including chargers and electronics.','Check the room for any items left behind.','Settle any outstanding payments including the city tax.'], note:'If you forget anything, we offer a mail-back service (charges apply).', desc2:'Once ready, tap the button below to notify us. Thank you!', btn:'Complete Check-Out' , nameLabel:'Full name', nameError:'Enter your full name', roomLabel:'Room', roomPlaceholder:'Select your room', roomError:'Select a room' },
     events: { desc:'Events in Milazzo and surroundings — updated regularly.', showPast:'Show past events', hidePast:'Hide past events', noUpcoming:'No upcoming events. Check back soon!' },
     philosophy: ['To welcome without leaving a trace: that is where everything begins. In the heart of Milazzo, where the rhythm of the city meets the sea, we imagined a space capable of blending naturally and discreetly into the urban fabric, offering a comfortable and authentic stay.','All our rooms — junior suites — are crafted down to the last detail: natural light, soundproofing, efficient systems that minimise waste. Generous, balanced spaces designed for genuine, deep well-being, built on quality and harmony.','Sustainability is a concrete choice, lived every day with real commitment. We have eliminated single-use plastic and disposable paper, provide free drinking water and use only energy from renewable sources. In this way, we contribute to a truly responsible hospitality.','Being in the centre means discovering the city authentically. We are working to promote soft mobility such as cycling, with dedicated itineraries and maps to help you navigate easily and reduce your environmental footprint.','We believe in a hospitality where responsibility and comfort merge without compromise. We have already thought of everything: guests do not need to do anything differently or adopt any particular eco-conscious behaviour. They can simply relax and enjoy their holiday, while we act discreetly to minimise our impact. What remains is the memory of a light, authentic and mindful journey — with a minimal footprint on the environment and a positive mark within oneself.'],
     dir: {
@@ -609,7 +610,7 @@ const allT = {
     map: { title:'Mappa Interattiva di Milazzo', desc:'Attrazioni, monumenti e gemme nascoste.', openMaps:'Apri in Google Maps' },
     beach: { desc:'Naviga direttamente alla spiaggia più vicina — acque cristalline del Tirreno ti aspettano.', btnTitle:'Portami alla spiaggia', btnSub:'Apre Google Maps · Navigazione' },
     room: { desc:'Lasciati guidare verso MiPA.', btnTitle:'Naviga verso MiPA', btnSub:'Apre Google Maps · Indicazioni' },
-    co: { desc1:'Grazie per aver soggiornato da noi! Prima di partire, ti preghiamo di:', steps:['Lascia tutte le chiavi nella camera.','Raccogli tutti i tuoi oggetti personali, compresi caricabatterie ed elettroniche.','Controlla accuratamente la camera per eventuali oggetti dimenticati.','Regola tutti i pagamenti in sospeso, inclusa la tassa di soggiorno.'], note:'Se dimentichi qualcosa, offriamo un servizio di rispedizione (con costi aggiuntivi).', desc2:'Una volta pronto, tocca il pulsante qui sotto per avvisarci. Grazie!', btn:'Completa Check-Out' },
+    co: { desc1:'Grazie per aver soggiornato da noi! Prima di partire, ti preghiamo di:', steps:['Lascia tutte le chiavi nella camera.','Raccogli tutti i tuoi oggetti personali, compresi caricabatterie ed elettroniche.','Controlla accuratamente la camera per eventuali oggetti dimenticati.','Regola tutti i pagamenti in sospeso, inclusa la tassa di soggiorno.'], note:'Se dimentichi qualcosa, offriamo un servizio di rispedizione (con costi aggiuntivi).', desc2:'Una volta pronto, tocca il pulsante qui sotto per avvisarci. Grazie!', btn:'Completa Check-Out' , nameLabel:'Nome e cognome', nameError:'Inserisci nome e cognome', roomLabel:'Camera', roomPlaceholder:'Seleziona la camera', roomError:'Seleziona una camera' },
     events: { desc:'Prossimi eventi a Milazzo e dintorni — aggiornati regolarmente.', showPast:'Mostra eventi precedenti', hidePast:'Nascondi eventi precedenti', noUpcoming:'Nessun evento in programma. Ricontrolla presto!' },
     philosophy: ["Accogliere senza lasciare traccia: da qui nasce tutto. Nel cuore di Milazzo, dove il ritmo della città incontra il mare, abbiamo immaginato uno spazio capace di integrarsi in modo naturale e discreto nel contesto urbano, offrendo un'esperienza di soggiorno confortevole e autentica.","Tutte le nostre camere, junior suite, sono curate nei minimi dettagli: luce naturale, insonorizzazione, impianti efficienti che riducono gli sprechi. Spazi ampi ed equilibrati, pensati per un benessere autentico e profondo, fatto di qualità e armonia.","La sostenibilità è una scelta concreta, vissuta ogni giorno con impegno reale. Abbiamo eliminato plastica monouso e carta usa e getta, offriamo acqua potabile gratuita e usiamo solo energia da fonti rinnovabili. Così, contribuiamo a un'ospitalità veramente responsabile.","Essere in centro significa scoprire la città in modo autentico. Stiamo lavorando per promuovere la mobilità dolce come la bicicletta, con itinerari e mappe dedicate per orientarsi facilmente e ridurre l'impatto ambientale.","Crediamo in un'ospitalità dove responsabilità e comfort si fondono senza compromessi. Abbiamo già pensato a tutto: l'ospite non deve fare nulla di diverso, né adottare atteggiamenti responsabili. Può semplicemente rilassarsi e godersi la vacanza, mentre noi agiamo in modo discreto per minimizzare l'impatto. Quello che resta è il ricordo di un viaggio leggero, autentico e consapevole — con un'impronta minima sull'ambiente e un segno positivo dentro di sé."],
     dir: {
@@ -680,7 +681,7 @@ const allT = {
     map:{ title:'Carte Interactive de Milazzo', desc:'Attractions, monuments et joyaux cachés.', openMaps:'Ouvrir dans Google Maps' },
     beach:{ desc:'Naviguez directement vers la plage la plus proche — des eaux cristallines vous attendent.', btnTitle:'Emmène-moi à la plage', btnSub:'Ouvre Google Maps · Navigation' },
     room:{ desc:"Laissez-nous vous guider jusqu'à MiPA.", btnTitle:'Naviguer vers MiPA', btnSub:'Ouvre Google Maps · Itinéraire' },
-    co:{ desc1:'Merci pour votre séjour ! Avant de partir, veuillez :', steps:["Laissez toutes les clés dans la chambre.","Rassemblez toutes vos affaires personnelles, y compris chargeurs et électroniques.","Vérifiez soigneusement la chambre pour tout objet oublié.","Réglez tous les paiements en attente, y compris la taxe de séjour."], note:'Si vous oubliez quelque chose, nous proposons un service de renvoi (frais applicables).', desc2:'Une fois prêt, appuyez sur le bouton ci-dessous pour nous prévenir. Merci !', btn:'Finaliser le Check-Out' },
+    co:{ desc1:'Merci pour votre séjour ! Avant de partir, veuillez :', steps:["Laissez toutes les clés dans la chambre.","Rassemblez toutes vos affaires personnelles, y compris chargeurs et électroniques.","Vérifiez soigneusement la chambre pour tout objet oublié.","Réglez tous les paiements en attente, y compris la taxe de séjour."], note:'Si vous oubliez quelque chose, nous proposons un service de renvoi (frais applicables).', desc2:'Une fois prêt, appuyez sur le bouton ci-dessous pour nous prévenir. Merci !', btn:'Finaliser le Check-Out' , nameLabel:'Nom et prénom', nameError:'Indiquez votre nom et prénom', roomLabel:'Chambre', roomPlaceholder:'Choisissez la chambre', roomError:'Choisissez une chambre' },
     events:{ desc:'Événements à Milazzo et environs — mis à jour régulièrement.', showPast:'Afficher les événements passés', hidePast:'Masquer les événements passés', noUpcoming:'Aucun événement à venir. Revenez bientôt !' },
     philosophy:["Accueillir sans laisser de trace : c'est là que tout commence. Au cœur de Milazzo, où le rythme de la ville rencontre la mer, nous avons imaginé un espace capable de s'intégrer naturellement et discrètement dans le tissu urbain, offrant un séjour confortable et authentique.","Toutes nos chambres — junior suites — sont soignées dans les moindres détails : lumière naturelle, isolation phonique, systèmes efficaces qui minimisent le gaspillage. Des espaces généreux et équilibrés conçus pour un vrai bien-être profond, fondé sur la qualité et l'harmonie.","La durabilité est un choix concret, vécu chaque jour avec un engagement réel. Nous avons éliminé le plastique à usage unique et le papier jetable, proposons de l'eau potable gratuite et utilisons uniquement de l'énergie issue de sources renouvelables. Ainsi, nous contribuons à une hospitalité véritablement responsable.","Être au centre, c'est découvrir la ville authentiquement. Nous travaillons à promouvoir la mobilité douce comme le vélo, avec des itinéraires et des cartes dédiés pour se repérer facilement et réduire son empreinte environnementale.","Nous croyons en une hospitalité où responsabilité et confort fusionnent sans compromis. Nous avons déjà tout prévu : les hôtes n'ont rien à faire différemment ni à adopter de comportements éco-responsables particuliers. Ils peuvent simplement se détendre et profiter de leurs vacances, tandis que nous agissons discrètement pour minimiser notre impact. Ce qui reste, c'est le souvenir d'un voyage léger, authentique et conscient — avec une empreinte minimale sur l'environnement et une marque positive en soi."],
     dir:{ arriving:'Arrivée', leaving:'Quitter Milazzo', arrivalModes:[{icon:'directions_car',color:'#4f7d65',title:'En Voiture',desc:"Quittez l'autoroute au péage de Milazzo et suivez le Viale Sicilia jusqu'à la dernière sortie. Garez-vous sur la Piazza XXV Aprile (lignes bleues — app EasyPark)."},{icon:'train',color:'#0284c7',title:'En Train',desc:"Descendez à la gare de Milazzo et prenez les lignes 4 ou 5 jusqu'à l'arrêt du port, le plus proche de l'hébergement."},{icon:'directions_bus',color:'#d97706',title:'En Bus',desc:"Depuis l'aéroport de Catane ou d'autres localités, descendez à l'arrêt du port — le plus proche de MiPA."}], departureModes:[{icon:'directions_car',color:'#4f7d65',title:'En Voiture',desc:"Suivez le Viale Sicilia jusqu'au bout, puis prenez le raccordement Milazzo pour entrer sur l'A20 en direction de Messine (Catane) ou Palerme."},{icon:'directions_bus',color:'#d97706',title:'En Bus (vers Messine)',desc:'Vérifiez les horaires de GiuntaBus et AST pour les liaisons journalières vers Messine.'},{icon:'train',color:'#0284c7',title:'En Train',desc:"Prenez les lignes 4 ou 5 depuis l'arrêt du port jusqu'à la gare de Milazzo."},{icon:'flight',color:'#7c3aed',title:"Aéroport de Catane",desc:"Liaison directe de Milazzo à l'aéroport de Catane — horaires à l'arrêt du port."}] },
@@ -733,7 +734,7 @@ const allT = {
     map:{ title:'Mapa Interactivo de Milazzo', desc:'Atracciones, monumentos y joyas ocultas.', openMaps:'Abrir en Google Maps' },
     beach:{ desc:'Navega directamente a la playa más cercana — aguas cristalinas del Tirreno te esperan.', btnTitle:'Llévame a la playa', btnSub:'Abre Google Maps · Navegación' },
     room:{ desc:'Déjanos guiarte de vuelta a MiPA.', btnTitle:'Navegar a MiPA', btnSub:'Abre Google Maps · Ruta' },
-    co:{ desc1:'¡Gracias por tu estancia! Antes de salir, por favor:', steps:['Deja todas las llaves dentro de la habitación.','Recoge todos tus objetos personales, incluyendo cargadores y electrónicos.','Revisa la habitación por si olvidaste algo.','Liquida cualquier pago pendiente, incluyendo la tasa turística.'], note:'Si olvidas algo, ofrecemos servicio de reenvío por correo (con cargo).', desc2:'Cuando estés listo, pulsa el botón para avisarnos. ¡Gracias!', btn:'Completar Check-Out' },
+    co:{ desc1:'¡Gracias por tu estancia! Antes de salir, por favor:', steps:['Deja todas las llaves dentro de la habitación.','Recoge todos tus objetos personales, incluyendo cargadores y electrónicos.','Revisa la habitación por si olvidaste algo.','Liquida cualquier pago pendiente, incluyendo la tasa turística.'], note:'Si olvidas algo, ofrecemos servicio de reenvío por correo (con cargo).', desc2:'Cuando estés listo, pulsa el botón para avisarnos. ¡Gracias!', btn:'Completar Check-Out' , nameLabel:'Nombre y apellido', nameError:'Indica tu nombre y apellido', roomLabel:'Habitación', roomPlaceholder:'Selecciona la habitación', roomError:'Selecciona una habitación' },
     events:{ desc:'Eventos en Milazzo y alrededores — actualizados regularmente.', showPast:'Mostrar eventos pasados', hidePast:'Ocultar eventos pasados', noUpcoming:'No hay eventos próximos. ¡Vuelve pronto!' },
     philosophy:['Acoger sin dejar huella: ahí empieza todo. En el corazón de Milazzo, donde el ritmo de la ciudad se encuentra con el mar, imaginamos un espacio capaz de integrarse de forma natural y discreta en el tejido urbano, ofreciendo una estancia cómoda y auténtica.','Todas nuestras habitaciones —junior suites— están cuidadas hasta el último detalle: luz natural, insonorización, sistemas eficientes que minimizan el desperdicio. Espacios generosos y equilibrados diseñados para un bienestar genuino y profundo, basado en la calidad y la armonía.','La sostenibilidad es una elección concreta, vivida cada día con verdadero compromiso. Hemos eliminado el plástico de un solo uso y el papel desechable, ofrecemos agua potable gratuita y utilizamos únicamente energía de fuentes renovables. Así contribuimos a una hospitalidad verdaderamente responsable.','Estar en el centro significa descubrir la ciudad de forma auténtica. Trabajamos para promover la movilidad suave como el ciclismo, con itinerarios y mapas dedicados para navegar fácilmente y reducir la huella ambiental.','Creemos en una hospitalidad donde responsabilidad y comodidad se fusionan sin compromisos. Ya hemos pensado en todo: los huéspedes no necesitan hacer nada diferente ni adoptar ningún comportamiento especial. Pueden simplemente relajarse y disfrutar de sus vacaciones, mientras actuamos discretamente para minimizar nuestro impacto. Lo que queda es el recuerdo de un viaje ligero, auténtico y consciente — con una huella mínima en el entorno y una marca positiva en uno mismo.'],
     dir:{ arriving:'Llegada', leaving:'Salir de Milazzo', arrivalModes:[{icon:'directions_car',color:'#4f7d65',title:'En Coche',desc:'Sal de la autopista en el peaje de Milazzo y sigue el Viale Sicilia hasta la última salida. Aparca en la Piazza XXV Aprile (líneas azules — app EasyPark).'},{icon:'train',color:'#0284c7',title:'En Tren',desc:'Baja en la estación de Milazzo y toma las líneas 4 o 5 hasta la parada del puerto, la más cercana al alojamiento.'},{icon:'directions_bus',color:'#d97706',title:'En Autobús',desc:'Desde el aeropuerto de Catania u otros lugares, baja en la parada del puerto — la más cercana a MiPA.'}], departureModes:[{icon:'directions_car',color:'#4f7d65',title:'En Coche',desc:'Sigue el Viale Sicilia hasta el final, luego toma el enlace de Milazzo para entrar en la A20 hacia Mesina (Catania) o Palermo.'},{icon:'directions_bus',color:'#d97706',title:'En Autobús (a Mesina)',desc:'Consulta los horarios de GiuntaBus y AST para las conexiones diarias a Mesina.'},{icon:'train',color:'#0284c7',title:'En Tren',desc:'Toma las líneas 4 o 5 desde la parada del puerto hasta la estación de tren de Milazzo.'},{icon:'flight',color:'#7c3aed',title:'Aeropuerto de Catania',desc:'Conexión directa de Milazzo al aeropuerto de Catania — consulta los horarios en la parada del puerto.'}] },
@@ -786,7 +787,7 @@ const allT = {
     map:{ title:'Interaktive Karte von Milazzo', desc:'Sehenswürdigkeiten, Wahrzeichen und versteckte Schätze.', openMaps:'In Google Maps öffnen' },
     beach:{ desc:'Navigieren Sie direkt zum nächsten Strand — kristallklares Tyrrhenisches Meer wartet.', btnTitle:'Bring mich zum Strand', btnSub:'Öffnet Google Maps · Navigation' },
     room:{ desc:'Lassen Sie uns Sie zurück zu MiPA führen.', btnTitle:'Zu MiPA navigieren', btnSub:'Öffnet Google Maps · Wegbeschreibung' },
-    co:{ desc1:'Vielen Dank für Ihren Aufenthalt! Bevor Sie abreisen, beachten Sie bitte:', steps:['Lassen Sie alle Zimmerschlüssel im Zimmer.','Sammeln Sie alle persönlichen Gegenstände, einschließlich Ladegeräte.','Überprüfen Sie das Zimmer sorgfältig auf vergessene Gegenstände.','Begleichen Sie alle offenen Zahlungen, einschließlich der Kurtaxe.'], note:'Sollten Sie etwas vergessen haben, bieten wir einen Rücksendeservice an (Gebühren fallen an).', desc2:'Wenn Sie bereit sind, tippen Sie auf die Schaltfläche unten. Danke!', btn:'Check-Out abschließen' },
+    co:{ desc1:'Vielen Dank für Ihren Aufenthalt! Bevor Sie abreisen, beachten Sie bitte:', steps:['Lassen Sie alle Zimmerschlüssel im Zimmer.','Sammeln Sie alle persönlichen Gegenstände, einschließlich Ladegeräte.','Überprüfen Sie das Zimmer sorgfältig auf vergessene Gegenstände.','Begleichen Sie alle offenen Zahlungen, einschließlich der Kurtaxe.'], note:'Sollten Sie etwas vergessen haben, bieten wir einen Rücksendeservice an (Gebühren fallen an).', desc2:'Wenn Sie bereit sind, tippen Sie auf die Schaltfläche unten. Danke!', btn:'Check-Out abschließen' , nameLabel:'Vor- und Nachname', nameError:'Bitte Vor- und Nachnamen eingeben', roomLabel:'Zimmer', roomPlaceholder:'Zimmer auswählen', roomError:'Bitte ein Zimmer auswählen' },
     events:{ desc:'Veranstaltungen in Milazzo und Umgebung — regelmäßig aktualisiert.', showPast:'Vergangene Events anzeigen', hidePast:'Vergangene Events ausblenden', noUpcoming:'Derzeit keine bevorstehenden Veranstaltungen. Schauen Sie bald wieder vorbei!' },
     philosophy:['Willkommen heißen, ohne Spuren zu hinterlassen: das ist der Ausgangspunkt von allem. Im Herzen von Milazzo, wo der Stadtrhythmus auf das Meer trifft, haben wir uns einen Raum vorgestellt, der sich auf natürliche und diskrete Weise in das städtische Gefüge einfügt und einen komfortablen, authentischen Aufenthalt bietet.','Alle unsere Zimmer — Junior-Suiten — sind bis ins kleinste Detail gepflegt: natürliches Licht, Schalldämmung, effiziente Anlagen, die Verschwendung reduzieren. Großzügige, ausgewogene Räume, die auf echtes und tiefes Wohlbefinden ausgerichtet sind, das aus Qualität und Harmonie besteht.','Nachhaltigkeit ist eine konkrete Wahl, die jeden Tag mit echtem Engagement gelebt wird. Wir haben Einwegplastik und Einwegpapier eliminiert, bieten kostenloses Trinkwasser an und nutzen ausschließlich Energie aus erneuerbaren Quellen. So leisten wir einen Beitrag zu einer wirklich verantwortungsvollen Gastfreundschaft.','Im Stadtzentrum zu sein bedeutet, die Stadt auf authentische Weise zu entdecken. Wir arbeiten daran, sanfte Mobilität wie das Fahrrad zu fördern, mit eigenen Routen und Karten, um sich leicht zu orientieren und die Umweltbelastung zu reduzieren.','Wir glauben an eine Gastfreundschaft, bei der Verantwortung und Komfort ohne Kompromisse verschmelzen. Wir haben bereits an alles gedacht: Der Gast muss nichts anderes tun oder besondere umweltbewusste Verhaltensweisen annehmen. Er kann sich einfach entspannen und seinen Urlaub genießen, während wir diskret handeln, um unseren Einfluss zu minimieren. Was bleibt, ist die Erinnerung an eine leichte, authentische und bewusste Reise — mit einem minimalen Fußabdruck auf der Umwelt und einem positiven Zeichen in sich selbst.'],
     dir:{ arriving:'Anreise', leaving:'Abreise aus Milazzo', arrivalModes:[{icon:'directions_car',color:'#4f7d65',title:'Mit dem Auto',desc:'Verlassen Sie die Autobahn an der Mautstelle Milazzo und folgen Sie dem Viale Sicilia bis zur letzten Ausfahrt. Parken auf der Piazza XXV Aprile (blaue Linien — EasyPark-App).'},{icon:'train',color:'#0284c7',title:'Mit dem Zug',desc:'Steigen Sie am Bahnhof Milazzo aus und nehmen Sie die Linien 4 oder 5 bis zur Hafenhaltestelle.'},{icon:'directions_bus',color:'#d97706',title:'Mit dem Bus',desc:'Vom Flughafen Catania oder anderen Orten steigen Sie an der Hafenhaltestelle aus — die nächstgelegene zu MiPA.'}], departureModes:[{icon:'directions_car',color:'#4f7d65',title:'Mit dem Auto',desc:'Folgen Sie dem Viale Sicilia bis zum Ende, dann nehmen Sie die Ausfahrt Milazzo auf die A20 Richtung Messina oder Palermo.'},{icon:'directions_bus',color:'#d97706',title:'Mit dem Bus (nach Messina)',desc:'Prüfen Sie die Fahrpläne von GiuntaBus und AST für tägliche Verbindungen nach Messina.'},{icon:'train',color:'#0284c7',title:'Mit dem Zug',desc:'Nehmen Sie die Linien 4 oder 5 von der Hafenhaltestelle zum Bahnhof Milazzo.'},{icon:'flight',color:'#7c3aed',title:'Flughafen Catania',desc:'Direktverbindung von Milazzo zum Flughafen Catania — Fahrpläne an der Hafenhaltestelle.'}] },
@@ -839,7 +840,7 @@ const allT = {
     map:{ title:'米拉佐互动地图', desc:'景点、地标和隐藏宝藏。', openMaps:'在谷歌地图中打开' },
     beach:{ desc:'直接导航到最近的海滩 — 清澈的第勒尼安海水等待着您。', btnTitle:'带我去海滩', btnSub:'打开谷歌地图 · 导航' },
     room:{ desc:'让我们引导您回到MiPA。', btnTitle:'导航到MiPA', btnSub:'打开谷歌地图 · 路线' },
-    co:{ desc1:'感谢您选择入住！离开前，请注意：', steps:['将所有钥匙留在房间内。','收拾所有个人物品，包括充电器和电子设备。','仔细检查房间，确保没有遗漏任何物品。','结清所有未付款项，包括城市税。'], note:'如果遗忘了物品，我们提供邮寄返回服务（需额外付费）。', desc2:'准备好后，点击下方按钮通知我们。谢谢！', btn:'完成退房' },
+    co:{ desc1:'感谢您选择入住！离开前，请注意：', steps:['将所有钥匙留在房间内。','收拾所有个人物品，包括充电器和电子设备。','仔细检查房间，确保没有遗漏任何物品。','结清所有未付款项，包括城市税。'], note:'如果遗忘了物品，我们提供邮寄返回服务（需额外付费）。', desc2:'准备好后，点击下方按钮通知我们。谢谢！', btn:'完成退房' , nameLabel:'姓名', nameError:'请输入姓名', roomLabel:'房间', roomPlaceholder:'选择房间', roomError:'请选择房间' },
     events:{ desc:'米拉佐及周边活动 — 定期更新。', showPast:'显示过去的活动', hidePast:'隐藏过去的活动', noUpcoming:'目前没有即将举行的活动。请稍后再查看！' },
     philosophy:['接待客人，不留痕迹：一切由此而生。在米拉佐的心脏地带，城市的节奏与大海相遇，我们构想了一个能够自然、低调地融入城市肌理的空间，为宾客提供舒适而真实的住宿体验。','我们所有的房间——精品套房——都精心打磨每一处细节：自然采光、隔音设计、高效节能系统。宽敞、平衡的空间，旨在提供由品质与和谐构成的真实而深层的舒适感。','可持续发展是一种具体的选择，每天以真正的承诺去践行。我们已消除一次性塑料和一次性纸制品，提供免费饮用水，并仅使用可再生能源。由此，我们为真正负责任的待客之道作出贡献。','身处市中心意味着真实地探索这座城市。我们正致力于推广骑自行车等温和出行方式，配有专属路线和地图，方便导航并减少环境影响。','我们相信一种责任与舒适无妥协融合的待客之道。我们已经为您考虑好了一切：宾客无需做任何不同的事，也无需采取任何特别的环保行为。只需放松身心，享受假期，而我们则悄然行动，将影响降至最低。留下的是一段轻盈、真实而有意识的旅行记忆。'],
     dir:{ arriving:'到达', leaving:'离开米拉佐', arrivalModes:[{icon:'directions_car',color:'#4f7d65',title:'驾车',desc:'在米拉佐收费站下高速公路，沿西西里大道行驶至最后出口。在XXV Aprile广场停车（蓝线停车位 — 使用EasyPark应用）。'},{icon:'train',color:'#0284c7',title:'乘火车',desc:'在米拉佐站下车，乘坐4或5路公交至港口站，即最近的站点。'},{icon:'directions_bus',color:'#d97706',title:'乘巴士',desc:'从卡塔尼亚机场或其他地点，在港口站下车 — 距MiPA最近。'}], departureModes:[{icon:'directions_car',color:'#4f7d65',title:'驾车',desc:'沿西西里大道行驶至尽头，然后取道米拉佐交叉口进入A20高速公路，朝墨西拿或巴勒莫方向。'},{icon:'directions_bus',color:'#d97706',title:'乘巴士（前往墨西拿）',desc:'查看GiuntaBus和AST的时刻表，了解前往墨西拿的每日班次。'},{icon:'train',color:'#0284c7',title:'乘火车',desc:'从港口站乘坐4或5路公交至米拉佐火车站。'},{icon:'flight',color:'#7c3aed',title:'卡塔尼亚机场',desc:'从米拉佐直达卡塔尼亚机场 — 在港口站查看时刻表。'}] },
@@ -892,7 +893,7 @@ const allT = {
     map:{ title:'Интерактивная карта Милаццо', desc:'Достопримечательности, памятники и скрытые жемчужины.', openMaps:'Открыть в Google Maps' },
     beach:{ desc:'Навигация прямо до ближайшего пляжа — кристально чистые воды Тирренского моря ждут вас.', btnTitle:'Отвези меня на пляж', btnSub:'Открывает Google Maps · Навигация' },
     room:{ desc:'Позвольте нам проводить вас обратно в MiPA.', btnTitle:'Навигация к MiPA', btnSub:'Открывает Google Maps · Маршрут' },
-    co:{ desc1:'Спасибо, что выбрали нас! Перед отъездом, пожалуйста:', steps:['Оставьте все ключи в номере.','Соберите все личные вещи, включая зарядные устройства и электронику.','Тщательно проверьте номер на наличие забытых вещей.','Урегулируйте все незакрытые платежи, включая туристический налог.'], note:'Если вы что-то забыли, мы предлагаем услугу возврата по почте (взимается дополнительная плата).', desc2:'Когда будете готовы, нажмите кнопку ниже. Спасибо!', btn:'Завершить выезд' },
+    co:{ desc1:'Спасибо, что выбрали нас! Перед отъездом, пожалуйста:', steps:['Оставьте все ключи в номере.','Соберите все личные вещи, включая зарядные устройства и электронику.','Тщательно проверьте номер на наличие забытых вещей.','Урегулируйте все незакрытые платежи, включая туристический налог.'], note:'Если вы что-то забыли, мы предлагаем услугу возврата по почте (взимается дополнительная плата).', desc2:'Когда будете готовы, нажмите кнопку ниже. Спасибо!', btn:'Завершить выезд' , nameLabel:'Имя и фамилия', nameError:'Введите имя и фамилию', roomLabel:'Номер', roomPlaceholder:'Выберите номер', roomError:'Выберите номер' },
     events:{ desc:'Мероприятия в Милаццо и окрестностях — регулярно обновляется.', showPast:'Показать прошедшие события', hidePast:'Скрыть прошедшие события', noUpcoming:'На данный момент предстоящих мероприятий нет. Заглядывайте позже!' },
     philosophy:['Принимать гостей, не оставляя следов: с этого начинается всё. В самом сердце Милаццо, где ритм города встречается с морем, мы представили пространство, способное естественно и ненавязчиво вписаться в городскую ткань, предлагая комфортный и аутентичный отдых.','Все наши номера — категории «junior suite» — продуманы до мельчайших деталей: естественный свет, звукоизоляция, эффективные системы, сокращающие расход ресурсов. Просторные, сбалансированные пространства, созданные для подлинного и глубокого комфорта.','Устойчивое развитие — это конкретный выбор, который мы реализуем каждый день с реальной ответственностью. Мы полностью отказались от одноразового пластика и одноразовой бумаги, предлагаем бесплатную питьевую воду и используем исключительно энергию из возобновляемых источников.','Находиться в центре города — значит открывать его аутентично. Мы работаем над тем, чтобы продвигать мягкие виды передвижения, такие как велосипед.','Мы верим в гостеприимство, где ответственность и комфорт сливаются без компромиссов. Мы уже всё продумали: гостю не нужно ничего делать иначе. Он может просто расслабиться и наслаждаться отдыхом, пока мы ненавязчиво действуем, чтобы свести к минимуму наше воздействие.'],
     dir:{ arriving:'Прибытие', leaving:'Отъезд из Милаццо', arrivalModes:[{icon:'directions_car',color:'#4f7d65',title:'На автомобиле',desc:'Съезжайте с автострады на пункте оплаты Милаццо и следуйте по проспекту Сицилия до последнего выезда. Паркуйтесь на площади XXV Aprile (синие линии — приложение EasyPark).'},{icon:'train',color:'#0284c7',title:'На поезде',desc:'Выйдите на станции Милаццо и сядьте на линии 4 или 5 до остановки у порта.'},{icon:'directions_bus',color:'#d97706',title:'На автобусе',desc:'Из аэропорта Катании или других мест выйдите на остановке у порта — ближайшей к MiPA.'}], departureModes:[{icon:'directions_car',color:'#4f7d65',title:'На автомобиле',desc:'Следуйте по проспекту Сицилия до конца, затем возьмите развязку Милаццо на автостраду A20 в направлении Мессины или Палермо.'},{icon:'directions_bus',color:'#d97706',title:'На автобусе (в Мессину)',desc:'Проверьте расписание GiuntaBus и AST для ежедневных рейсов в Мессину.'},{icon:'train',color:'#0284c7',title:'На поезде',desc:'Возьмите линии 4 или 5 от остановки у порта до железнодорожного вокзала Милаццо.'},{icon:'flight',color:'#7c3aed',title:'Аэропорт Катании',desc:'Прямое сообщение из Милаццо в аэропорт Катании — расписание на остановке у порта.'}] },
@@ -2317,6 +2318,15 @@ function getGuestName() {
   return raw.trim().split(/\s+/)[0];
 }
 
+// Nome e cognome completi del primo ospite registrato (per il campo check-out).
+// Torna stringa vuota se non è ancora stato caricato nessun documento: il campo
+// resta da compilare a mano, non viene mai forzato un valore fittizio.
+function getGuestFullName() {
+  const g = state.schedine && state.schedine[0];
+  if (!g || !g.personal) return '';
+  return [g.personal.firstName, g.personal.lastName].filter(Boolean).join(' ').trim();
+}
+
 function mapEvent(e) {
   const l = state.lang;
   const fallback = (obj) => obj[l] || obj.it || obj.en || '';
@@ -2398,7 +2408,8 @@ function connectWifi() {
   if (navigator.clipboard) navigator.clipboard.writeText('SSID: ' + ssid + '\nPassword: ' + pwd);
 }
 
-function doCheckout() {
+function doCheckout(name, room) {
+  const tr = t();
   localStorage.clear();
   state.images = [];
   state.docsSent = false;
@@ -2409,8 +2420,12 @@ function doCheckout() {
   state.ocrError = null;
   state.ocrErrorDetail = '';
   state.showTxtPreview = false;
+  state.checkoutName = undefined;
+  state.checkoutRoom = undefined;
+  state.checkoutErrors = null;
   navigate('home');
-  alert(t().co ? t().co.btn : 'Thank you!');
+  const thanks = tr.co ? tr.co.btn : 'Thank you!';
+  alert(name && room ? thanks + ' — ' + name + ' · ' + room : thanks);
 }
 
 function installApp() {
@@ -2627,6 +2642,56 @@ function renderProcessingStep(tr) {
       h('div', {}, tr.upload.ocrProcessing),
     ),
   ];
+}
+
+// ── Campi obbligatori del Check-Out ──
+// Nome e cognome: precompilato dal documento riconosciuto in Check-in (stessa fonte
+// del saluto in intestazione), ma sempre modificabile — e non può mai restare vuoto.
+// Camera: menu a tendina tra le 4 camere disponibili.
+function checkoutFields(tr) {
+  if (state.checkoutName === undefined) state.checkoutName = getGuestFullName();
+  if (state.checkoutRoom === undefined) state.checkoutRoom = '';
+  if (!state.checkoutErrors) state.checkoutErrors = { name: false, room: false };
+
+  const nameInput = h('input', {
+    className: 'field-input' + (state.checkoutErrors.name ? ' field-input-error' : ''),
+    type: 'text',
+    placeholder: tr.co.nameLabel,
+    value: state.checkoutName,
+  });
+  nameInput.addEventListener('input', e => {
+    state.checkoutName = e.target.value;
+    if (e.target.value.trim()) {
+      state.checkoutErrors.name = false;
+      nameInput.classList.remove('field-input-error');
+      const err = nameInput.parentElement.querySelector('.field-error');
+      if (err) err.remove();
+    }
+  });
+
+  const roomSelect = h('select', { className: 'field-input' + (state.checkoutErrors.room ? ' field-input-error' : '') },
+    h('option', { value: '' }, tr.co.roomPlaceholder),
+    ...ROOM_OPTIONS.map(r => h('option', { value: r }, r)),
+  );
+  roomSelect.value = state.checkoutRoom;
+  roomSelect.addEventListener('change', e => {
+    state.checkoutRoom = e.target.value;
+    state.checkoutErrors.room = false;
+    render();
+  });
+
+  return h('div', { className: 'checkout-fields' },
+    h('div', { className: 'field-group' },
+      h('label', { className: 'field-label' }, tr.co.nameLabel),
+      nameInput,
+      state.checkoutErrors.name ? h('div', { className: 'field-error' }, tr.co.nameError) : null,
+    ),
+    h('div', { className: 'field-group' },
+      h('label', { className: 'field-label' }, tr.co.roomLabel),
+      roomSelect,
+      state.checkoutErrors.room ? h('div', { className: 'field-error' }, tr.co.roomError) : null,
+    ),
+  );
 }
 
 // ── Campi del form di revisione ospite ──
@@ -3197,8 +3262,21 @@ function renderSectionContent() {
         )
       ),
       h('div', { className: 'checkout-note' }, tr.co.note),
-      h('p', { style: 'font-size:14px;color:var(--text-2);line-height:1.65;margin-bottom:16px' }, tr.co.desc2),
-      h('button', { className: 'btn-danger', onClick: doCheckout }, ms('logout'), ' ', tr.co.btn),
+      h('p', { style: 'font-size:14px;color:var(--text-2);line-height:1.65;margin-bottom:4px' }, tr.co.desc2),
+      checkoutFields(tr),
+      h('button', {
+        className: 'btn-danger',
+        onClick: () => {
+          const nameOk = !!state.checkoutName && state.checkoutName.trim().length > 0;
+          const roomOk = !!state.checkoutRoom;
+          if (!nameOk || !roomOk) {
+            state.checkoutErrors = { name: !nameOk, room: !roomOk };
+            render();
+            return;
+          }
+          doCheckout(state.checkoutName.trim(), state.checkoutRoom);
+        },
+      }, ms('logout'), ' ', tr.co.btn),
     );
   }
 

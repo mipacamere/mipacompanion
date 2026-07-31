@@ -247,6 +247,9 @@ a{color:var(--primary);text-decoration:none}
 .field-label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px}
 .field-input{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid var(--sep);border-radius:var(--r-sm);font-size:15px;font-family:inherit;background:var(--surface);color:var(--text-1)}
 .field-input:focus{outline:2px solid var(--primary);outline-offset:-1px}
+.field-input-error{border-color:var(--danger);outline:none}
+.field-error{font-size:12px;color:var(--danger);margin-top:5px;display:flex;align-items:center;gap:4px}
+.checkout-fields{margin:18px 0 20px}
 .ocr-error-note{background:#fff7ed;color:var(--warning);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;font-weight:600;margin-bottom:16px}
 .ocr-processing{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:60px 20px;color:var(--text-2);font-size:14px;font-weight:600}
 .ocr-spinner{width:40px;height:40px;border-radius:50%;border:3px solid var(--sep);border-top-color:var(--primary);animation:ocr-spin 0.8s linear infinite}
@@ -557,10 +560,28 @@ a{color:var(--primary);text-decoration:none}
 .forecast-day-sea{ font-size:9.5px; color:var(--azure); margin-top:4px; display:flex; align-items:center; justify-content:center; gap:2px }
 .forecast-day-sea .ms{ font-size:11px; margin:0; color:var(--azure) }
 
+/* Home: ordine mobile = meteo → accesso rapido → eventi.
+   Su desktop meteo ed eventi tornano affiancati, sopra l'accesso rapido. */
+.home-layout{
+  display:grid;
+  grid-template-areas:"weather" "quick" "events";
+  grid-template-columns:1fr;
+  gap:0;
+}
+.home-slot-weather{ grid-area:weather }
+.home-slot-quick{ grid-area:quick }
+.home-slot-events{ grid-area:events }
+
 /* Desktop: widget meteo ed eventi affiancati invece che impilati */
 @media(min-width:768px){
-  .home-top-grid{ display:grid; grid-template-columns:1.15fr 1fr; gap:16px; align-items:start; max-width:928px }
-  .weather-widget{ margin-bottom:0 }
+  .home-layout{
+    grid-template-areas:"weather events" "quick quick";
+    grid-template-columns:1.15fr 1fr;
+    gap:16px 16px;
+    max-width:928px;
+  }
+  .home-slot-weather .weather-widget{ margin-bottom:0 }
+  .home-slot-quick{ margin-top:6px }
 }
 
 
