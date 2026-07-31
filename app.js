@@ -23,46 +23,115 @@
 // ── State ──────────────────────────────────
 
 // ═══════════════════════════════════════════
-// WEATHER API INTEGRATION (Milazzo)
+// WEATHER + MARINE API INTEGRATION (Milazzo) — Open-Meteo
 // ═══════════════════════════════════════════
+// Nessuna API key richiesta: api.open-meteo.com (meteo) + marine-api.open-meteo.com
+// (mare: temperatura acqua e altezza onde). Uso non commerciale gratuito.
+// Documentazione: https://open-meteo.com/en/docs e https://open-meteo.com/en/docs/marine-weather-api
 
-// Ottieni la tua API key gratuita da https://openweathermap.org/api
-const WEATHER_API_KEY = 'YOUR_API_KEY_HERE'; // Sostituisci con la tua key
-const WEATHER_CITY = 'Milazzo';
-const WEATHER_COUNTRY = 'IT';
+const MILAZZO_LAT = 38.2333;
+const MILAZZO_LON = 15.2400;
 
-async function fetchWeather() {
+// Mappa i WMO weather code (usati da Open-Meteo) su una condizione sintetica.
+function weatherCondition(code) {
+  if (code === 0 || code === 1 || code === 2) return 'clear';
+  if (code === 3) return 'cloudy';
+  if (code === 45 || code === 48) return 'fog';
+  if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'rain';
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'snow';
+  if (code >= 95) return 'storm';
+  return 'cloudy';
+}
+function weatherIconForCode(code) {
+  return { clear: 'wb_sunny', cloudy: 'wb_cloudy', fog: 'foggy', rain: 'rainy', snow: 'ac_unit', storm: 'thunderstorm' }[weatherCondition(code)];
+}
+
+async function fetchOpenMeteo() {
   try {
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${WEATHER_CITY},${WEATHER_COUNTRY}&appid=${WEATHER_API_KEY}&units=metric&lang=it`
-    );
-    const data = await response.json();
-    
+    const weatherUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + MILAZZO_LAT + '&longitude=' + MILAZZO_LON
+      + '&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code'
+      + '&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=6';
+    const marineUrl = 'https://marine-api.open-meteo.com/v1/marine?latitude=' + MILAZZO_LAT + '&longitude=' + MILAZZO_LON
+      + '&current=wave_height,sea_surface_temperature'
+      + '&hourly=sea_surface_temperature&daily=wave_height_max&timezone=auto&forecast_days=6';
+
+    const [wRes, mRes] = await Promise.all([fetch(weatherUrl), fetch(marineUrl)]);
+    const w = await wRes.json();
+    const m = await mRes.json();
+    if (w.error || m.error) return null;
+
+    const hourlyTimes = (m.hourly && m.hourly.time) || [];
+    const hourlySea = (m.hourly && m.hourly.sea_surface_temperature) || [];
+    function seaTempForDate(dateStr) {
+      const idx = hourlyTimes.indexOf(dateStr + 'T12:00');
+      return idx >= 0 && hourlySea[idx] != null ? Math.round(hourlySea[idx] * 10) / 10 : null;
+    }
+
+    const daily = ((w.daily && w.daily.time) || []).map((date, i) => ({
+      date,
+      weatherCode: w.daily.weather_code[i],
+      tempMax: Math.round(w.daily.temperature_2m_max[i]),
+      tempMin: Math.round(w.daily.temperature_2m_min[i]),
+      waveHeight: (m.daily && m.daily.wave_height_max && m.daily.wave_height_max[i] != null) ? Math.round(m.daily.wave_height_max[i] * 10) / 10 : null,
+      seaTemp: seaTempForDate(date),
+    }));
+
     return {
-      temp: Math.round(data.main.temp),
-      description: data.weather[0].description,
-      icon: getWeatherIcon(data.weather[0].main),
-      humidity: data.main.humidity,
-      wind: data.wind.speed,
-      location: data.name
+      current: {
+        temp: Math.round(w.current.temperature_2m),
+        humidity: Math.round(w.current.relative_humidity_2m),
+        wind: Math.round(w.current.wind_speed_10m),
+        weatherCode: w.current.weather_code,
+        seaTemp: (m.current && m.current.sea_surface_temperature != null) ? Math.round(m.current.sea_surface_temperature * 10) / 10 : null,
+        waveHeight: (m.current && m.current.wave_height != null) ? Math.round(m.current.wave_height * 10) / 10 : null,
+      },
+      daily: daily.slice(1), // il giorno 0 è oggi, già mostrato nella parte principale del widget
     };
-  } catch (error) {
-    console.error('Weather fetch error:', error);
+  } catch (e) {
+    console.error('Open-Meteo fetch error:', e);
     return null;
   }
 }
 
-function getWeatherIcon(weatherMain) {
-  const icons = {
-    'Clear': 'wb_sunny',
-    'Clouds': 'cloud',
-    'Rain': 'umbrella',
-    'Drizzle': 'water_drop',
-    'Thunderstorm': 'thunderstorm',
-    'Snow': 'ac_unit',
-    'Mist': 'foggy'
-  };
-  return icons[weatherMain] || 'wb_sunny';
+function renderWeatherWidget(data) {
+  const tr = t();
+  const wt = tr.weather || {};
+  if (!data) {
+    return h('div', { className: 'pharmacy-empty' }, ms('error_outline'), h('div', {}, wt.fetchError || 'Meteo non disponibile al momento.'));
+  }
+  const c = data.current;
+  const cond = weatherCondition(c.weatherCode);
+  const widget = h('div', { className: 'weather-widget' },
+    h('div', { className: 'weather-main' },
+      h('div', { className: 'weather-icon-big' }, ms(weatherIconForCode(c.weatherCode))),
+      h('div', {},
+        h('div', { className: 'weather-temp-big' }, c.temp + '°C'),
+        h('div', { className: 'weather-desc' }, (wt[cond] || cond) + ' · Milazzo'),
+      ),
+      h('div', { className: 'weather-expand-hint' }, wt.forecast || 'Previsioni', ms('expand_more')),
+    ),
+    h('div', { className: 'weather-stats' },
+      h('div', { className: 'weather-stat' }, ms('air'), h('div', { className: 'weather-stat-val' }, c.wind + ' km/h'), h('div', { className: 'weather-stat-label' }, wt.wind || 'Vento')),
+      h('div', { className: 'weather-stat' }, ms('water_drop'), h('div', { className: 'weather-stat-val' }, c.humidity + '%'), h('div', { className: 'weather-stat-label' }, wt.humidity || 'Umidità')),
+      h('div', { className: 'weather-stat' }, ms('tsunami'), h('div', { className: 'weather-stat-val' }, c.seaTemp != null ? c.seaTemp + '°C' : '—'), h('div', { className: 'weather-stat-label' }, wt.sea || 'Mare')),
+      h('div', { className: 'weather-stat' }, ms('waves'), h('div', { className: 'weather-stat-val' }, c.waveHeight != null ? c.waveHeight + ' m' : '—'), h('div', { className: 'weather-stat-label' }, wt.waves || 'Onde')),
+    ),
+    h('div', { className: 'weather-forecast' },
+      h('div', { className: 'forecast-inner' },
+        ...data.daily.map(d => {
+          const dayName = new Date(d.date + 'T12:00').toLocaleDateString(state.lang, { weekday: 'short' });
+          return h('div', { className: 'forecast-day' },
+            h('div', { className: 'forecast-day-name' }, dayName),
+            ms(weatherIconForCode(d.weatherCode)),
+            h('div', { className: 'forecast-day-temp' }, d.tempMax + '°', h('span', {}, '/' + d.tempMin + '°')),
+            d.seaTemp != null ? h('div', { className: 'forecast-day-sea' }, ms('tsunami'), d.seaTemp + '°C') : null,
+          );
+        })
+      )
+    ),
+  );
+  widget.addEventListener('click', () => widget.classList.toggle('open'));
+  return widget;
 }
 
 // ═══════════════════════════════════════════
@@ -127,20 +196,7 @@ function renderPharmacyWidget(data) {
   return wrap;
 }
 
-function renderWeatherChip(weather) {
-  if (!weather) return null;
-  return h('div', { className: 'weather-chip' },
-    h('span', { className: 'ms weather-chip-icon' }, weather.icon),
-    h('div', {},
-      h('div', { className: 'weather-chip-temp' }, weather.temp + '°C · ' + weather.description),
-      h('div', { className: 'weather-chip-loc' }, weather.location),
-    ),
-    h('div', { className: 'weather-chip-meta' },
-      h('div', {}, ms('water_drop'), ' ', weather.humidity + '%'),
-      h('div', {}, ms('air'), ' ', weather.wind + ' m/s'),
-    ),
-  );
-}
+
 
 // ═══════════════════════════════════════════
 // MODIFICA renderDashboard() per includere meteo
@@ -235,7 +291,7 @@ function renderMasonryGrid(ids) {
       const tall = i % 3 === 0;
       return h('button', {
         className: 'explore-card' + (tall ? ' explore-card-tall' : ''),
-        style: { background: 'color-mix(in srgb, ' + ACCENT_SHADES[i % ACCENT_SHADES.length] + ' 16%, var(--surface))' },
+        style: { background: 'color-mix(in srgb, ' + ACCENT_SHADES[i % ACCENT_SHADES.length] + ' 22%, var(--surface))' },
         onClick: () => item.external ? openSchedineFlow() : navigate('section', item.id),
       },
         ms(item.icon),
@@ -322,12 +378,17 @@ function renderDashboard() {
     state.section = 'checkout';
     page.appendChild(h('div', { className: 'dashboard-content' }, renderSectionContent()));
   } else {
+    const events = renderUpcomingEvents();
+    const topGrid = h('div', { className: 'home-top-grid' },
+      h('div', { id: 'weather-container' },
+        h('div', { className: 'pharmacy-loading' }, ms('progress_activity'), ' ', (t().pharmacies && t().pharmacies.loading) || '...'),
+      ),
+      events,
+    );
     const homeContent = h('div', { className: 'dashboard-content' },
-      h('div', { id: 'weather-container' }),
+      topGrid,
       renderQuickAccessGrid(),
     );
-    const events = renderUpcomingEvents();
-    if (events) homeContent.appendChild(events);
     page.appendChild(homeContent);
   }
 
@@ -366,15 +427,14 @@ function render() {
     app.appendChild(renderBottomTabBar());
   }
 
-  // Carica meteo dopo il render, solo quando il tab Home è attivo
+  // Carica meteo + mare (Open-Meteo) dopo il render, solo quando il tab Home è attivo
   if (state.page === 'dashboard' && state.dashTab === 'home') {
     setTimeout(() => {
-      fetchWeather().then(weather => {
+      fetchOpenMeteo().then(data => {
         const container = document.getElementById('weather-container');
-        if (container && weather) {
+        if (container) {
           container.innerHTML = '';
-          const chip = renderWeatherChip(weather);
-          if (chip) container.appendChild(chip);
+          container.appendChild(renderWeatherWidget(data));
         }
       });
     }, 100);
@@ -474,6 +534,7 @@ const allT = {
     itinerary: { desc:'Discover the best of the city with this carefully planned itinerary. Explore must-see attractions and enjoy local experiences.', btn:'Explore Milazzo' },
     entryInstructions: { steps: ["The main door opens with the code from your confirmation message.","The key box is right beside the entrance, on the right.","Go up to the first floor: the apartment is the door at the end of the hallway.","Need help? Message us on WhatsApp — we're always reachable."] },
     pharmacies: { desc: 'Check the up-to-date list of on-duty pharmacies in Milazzo, open today or tonight.', btn: 'See on-duty pharmacies' , loading:'Loading…', fetchError:"Could not load the list right now.", none:'No data available right now.', open:'Open', onDuty:'On duty', updated:'Updated at' },
+    weather: { clear:'Clear sky', cloudy:'Cloudy', fog:'Foggy', rain:'Rainy', snow:'Snowy', storm:'Storm', wind:'Wind', humidity:'Humidity', sea:'Sea', waves:'Waves', forecast:'Forecast', fetchError:'Weather unavailable right now.' },
     map: { title:'Milazzo Interactive Map', desc:'Highlights, landmarks and hidden gems.', openMaps:'Open in Google Maps' },
     beach: { desc:'Navigate directly to the nearest beach — crystal-clear Tyrrhenian waters await.', btnTitle:'Take me to the beach', btnSub:'Opens Google Maps · Navigation' },
     room: { desc:'Let us guide you back to MiPA.', btnTitle:'Navigate to MiPA', btnSub:'Opens Google Maps · Turn-by-turn' },
@@ -544,6 +605,7 @@ const allT = {
     itinerary: { desc:'Scopri il meglio della città con questo itinerario giornaliero ben pianificato.', btn:'Esplora Milazzo' },
     entryInstructions: { steps: ["Il portone si apre con il codice che trovi nel messaggio di conferma.","La cassetta con le chiavi si trova subito a destra dell'ingresso.","Sali al primo piano: l'appartamento è la porta in fondo al corridoio.","Se hai bisogno, scrivici su WhatsApp: siamo sempre raggiungibili."] },
     pharmacies: { desc: "Consulta l'elenco aggiornato delle farmacie di turno a Milazzo, aperte oggi o stanotte.", btn: 'Vedi farmacie di turno' , loading:'Caricamento…', fetchError:"Impossibile caricare l'elenco in questo momento.", none:'Nessun dato disponibile al momento.', open:'Aperta', onDuty:'Di turno', updated:'Aggiornato alle' },
+    weather: { clear:'Sereno', cloudy:'Nuvoloso', fog:'Nebbia', rain:'Pioggia', snow:'Neve', storm:'Temporale', wind:'Vento', humidity:'Umidità', sea:'Mare', waves:'Onde', forecast:'Previsioni', fetchError:'Meteo non disponibile al momento.' },
     map: { title:'Mappa Interattiva di Milazzo', desc:'Attrazioni, monumenti e gemme nascoste.', openMaps:'Apri in Google Maps' },
     beach: { desc:'Naviga direttamente alla spiaggia più vicina — acque cristalline del Tirreno ti aspettano.', btnTitle:'Portami alla spiaggia', btnSub:'Apre Google Maps · Navigazione' },
     room: { desc:'Lasciati guidare verso MiPA.', btnTitle:'Naviga verso MiPA', btnSub:'Apre Google Maps · Indicazioni' },
@@ -614,6 +676,7 @@ const allT = {
     itinerary:{ desc:'Découvrez le meilleur de la ville grâce à cet itinéraire soigneusement planifié.', btn:'Explorer Milazzo' },
     entryInstructions:{ steps: ["La porte principale s'ouvre avec le code de votre message de confirmation.","La boîte à clés se trouve juste à droite de l'entrée.","Montez au premier étage : l'appartement est la porte au fond du couloir.","Besoin d'aide ? Écrivez-nous sur WhatsApp, nous sommes toujours disponibles."] },
     pharmacies:{ desc: 'Consultez la liste à jour des pharmacies de garde à Milazzo, ouvertes aujourd\'hui ou cette nuit.', btn: 'Voir les pharmacies de garde' , loading:'Chargement…', fetchError:'Impossible de charger la liste pour le moment.', none:'Aucune donnée disponible pour le moment.', open:'Ouverte', onDuty:'De garde', updated:'Mis à jour à' },
+    weather: { clear:'Ciel dégagé', cloudy:'Nuageux', fog:'Brouillard', rain:'Pluie', snow:'Neige', storm:'Orage', wind:'Vent', humidity:'Humidité', sea:'Mer', waves:'Vagues', forecast:'Prévisions', fetchError:'Météo indisponible pour le moment.' },
     map:{ title:'Carte Interactive de Milazzo', desc:'Attractions, monuments et joyaux cachés.', openMaps:'Ouvrir dans Google Maps' },
     beach:{ desc:'Naviguez directement vers la plage la plus proche — des eaux cristallines vous attendent.', btnTitle:'Emmène-moi à la plage', btnSub:'Ouvre Google Maps · Navigation' },
     room:{ desc:"Laissez-nous vous guider jusqu'à MiPA.", btnTitle:'Naviguer vers MiPA', btnSub:'Ouvre Google Maps · Itinéraire' },
@@ -666,6 +729,7 @@ const allT = {
     itinerary:{ desc:'Descubre lo mejor de la ciudad con este itinerario cuidadosamente planificado.', btn:'Explorar Milazzo' },
     entryInstructions:{ steps: ['La puerta principal se abre con el código de tu mensaje de confirmación.','La caja de llaves está justo a la derecha de la entrada.','Sube al primer piso: el apartamento es la puerta al final del pasillo.','¿Necesitas ayuda? Escríbenos por WhatsApp, siempre estamos disponibles.'] },
     pharmacies:{ desc: 'Consulta la lista actualizada de farmacias de guardia en Milazzo, abiertas hoy o esta noche.', btn: 'Ver farmacias de guardia' , loading:'Cargando…', fetchError:'No se pudo cargar la lista en este momento.', none:'No hay datos disponibles en este momento.', open:'Abierta', onDuty:'De guardia', updated:'Actualizado a las' },
+    weather: { clear:'Despejado', cloudy:'Nublado', fog:'Niebla', rain:'Lluvia', snow:'Nieve', storm:'Tormenta', wind:'Viento', humidity:'Humedad', sea:'Mar', waves:'Olas', forecast:'Previsión', fetchError:'Meteo no disponible en este momento.' },
     map:{ title:'Mapa Interactivo de Milazzo', desc:'Atracciones, monumentos y joyas ocultas.', openMaps:'Abrir en Google Maps' },
     beach:{ desc:'Navega directamente a la playa más cercana — aguas cristalinas del Tirreno te esperan.', btnTitle:'Llévame a la playa', btnSub:'Abre Google Maps · Navegación' },
     room:{ desc:'Déjanos guiarte de vuelta a MiPA.', btnTitle:'Navegar a MiPA', btnSub:'Abre Google Maps · Ruta' },
@@ -718,6 +782,7 @@ const allT = {
     itinerary:{ desc:'Entdecken Sie das Beste der Stadt mit diesem sorgfältig geplanten Reiseverlauf.', btn:'Milazzo erkunden' },
     entryInstructions:{ steps: ['Die Haustür öffnet sich mit dem Code aus Ihrer Bestätigungsnachricht.','Die Schlüsselbox befindet sich direkt rechts vom Eingang.','Gehen Sie in den ersten Stock: Die Wohnung ist die Tür am Ende des Flurs.','Brauchen Sie Hilfe? Schreiben Sie uns auf WhatsApp — wir sind immer erreichbar.'] },
     pharmacies:{ desc: 'Sehen Sie die aktuelle Liste der Notdienst-Apotheken in Milazzo, heute oder heute Nacht geöffnet.', btn: 'Notdienst-Apotheken ansehen' , loading:'Wird geladen…', fetchError:'Die Liste konnte gerade nicht geladen werden.', none:'Derzeit keine Daten verfügbar.', open:'Geöffnet', onDuty:'Notdienst', updated:'Aktualisiert um' },
+    weather: { clear:'Klar', cloudy:'Bewölkt', fog:'Nebel', rain:'Regen', snow:'Schnee', storm:'Gewitter', wind:'Wind', humidity:'Luftfeuchtigkeit', sea:'Meer', waves:'Wellen', forecast:'Vorhersage', fetchError:'Wetter derzeit nicht verfügbar.' },
     map:{ title:'Interaktive Karte von Milazzo', desc:'Sehenswürdigkeiten, Wahrzeichen und versteckte Schätze.', openMaps:'In Google Maps öffnen' },
     beach:{ desc:'Navigieren Sie direkt zum nächsten Strand — kristallklares Tyrrhenisches Meer wartet.', btnTitle:'Bring mich zum Strand', btnSub:'Öffnet Google Maps · Navigation' },
     room:{ desc:'Lassen Sie uns Sie zurück zu MiPA führen.', btnTitle:'Zu MiPA navigieren', btnSub:'Öffnet Google Maps · Wegbeschreibung' },
@@ -770,6 +835,7 @@ const allT = {
     itinerary:{ desc:'通过这个精心规划的行程，发现城市的最佳景点。', btn:'探索米拉佐' },
     entryInstructions:{ steps: ['大门使用确认信息中的密码开启。','钥匙盒就在入口右侧。','上到一楼（意大利楼层计法）：公寓是走廊尽头的门。','需要帮助？请通过WhatsApp联系我们，我们随时在线。'] },
     pharmacies:{ desc: '查看米拉佐今天或今晚营业的值班药房最新列表。', btn: '查看值班药房' , loading:'加载中…', fetchError:'暂时无法加载列表。', none:'暂无数据。', open:'营业中', onDuty:'值班', updated:'更新于' },
+    weather: { clear:'晴朗', cloudy:'多云', fog:'有雾', rain:'有雨', snow:'下雪', storm:'雷暴', wind:'风速', humidity:'湿度', sea:'海温', waves:'浪高', forecast:'预报', fetchError:'暂时无法获取天气。' },
     map:{ title:'米拉佐互动地图', desc:'景点、地标和隐藏宝藏。', openMaps:'在谷歌地图中打开' },
     beach:{ desc:'直接导航到最近的海滩 — 清澈的第勒尼安海水等待着您。', btnTitle:'带我去海滩', btnSub:'打开谷歌地图 · 导航' },
     room:{ desc:'让我们引导您回到MiPA。', btnTitle:'导航到MiPA', btnSub:'打开谷歌地图 · 路线' },
@@ -822,6 +888,7 @@ const allT = {
     itinerary:{ desc:'Откройте для себя лучшее в городе с этим тщательно спланированным маршрутом.', btn:'Исследовать Милаццо' },
     entryInstructions:{ steps: ['Входная дверь открывается кодом из вашего сообщения с подтверждением.','Коробка с ключами находится справа от входа.','Поднимитесь на второй этаж: квартира — дверь в конце коридора.','Нужна помощь? Напишите нам в WhatsApp — мы всегда на связи.'] },
     pharmacies:{ desc: 'Посмотрите актуальный список дежурных аптек в Милаццо, открытых сегодня или сегодня ночью.', btn: 'Показать дежурные аптеки' , loading:'Загрузка…', fetchError:'Не удалось загрузить список сейчас.', none:'Данные сейчас недоступны.', open:'Открыта', onDuty:'Дежурная', updated:'Обновлено в' },
+    weather: { clear:'Ясно', cloudy:'Облачно', fog:'Туман', rain:'Дождь', snow:'Снег', storm:'Гроза', wind:'Ветер', humidity:'Влажность', sea:'Море', waves:'Волны', forecast:'Прогноз', fetchError:'Погода сейчас недоступна.' },
     map:{ title:'Интерактивная карта Милаццо', desc:'Достопримечательности, памятники и скрытые жемчужины.', openMaps:'Открыть в Google Maps' },
     beach:{ desc:'Навигация прямо до ближайшего пляжа — кристально чистые воды Тирренского моря ждут вас.', btnTitle:'Отвези меня на пляж', btnSub:'Открывает Google Maps · Навигация' },
     room:{ desc:'Позвольте нам проводить вас обратно в MiPA.', btnTitle:'Навигация к MiPA', btnSub:'Открывает Google Maps · Маршрут' },
