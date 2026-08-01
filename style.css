@@ -48,6 +48,31 @@
     --shadow-sm: 0 4px 14px rgba(0,0,0,.45),0 0 0 .5px rgba(255,255,255,.04);
   }
 }
+/* Scelta manuale (pulsante nell'header): sovrascrive la preferenza automatica del
+   sistema. Queste regole vengono dopo la media query nel file, quindi vincono
+   quando la classe è presente, a prescindere dal tema del telefono. */
+html.theme-dark{
+  --primary: #6fa688; --primary-dark: #8fc0a4; --primary-deeper: #5c8e73;
+  --toolbar: linear-gradient(160deg,#0e1310 0%,#1c2820 55%,#2a3a2f 100%);
+  --gold: #d9b876; --clay: #d38a68; --azure: #7cabd0; --card-ink: #f2f0e8;
+  --bg: #141d18; --surface: #1c2820; --overlay: rgba(255,255,255,.06);
+  --danger: #ef5350; --warning: #f0a742;
+  --text-1: #f2f0e8; --text-2: rgba(242,240,232,.82); --text-3: rgba(242,240,232,.52); --text-4: rgba(242,240,232,.28);
+  --sep: rgba(242,240,232,.12);
+  --shadow-xs: 0 1px 3px rgba(0,0,0,.35),0 0 0 .5px rgba(255,255,255,.04);
+  --shadow-sm: 0 4px 14px rgba(0,0,0,.45),0 0 0 .5px rgba(255,255,255,.04);
+}
+html.theme-light{
+  --primary: #4f7d65; --primary-dark: #3d6451; --primary-deeper: #2e4d3d;
+  --toolbar: linear-gradient(160deg,#354f41 0%,#4a7460 55%,#5e8e74 100%);
+  --gold: #c9a15a; --clay: #c0704a; --azure: #4d7fa3; --card-ink: var(--primary-deeper);
+  --bg: #f2f2f7; --surface: #ffffff; --overlay: rgba(0,0,0,.04);
+  --danger: #dc2626; --warning: #d97706;
+  --text-1: #1c1c1e; --text-2: rgba(60,60,67,.82); --text-3: rgba(60,60,67,.55); --text-4: rgba(60,60,67,.30);
+  --sep: rgba(60,60,67,.13);
+  --shadow-xs: 0 1px 3px rgba(0,0,0,.06),0 0 0 .5px rgba(0,0,0,.04);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.08),0 0 0 .5px rgba(0,0,0,.04);
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%; overflow-x:hidden}
 body{background:var(--bg);color:var(--text-1);font-family:"SF Pro Display",-apple-system,"Helvetica Neue",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
@@ -511,6 +536,13 @@ a{color:var(--primary);text-decoration:none}
   font-size:16px; cursor:pointer; box-shadow:var(--shadow-xs);
 }
 .lang-flag-btn .ms{ font-size:16px; color:var(--text-3) }
+.header-actions{ display:flex; align-items:center; gap:8px; position:relative }
+.theme-toggle-btn{
+  display:flex; align-items:center; justify-content:center; background:var(--surface);
+  border:1px solid var(--sep); border-radius:999px; width:34px; height:34px;
+  cursor:pointer; box-shadow:var(--shadow-xs); flex-shrink:0;
+}
+.theme-toggle-btn .ms{ font-size:17px; color:var(--gold) }
 .lang-menu{
   position:absolute; top:42px; right:0; background:var(--surface); border-radius:var(--r-md);
   box-shadow:var(--shadow-sm); width:172px; padding:6px; z-index:60;
@@ -548,17 +580,18 @@ a{color:var(--primary);text-decoration:none}
 .weather-stat-val{ font-size:13px; font-weight:700; color:var(--text-1) }
 .weather-stat-label{ font-size:9.5px; color:var(--text-3); text-transform:uppercase; letter-spacing:.03em; margin-top:1px }
 
-.weather-forecast{ max-height:0; overflow:hidden; transition:max-height .25s ease }
-.weather-widget.open .weather-forecast{ max-height:200px }
+.weather-forecast{ max-height:0; overflow:hidden; transition:max-height .3s ease }
+.weather-widget.open .weather-forecast{ max-height:320px }
 .forecast-inner{ padding:14px 16px 16px; border-top:1px solid var(--sep); display:flex; gap:8px; overflow-x:auto }
 .forecast-inner::-webkit-scrollbar{ display:none }
-.forecast-day{ flex:0 0 78px; text-align:center; background:var(--bg); border-radius:12px; padding:10px 6px }
+.forecast-day{ flex:0 0 96px; text-align:center; background:var(--bg); border-radius:12px; padding:10px 6px }
 .forecast-day-name{ font-size:10.5px; font-weight:700; color:var(--text-2); margin-bottom:5px; text-transform:capitalize }
 .forecast-day .ms{ font-size:20px; color:var(--gold); margin-bottom:3px }
 .forecast-day-temp{ font-size:12px; font-weight:700; color:var(--text-1) }
 .forecast-day-temp span{ color:var(--text-3); font-weight:500 }
-.forecast-day-sea{ font-size:9.5px; color:var(--azure); margin-top:4px; display:flex; align-items:center; justify-content:center; gap:2px }
-.forecast-day-sea .ms{ font-size:11px; margin:0; color:var(--azure) }
+.forecast-day-extra{ display:flex; flex-direction:column; gap:3px; margin-top:7px; padding-top:7px; border-top:1px solid var(--sep) }
+.forecast-day-extra-row{ display:flex; align-items:center; justify-content:center; gap:3px; font-size:10px; color:var(--text-3); font-weight:600 }
+.forecast-day-extra-row .ms{ font-size:12px; margin:0; color:var(--azure) }
 
 /* Home: ordine mobile = meteo → accesso rapido → eventi.
    Su desktop meteo ed eventi tornano affiancati, sopra l'accesso rapido. */

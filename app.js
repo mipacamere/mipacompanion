@@ -51,7 +51,7 @@ async function fetchOpenMeteo() {
   try {
     const weatherUrl = 'https://api.open-meteo.com/v1/forecast?latitude=' + MILAZZO_LAT + '&longitude=' + MILAZZO_LON
       + '&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code'
-      + '&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=6';
+      + '&daily=weather_code,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,relative_humidity_2m_mean&timezone=auto&forecast_days=6';
     const marineUrl = 'https://marine-api.open-meteo.com/v1/marine?latitude=' + MILAZZO_LAT + '&longitude=' + MILAZZO_LON
       + '&current=wave_height,sea_surface_temperature'
       + '&hourly=sea_surface_temperature&daily=wave_height_max&timezone=auto&forecast_days=6';
@@ -73,6 +73,8 @@ async function fetchOpenMeteo() {
       weatherCode: w.daily.weather_code[i],
       tempMax: Math.round(w.daily.temperature_2m_max[i]),
       tempMin: Math.round(w.daily.temperature_2m_min[i]),
+      wind: (w.daily.wind_speed_10m_max && w.daily.wind_speed_10m_max[i] != null) ? Math.round(w.daily.wind_speed_10m_max[i]) : null,
+      humidity: (w.daily.relative_humidity_2m_mean && w.daily.relative_humidity_2m_mean[i] != null) ? Math.round(w.daily.relative_humidity_2m_mean[i]) : null,
       waveHeight: (m.daily && m.daily.wave_height_max && m.daily.wave_height_max[i] != null) ? Math.round(m.daily.wave_height_max[i] * 10) / 10 : null,
       seaTemp: seaTempForDate(date),
     }));
@@ -125,7 +127,12 @@ function renderWeatherWidget(data) {
             h('div', { className: 'forecast-day-name' }, dayName),
             ms(weatherIconForCode(d.weatherCode)),
             h('div', { className: 'forecast-day-temp' }, d.tempMax + '°', h('span', {}, '/' + d.tempMin + '°')),
-            d.seaTemp != null ? h('div', { className: 'forecast-day-sea' }, ms('tsunami'), d.seaTemp + '°C') : null,
+            h('div', { className: 'forecast-day-extra' },
+              d.wind != null ? h('div', { className: 'forecast-day-extra-row' }, ms('air'), d.wind + ' km/h') : null,
+              d.humidity != null ? h('div', { className: 'forecast-day-extra-row' }, ms('water_drop'), d.humidity + '%') : null,
+              d.seaTemp != null ? h('div', { className: 'forecast-day-extra-row' }, ms('tsunami'), d.seaTemp + '°C') : null,
+              d.waveHeight != null ? h('div', { className: 'forecast-day-extra-row' }, ms('waves'), d.waveHeight + ' m') : null,
+            ),
           );
         })
       )
@@ -245,12 +252,47 @@ function renderLangMenu() {
   return wrap;
 }
 
+// ── Tema light/dark ──
+// Di default segue il sistema (prefers-color-scheme). Il pulsante nell'header
+// permette una scelta manuale, salvata e riproposta ad ogni apertura dell'app.
+function getEffectiveTheme() {
+  const html = document.documentElement;
+  if (html.classList.contains('theme-dark')) return 'dark';
+  if (html.classList.contains('theme-light')) return 'light';
+  return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+}
+function applyStoredTheme() {
+  const stored = localStorage.getItem('mipa_theme');
+  const html = document.documentElement;
+  html.classList.remove('theme-dark', 'theme-light');
+  if (stored === 'dark') html.classList.add('theme-dark');
+  else if (stored === 'light') html.classList.add('theme-light');
+  // se stored è assente/'auto', nessuna classe: resta la preferenza di sistema
+}
+function toggleTheme() {
+  const next = getEffectiveTheme() === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('mipa_theme', next);
+  applyStoredTheme();
+  render();
+}
+applyStoredTheme();
+
+function renderThemeToggle() {
+  const isDark = getEffectiveTheme() === 'dark';
+  return h('button', {
+    className: 'theme-toggle-btn',
+    onClick: (e) => { e.stopPropagation(); toggleTheme(); },
+  }, ms(isDark ? 'light_mode' : 'dark_mode'));
+}
+
 function renderHeader() {
   const tr = t();
   const guestName = getGuestName();
 
   return h('div', {},
-    h('div', { className: 'home-topbar' }, renderLangMenu()),
+    h('div', { className: 'home-topbar' },
+      h('div', { className: 'header-actions' }, renderThemeToggle(), renderLangMenu()),
+    ),
     h('div', { className: 'greeting-card' },
       h('div', { className: 'greeting-card-inner' },
         h('div', { className: 'home-greeting' }, (tr.dash.hello || 'Hello') + ', ' + (guestName || tr.guestFallback || 'Guest')),
@@ -2898,7 +2940,7 @@ function renderUpload() {
   return h('div', { className: 'page' },
     h('div', { className: 'section-topbar' },
       h('button', { className: 'back-btn-flat', onClick: () => navigate('home') }, ms('chevron_left', true), ' ', tr.back),
-      renderLangMenu(),
+      h('div', { className: 'header-actions' }, renderThemeToggle(), renderLangMenu()),
     ),
     h('div', { className: 'upload-page' },
       state.docPhase === 'capture' ? h('h2', { className: 'section-h2' }, tr.upload.title) : null,
@@ -3335,7 +3377,7 @@ function renderSection() {
   return h('div', { className: 'page' },
     h('div', { className: 'section-topbar' },
       h('button', { className: 'back-btn-flat', onClick: () => navigate('dashboard') }, ms('chevron_left', true), ' ', tr.back),
-      renderLangMenu(),
+      h('div', { className: 'header-actions' }, renderThemeToggle(), renderLangMenu()),
     ),
     h('div', { className: 'tablet-topbar', style: 'display:none' },
       h('div', { className: 'tablet-topbar-title' }, label),
